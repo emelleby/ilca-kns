@@ -8,7 +8,6 @@ generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["driverAdapters"]
   output          = "../node_modules/.prisma/client"
-
 }
 
 datasource db {
@@ -17,22 +16,73 @@ datasource db {
 }
 
 model User {
-  id          String      @id @default(uuid()) // User ID (UUID-based)
-  username    String      @unique
-  createdAt   DateTime    @default(now())
-
+  id          String       @id @default(uuid()) // User ID (UUID-based)
+  username    String       @unique
+  createdAt   DateTime     @default(now())
+  role        Role         @default(USER)
+  profile     Profile?
+  posts       Post[]
+  comments    Comment[]
   credentials Credential[] // Relationship: One user can have many credentials
 }
 
 model Credential {
-  id            String   @id @default(uuid()) // Internal DB ID
-  userId        String   @unique // Every credential is linked to a specific user
-  user          User     @relation(fields: [userId], references: [id])
-  createdAt     DateTime @default(now())
-  credentialId  String   @unique // WebAuthn credential identifier
-  publicKey     Bytes
-  counter       Int      @default(0)
-  
+  id           String   @id @default(uuid()) // Internal DB ID
+  userId       String   @unique // Every credential is linked to a specific user
+  user         User     @relation(fields: [userId], references: [id])
+  createdAt    DateTime @default(now())
+  credentialId String   @unique // WebAuthn credential identifier
+  publicKey    Bytes
+  counter      Int      @default(0)
+
   @@index([credentialId])
   @@index([userId])
+}
+
+model Profile {
+  id              String  @id @default(uuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id])
+  name            String?
+  bio             String?
+  location        String?
+  experienceLevel String?
+  profilePicture  String?
+  privacySettings String?
+}
+
+model Post {
+  id          String     @id @default(uuid())
+  userId      String
+  user        User       @relation(fields: [userId], references: [id])
+  title       String
+  content     String
+  category    String?
+  status      PostStatus @default(DRAFT)
+  publishedAt DateTime?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  comments    Comment[]
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  content   String
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  ADMIN
+  COACH
+  USER
 }

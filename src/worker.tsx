@@ -47,9 +47,16 @@ export default defineApp([
   },
   render(Document, [
     route("/", () => new Response("Hello, World!")),
-    route("/ping", function () {
-      return <h1>Pong!</h1>;
+    route("/test", () => new Response("Testing 123")),
+    route("/home", () => new Response("Homey boy!")),
+    route("/pingo", function () {
+      return <h1>Pongo!</h1>;
     }),
+    route("/ass", function () {
+      return <h1 className="text-4xl font-bold text-red-500">YOLO</h1>;
+    }),
+    // route("/home", [Home]),
+    route("/homey", () => new Response("Home works!", { status: 200 })),
     route("/protected", [
       ({ ctx }) => {
         if (!ctx.user) {
