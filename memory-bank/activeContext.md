@@ -2,15 +2,16 @@
 
 ## Current Focus
 
-- Understanding the sailing community application requirements
-- Planning the implementation of core features
-- Establishing the technical architecture based on RedwoodSDK
+- Implementing authentication with dual methods (passkey and email/password)
+- Developing user account management functionality
+- Establishing database schema and migration workflows
 
 ## Recent Changes
 
-- Initial analysis of the Product Requirements Document
-- Creation of Memory Bank to track project knowledge
-- Identification of key user roles and permissions
+- Added email and password fields to User model in schema.prisma
+- Implemented password-based authentication alongside passkey authentication
+- Established Prisma migration workflow for schema changes
+- Created utility functions for password hashing and verification
 
 ## Key Patterns and Preferences
 
@@ -20,19 +21,20 @@
 - Training progress tracking
 - Event management functionality
 - Interactive client components require "use client"; directive
-- Two-pass rendering pattern implemented for client-side interactivity to prevent hydration errors caused by external DOM modifications (e.g., browser extensions).
+- Two-pass rendering pattern implemented for client-side interactivity to prevent hydration errors
+- Dual authentication methods (passkey-first with email/password as alternative)
+- Prisma workflow: `pnpm migrate:new "migration_name"` for schema changes, followed by server restart
 
 ## Active Decisions
 
-- Need to prioritize feature implementation
-- Determining the database schema for user profiles, training logs, and events
-- Planning the authentication flow with role-based permissions
-- Designing the UI components using Shadcn and Tailwind CSS
+- Using a linked account approach for authentication methods
+- Emphasizing passkey authentication in the UI while providing email/password as an alternative
+- Implementing account settings to allow users to add authentication methods
+- Using Prisma ORM for database operations with D1 database
 
 ## Next Steps
 
-- Design the database schema
-- Create user authentication flows
-- Implement the core UI components
+- Complete account linking functionality
+- Implement user profile management
 - Develop the personal sailing diary functionality
 - Build the community blog/news system

@@ -12,6 +12,7 @@ import { sessions } from "@/session/store";
 import { requestInfo } from "rwsdk/worker";
 import { db } from "@/db";
 import { env } from "cloudflare:workers";
+import { hashPassword, verifyPassword } from "@/app/utils/password";
 
 const IS_DEV = process.env.NODE_ENV === "development";
 
@@ -167,5 +168,106 @@ export async function finishPasskeyLogin(login: AuthenticationResponseJSON) {
     challenge: null,
   });
 
+  return true;
+}
+
+// Add email/password registration
+export async function registerWithPassword(username: string, email: string, password: string) {
+  // Hash password
+  const hashedPassword = await hashPassword(password);
+  
+  // Create user
+  const user = await db.user.create({
+    data: {
+      username,
+      email,
+      password: hashedPassword,
+    },
+  });
+  
+  // Set session
+  await sessions.save(requestInfo.headers, {
+    userId: user.id,
+    challenge: null,
+  });
+  
+  return user.id;
+}
+
+// Add email/password login
+export async function loginWithPassword(email: string, password: string) {
+  // Find user
+  const user = await db.user.findUnique({
+    where: { email },
+  });
+  
+  if (!user || !user.password) return false;
+  
+  // Verify password
+  const isValid = verifyPassword(password, user.password);
+  if (!isValid) return false;
+  
+  // Set session
+  await sessions.save(requestInfo.headers, {
+    userId: user.id,
+    challenge: null,
+  });
+  
+  return true;
+}
+
+// Add function to link passkey to existing account
+export async function addPasskeyToExistingAccount(userId: string, registration: RegistrationResponseJSON) {
+  const { request, headers } = requestInfo;
+  const { origin } = new URL(request.url);
+
+  const session = await sessions.load(request);
+  const challenge = session?.challenge;
+
+  if (!challenge) {
+    return false;
+  }
+
+  const verification = await verifyRegistrationResponse({
+    response: registration,
+    expectedChallenge: challenge,
+    expectedOrigin: origin,
+    expectedRPID: env.WEBAUTHN_RP_ID || new URL(request.url).hostname,
+  });
+
+  if (!verification.verified || !verification.registrationInfo) {
+    return false;
+  }
+
+  await sessions.save(headers, { challenge: null });
+
+  // Create credential for existing user
+  await db.credential.create({
+    data: {
+      userId,
+      credentialId: registration.id,
+      publicKey: Buffer.from(
+        verification.registrationInfo.credentialPublicKey
+      ),
+      counter: verification.registrationInfo.counter,
+    },
+  });
+
+  return true;
+}
+
+// Add function to link email/password to passkey account
+export async function addPasswordToPasskeyAccount(userId: string, email: string, password: string) {
+  const hashedPassword = await hashPassword(password);
+  
+  // Update existing user
+  await db.user.update({
+    where: { id: userId },
+    data: {
+      email,
+      password: hashedPassword,
+    },
+  });
+  
   return true;
 }

@@ -5,6 +5,7 @@ import { startRegistration } from "@simplewebauthn/browser";
 import {
   finishPasskeyRegistration,
   startPasskeyRegistration,
+  registerWithPassword,
 } from "./functions";
 import { AuthLayout } from "@/app/layouts/AuthLayout";
 import { Button } from "@/app/components/ui/button";
@@ -18,6 +19,10 @@ export function Signup() {
   const [result, setResult] = useState("");
   const [isPending, startTransition] = useTransition();
   const [isClient, setIsClient] = useState(false);
+  const [showPasswordOption, setShowPasswordOption] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   useEffect(() => {
     setIsClient(true);
@@ -42,6 +47,27 @@ export function Signup() {
 
   const handlePerformPasskeyRegister = () => {
     startTransition(() => void passkeyRegister());
+  };
+
+  const handlePasswordRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (password !== confirmPassword) {
+      setResult("Passwords don't match");
+      return;
+    }
+    
+    startTransition(async () => {
+      try {
+        const success = await registerWithPassword(username, email, password);
+        if (success) {
+          window.location.href = link("/user/login");
+        } else {
+          setResult("Registration failed");
+        }
+      } catch (error) {
+        setResult("Registration failed");
+      }
+    });
   };
 
   if (!isClient) {
@@ -94,6 +120,65 @@ export function Signup() {
               </Button>
               {result && <div className="mt-4 text-center text-sm text-destructive">{result}</div>}
             </form>
+            <Button 
+              variant="link" 
+              onClick={() => setShowPasswordOption(!showPasswordOption)}
+              className="w-full mt-2 cursor-pointer"
+            >
+              {showPasswordOption ? "Use passkey instead" : "Use email and password instead"}
+            </Button>
+            {showPasswordOption && (
+              <form className="flex flex-col gap-4 mt-4" onSubmit={handlePasswordRegister}>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="username">Username</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    value={username}
+                    onChange={e => setUsername(e.target.value)}
+                    placeholder="Username"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="password">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    autoComplete="new-password"
+                    required
+                  />
+                </div>
+                <Button type="submit" disabled={isPending} className="w-full">
+                  {isPending ? <>...</> : "Register with email"}
+                </Button>
+              </form>
+            )}
           </CardContent>
         </Card>
       </div>

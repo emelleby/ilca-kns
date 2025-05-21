@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { AuthLayout } from "@/app/layouts/AuthLayout"
 import {
   startAuthentication,
@@ -8,6 +8,7 @@ import {
 import {
   finishPasskeyLogin,
   startPasskeyLogin,
+  loginWithPassword,
 } from "./functions";
 import { cn } from "@/app/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
@@ -17,7 +18,7 @@ import { Label } from "@/app/components/ui/label";
 import { link } from "@/app/shared/links";
 
 export function Login() {
-  // Email/password state (for demo, not functional)
+  // Email/password state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -25,6 +26,12 @@ export function Login() {
   const [username, setUsername] = useState("");
   const [result, setResult] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isClient, setIsClient] = useState(false);
+
+  // Set isClient to true after component mounts
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const passkeyLogin = async () => {
     // 1. Get a challenge from the worker
@@ -47,6 +54,41 @@ export function Login() {
     startTransition(() => void passkeyLogin());
   };
 
+  const handlePasswordLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    startTransition(async () => {
+      try {
+        const success = await loginWithPassword(email, password);
+        if (success) {
+          window.location.href = link("/");
+        } else {
+          setResult("Invalid email or password");
+        }
+      } catch (error) {
+        setResult("Login failed");
+      }
+    });
+  };
+
+  // Show a skeleton loader while on the server or during initial client render
+  if (!isClient) {
+    return (
+      <AuthLayout>
+        <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-bg">
+          <Card className="w-full max-w-md p-8 shadow-lg bg-background/60">
+            <CardHeader>
+              <CardTitle>Login to your account</CardTitle>
+              <CardDescription>Loading...</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">Loading...</div>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>
@@ -64,7 +106,7 @@ export function Login() {
         <CardContent>
 
           {/* Email/Password Login */}
-          <form className="flex flex-col gap-4 mb-6" onSubmit={e => e.preventDefault()}>
+          <form className="flex flex-col gap-4 mb-6" onSubmit={handlePasswordLogin}>
             <div className="flex flex-col gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -72,7 +114,7 @@ export function Login() {
                 type="email"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                placeholder="m@example.com"
+                placeholder="you@example.com"
                 autoComplete="email"
                 required
               />
@@ -88,8 +130,8 @@ export function Login() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full" disabled>
-              Login (demo only)
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? <>...</> : "Login with email"}
             </Button>
             <div className="mt-2 text-center text-sm text-muted-foreground">
               <a href="#" className="underline underline-offset-4">Forgot your password?</a>
