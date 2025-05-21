@@ -51,7 +51,7 @@ export default defineApp([
     route("/pingo", function () {
       return <h1>Pongo!</h1>;
     }),
-    route("/ass", function () {
+    route("/tasks", function () {
       return <h1 className="text-4xl font-bold text-red-500">YOLO</h1>;
     }),
     route("/home", Home),

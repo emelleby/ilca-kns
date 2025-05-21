@@ -7,7 +7,7 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
     <div className="">
       <header className="w-full h-16 bg-primary flex items-center justify-between px-8 shadow-md">
         <a href={link("/home")} className="flex items-center gap-2">
-          <img src="/images/logo.png.jpg" alt="KNS" className="h-10 w-10 rounded-full object-contain" />
+          <img src="/images/!logo.png" alt="KNS" className="h-10 w-10 rounded-full object-contain" />
           <span className="text-white text-xl font-bold tracking-wide">ILCA-KNS</span>
         </a>
         <nav>

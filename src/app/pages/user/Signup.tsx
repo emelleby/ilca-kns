@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { startRegistration } from "@simplewebauthn/browser";
 import {
   finishPasskeyRegistration,
@@ -17,6 +17,11 @@ export function Signup() {
   const [username, setUsername] = useState("");
   const [result, setResult] = useState("");
   const [isPending, startTransition] = useTransition();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const passkeyRegister = async () => {
     // 1. Get a challenge from the worker
@@ -38,6 +43,24 @@ export function Signup() {
   const handlePerformPasskeyRegister = () => {
     startTransition(() => void passkeyRegister());
   };
+
+  if (!isClient) {
+    return (
+      <AuthLayout>
+        <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-bg">
+          <Card className="w-full max-w-md p-8 shadow-lg bg-background/60">
+            <CardHeader>
+              <CardTitle>Register a new account</CardTitle>
+              <CardDescription>Loading...</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col gap-4">Loading...</div>
+            </CardContent>
+          </Card>
+        </div>
+      </AuthLayout>
+    );
+  }
 
   return (
     <AuthLayout>
