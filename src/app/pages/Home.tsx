@@ -1,4 +1,4 @@
-import { HomeLayout } from "../layouts/HomeLayout";
+import { HomeLayout } from "@/app/layouts/HomeLayout";
 import { RequestInfo } from "rwsdk/worker";
 import { ReactNode } from "react";
 

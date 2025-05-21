@@ -2,6 +2,7 @@ import { defineApp, ErrorResponse } from "rwsdk/worker";
 import { route, render, prefix } from "rwsdk/router";
 import { Document } from "@/app/Document";
 import { Home } from "@/app/pages/Home";
+import { TasksPage } from "@/app/pages/TasksPage";
 import { setCommonHeaders } from "@/app/headers";
 import { userRoutes } from "@/app/pages/user/routes";
 import { sessions, setupSessionStore } from "./session/store";
@@ -51,9 +52,7 @@ export default defineApp([
     route("/pingo", function () {
       return <h1>Pongo!</h1>;
     }),
-    route("/tasks", function () {
-      return <h1 className="text-4xl font-bold text-red-500">YOLO</h1>;
-    }),
+    route("/tasks", TasksPage),
     route("/home", Home),
     route("/homey", () => new Response("Home works!", { status: 200 })),
     route("/protected", [
