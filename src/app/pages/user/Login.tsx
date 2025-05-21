@@ -1,21 +1,20 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { AuthLayout } from "@/app/layouts/AuthLayout"
 import {
   startAuthentication,
-  startRegistration,
 } from "@simplewebauthn/browser";
 import {
   finishPasskeyLogin,
-  finishPasskeyRegistration,
   startPasskeyLogin,
-  startPasskeyRegistration,
 } from "./functions";
 import { cn } from "@/app/lib/utils";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Button } from "@/app/components/ui/button";
 import { Label } from "@/app/components/ui/label";
+import { link } from "@/app/shared/links";
 
 export function Login() {
   // Email/password state (for demo, not functional)
@@ -40,24 +39,7 @@ export function Login() {
     if (!success) {
       setResult("Login failed");
     } else {
-      setResult("Login successful!");
-    }
-  };
-
-  const passkeyRegister = async () => {
-    // 1. Get a challenge from the worker
-    const options = await startPasskeyRegistration(username);
-
-    // 2. Ask the browser to sign the challenge
-    const registration = await startRegistration({ optionsJSON: options });
-
-    // 3. Give the signed challenge to the worker to finish the registration process
-    const success = await finishPasskeyRegistration(username, registration);
-
-    if (!success) {
-      setResult("Registration failed");
-    } else {
-      setResult("Registration successful!");
+      window.location.href = link("/");
     }
   };
 
@@ -65,20 +47,22 @@ export function Login() {
     startTransition(() => void passkeyLogin());
   };
 
-  const handlePerformPasskeyRegister = () => {
-    startTransition(() => void passkeyRegister());
-  };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <Card className="w-full max-w-md p-8 shadow-lg">
+    <AuthLayout>
+    <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-bg">
+      <Card className="w-full max-w-md p-8 shadow-lg bg-background/60">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
-            Choose your preferred login method below
+            Choose your preferred login method below or{" "}
+            <a href={link('/user/signup')} className="font-display font-bold text-black text-sm underline underline-offset-8 hover:decoration-primary">
+              Register
+            </a>
           </CardDescription>
         </CardHeader>
         <CardContent>
+
           {/* Email/Password Login */}
           <form className="flex flex-col gap-4 mb-6" onSubmit={e => e.preventDefault()}>
             <div className="flex flex-col gap-2">
@@ -136,19 +120,11 @@ export function Login() {
             <Button type="submit" disabled={isPending} className="w-full">
               {isPending ? <>...</> : "Login with passkey"}
             </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isPending}
-              className="w-full"
-              onClick={handlePerformPasskeyRegister}
-            >
-              {isPending ? <>...</> : "Register with passkey"}
-            </Button>
+            
             {result && <div className="mt-4 text-center text-sm text-muted-foreground">{result}</div>}
           </form>
         </CardContent>
       </Card>
-    </div>
+    </div></AuthLayout>
   );
 }
