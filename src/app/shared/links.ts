@@ -9,4 +9,5 @@ export const link = defineLinks([
   "/user/:id/settings",
   "/legal/privacy",
   "/legal/terms",
+  "/legal/tasks",
 ]);

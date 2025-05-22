@@ -46,7 +46,7 @@ export function Login() {
     if (!success) {
       setResult("Login failed");
     } else {
-      window.location.href = link("/");
+      window.location.href = link("/home");
     }
   };
 
@@ -61,7 +61,7 @@ export function Login() {
       try {
         const success = await loginWithPassword(email, password);
         if (success) {
-          window.location.href = link("/");
+          window.location.href = link("/home");
         } else {
           setResult("Invalid email or password");
         }
