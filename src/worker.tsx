@@ -2,6 +2,7 @@ import { defineApp, ErrorResponse } from "rwsdk/worker";
 import { route, render, prefix } from "rwsdk/router";
 import { Document } from "@/app/Document";
 import { Home } from "@/app/pages/Home";
+import AuthSettings from "@/app/pages/user/settings/AuthSettings";
 import { TasksPage } from "@/app/pages/TasksPage";
 import { setCommonHeaders } from "@/app/headers";
 import { userRoutes } from "@/app/pages/user/routes";
@@ -17,7 +18,18 @@ export type AppContext = {
   user: User | null;
 };
 
+// Middleware to require authentication
+const isAuthenticated = ({ ctx }: { ctx: AppContext }) => {
+  if (!ctx.user) {
+    return new Response(null, {
+      status: 302,
+      headers: { Location: "/user/login" },
+    });
+  }
+};
+
 export default defineApp([
+  
   setCommonHeaders(),
   async ({ ctx, request, headers }) => {
     setupSessionStore(env);
@@ -43,6 +55,9 @@ export default defineApp([
         where: {
           id: ctx.session.userId,
         },
+        include: {
+          credentials: true,
+        },
       });
     }
   },
@@ -55,6 +70,7 @@ export default defineApp([
     route("/tasks", TasksPage),
     route("/home", Home),
     route("/homey", () => new Response("Home works!", { status: 200 })),
+
     route("/protected", [
       ({ ctx }) => {
         if (!ctx.user) {

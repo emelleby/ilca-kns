@@ -6,6 +6,7 @@ export const link = defineLinks([
   "/user/login",
   "/user/signup",
   "/user/logout",
+  "/user/:id/settings",
   "/legal/privacy",
   "/legal/terms",
 ]);

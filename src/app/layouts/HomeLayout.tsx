@@ -14,6 +14,11 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
           {ctx?.user && ctx.user.username ? (
             <ul className="flex items-center gap-4">
               <li>
+                <a href={link("/user/:id/settings", {
+                    id: ctx.user.id || "",
+                  })} className="text-white hover:underline">Settings</a>
+              </li>
+              <li>
                 <a href={link("/user/logout")} className="text-white hover:underline">Logout</a>
               </li>
               <li>
@@ -26,10 +31,10 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
           ) : (
             <ul className="flex items-center gap-4">
               <li>
-                <a href={link("/user/signup")} className="text-white hover:underline">Signup</a>
+                <a href={link("/user/login")} className="text-white hover:underline">Login</a>
               </li>
               <li>
-                <a href={link("/user/login")} className="text-white hover:underline">Login</a>
+                <a href={link("/user/signup")} className="text-white hover:underline">Signup</a>
               </li>
             </ul>
           )}
@@ -39,7 +44,7 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
         {children}
       </main>
     </div>
-  )
-}
+  );
+};
 
 export { HomeLayout }
