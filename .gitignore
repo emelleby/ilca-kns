@@ -1,6 +1,8 @@
 # Node modules
 node_modules
 
+.cursor/mcp.json
+
 # Logs
 logs
 *.log
@@ -64,6 +66,8 @@ coverage
 *.temp
 
 .wrangler
+
+generated/
 
 # Added by Claude Task Master
 yarn-debug.log*
