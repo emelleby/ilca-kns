@@ -1,6 +1,9 @@
 # Node modules
 node_modules
 
+.cursor/mcp.json
+.Untracked
+
 # Logs
 logs
 *.log
