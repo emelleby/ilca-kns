@@ -2,10 +2,21 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { startRegistration } from "@simplewebauthn/browser";
-import { addPasskeyToExistingAccount, addPasswordToPasskeyAccount, startPasskeyRegistration, removePasskey } from "../functions";
+import {
+  addPasskeyToExistingAccount,
+  addPasswordToPasskeyAccount,
+  startPasskeyRegistration,
+  removePasskey,
+} from "../functions";
 import { Button } from "@/app/components/ui/button";
-import type { Credential } from "@prisma/client";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
+import type { Credential } from "@/db";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
 import { ClientOnly } from "@/app/components/ClientOnly";
@@ -16,24 +27,24 @@ export default function AuthSettings({ user }: { user: any }) {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState("");
   console.log("user", user);
-  
+
   // Email/password states
   const [email, setEmail] = useState(user?.email || "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  
+
   // Add passkey to account with email/password
   const addPasskey = async () => {
     try {
       // 1. Get registration options from the server
       const options = await startPasskeyRegistration(user.username);
-      
+
       // 2. Create the passkey with the browser's API
       const registration = await startRegistration({ optionsJSON: options });
-      
+
       // 3. Send the registration response to the server to verify and save
       const success = await addPasskeyToExistingAccount(user.id, registration);
-      
+
       if (success) {
         setResult("Passkey added successfully");
         // Refresh the page to update the UI
@@ -46,7 +57,7 @@ export default function AuthSettings({ user }: { user: any }) {
       setResult("An error occurred while adding passkey");
     }
   };
-  
+
   // Add email/password to passkey account
   const addEmailPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,10 +65,14 @@ export default function AuthSettings({ user }: { user: any }) {
       setResult("Passwords don't match");
       return;
     }
-    
+
     startTransition(async () => {
       try {
-        const success = await addPasswordToPasskeyAccount(user.id, email, password);
+        const success = await addPasswordToPasskeyAccount(
+          user.id,
+          email,
+          password
+        );
         if (success) {
           setResult("Email and password added successfully");
           // Refresh the page to update the UI
@@ -71,7 +86,7 @@ export default function AuthSettings({ user }: { user: any }) {
       }
     });
   };
-  
+
   // Client-side handler to remove a passkey
   const handleRemovePasskey = async (credentialId: string) => {
     const result = await removePasskey(credentialId);
@@ -83,12 +98,12 @@ export default function AuthSettings({ user }: { user: any }) {
       setResult("Failed to remove passkey: " + result.error);
     }
   };
-  
+
   return (
     <ClientOnly fallback={<CardSkeleton />}>
       <div className="container mx-auto py-8">
         <h1 className="text-2xl font-bold mb-6">Authentication Settings</h1>
-        
+
         {/* Show appropriate card based on user's current auth method */}
         {!user?.password && (
           <Card className="mb-6">
@@ -138,7 +153,7 @@ export default function AuthSettings({ user }: { user: any }) {
             </CardContent>
           </Card>
         )}
-        
+
         {/* Always show Add Passkey option to allow adding multiple devices */}
         <Card>
           <CardHeader>
@@ -149,8 +164,9 @@ export default function AuthSettings({ user }: { user: any }) {
           </CardHeader>
           <CardContent>
             <p className="mb-4 text-sm text-muted-foreground">
-              Passkeys provide a more secure way to sign in without having to remember passwords.
-              They use biometric authentication (like fingerprint or face recognition) or your device's screen lock.
+              Passkeys provide a more secure way to sign in without having to
+              remember passwords. They use biometric authentication (like
+              fingerprint or face recognition) or your device's screen lock.
             </p>
             <Button
               onClick={() => startTransition(() => void addPasskey())}
@@ -160,7 +176,7 @@ export default function AuthSettings({ user }: { user: any }) {
             </Button>
           </CardContent>
         </Card>
-        
+
         {/* Show current authentication methods */}
         <Card className="mt-6">
           <CardHeader>
@@ -173,7 +189,18 @@ export default function AuthSettings({ user }: { user: any }) {
             <ul className="space-y-2">
               {user?.password && (
                 <li className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-green-500"
+                  >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                   </svg>
@@ -182,7 +209,18 @@ export default function AuthSettings({ user }: { user: any }) {
               )}
               {user?.credentials?.length > 0 && (
                 <li className="flex items-center gap-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-500">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-green-500"
+                  >
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                     <polyline points="22 4 12 14.01 9 11.01"></polyline>
                   </svg>
@@ -192,25 +230,34 @@ export default function AuthSettings({ user }: { user: any }) {
             </ul>
           </CardContent>
         </Card>
-        
+
         {/* List existing passkeys if any */}
         {user?.credentials?.length > 0 && (
           <Card className="mt-6">
             <CardHeader>
               <CardTitle>Your Passkeys</CardTitle>
-              <CardDescription>
-                Manage your registered passkeys
-              </CardDescription>
+              <CardDescription>Manage your registered passkeys</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
                 {user.credentials.map((credential: Credential) => (
-                  <li key={credential.id} className="flex items-center justify-between gap-4">
-                    <span>{credential.deviceName || `Passkey ID: ${credential.credentialId}`}</span>
+                  <li
+                    key={credential.id}
+                    className="flex items-center justify-between gap-4"
+                  >
+                    <span>
+                      {credential.deviceName ||
+                        `Passkey ID: ${credential.credentialId}`}
+                    </span>
                     <Button
                       variant="destructive"
                       size="sm"
-                      onClick={() => startTransition(() => void handleRemovePasskey(credential.credentialId))}
+                      onClick={() =>
+                        startTransition(
+                          () =>
+                            void handleRemovePasskey(credential.credentialId)
+                        )
+                      }
                       disabled={isPending}
                     >
                       Remove
@@ -221,9 +268,15 @@ export default function AuthSettings({ user }: { user: any }) {
             </CardContent>
           </Card>
         )}
-        
+
         {result && (
-          <div className={`mt-4 p-3 rounded-md ${result.includes("success") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>
+          <div
+            className={`mt-4 p-3 rounded-md ${
+              result.includes("success")
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
             {result}
           </div>
         )}

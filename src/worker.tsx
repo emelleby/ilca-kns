@@ -8,8 +8,7 @@ import { setCommonHeaders } from "@/app/headers";
 import { userRoutes } from "@/app/pages/user/routes";
 import { sessions, setupSessionStore } from "./session/store";
 import { Session } from "./session/durableObject";
-import { db } from "./db";
-import type { User } from "@prisma/client";
+import { type User, setupDb, db } from "./db";
 import { env } from "cloudflare:workers";
 export { SessionDurableObject } from "./session/durableObject";
 
@@ -29,9 +28,9 @@ const isAuthenticated = ({ ctx }: { ctx: AppContext }) => {
 };
 
 export default defineApp([
-  
   setCommonHeaders(),
   async ({ ctx, request, headers }) => {
+    await setupDb(env);
     setupSessionStore(env);
 
     try {
