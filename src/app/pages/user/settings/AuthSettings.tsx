@@ -2,8 +2,9 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { startRegistration } from "@simplewebauthn/browser";
-import { addPasskeyToExistingAccount, addPasswordToPasskeyAccount, startPasskeyRegistration } from "../functions";
+import { addPasskeyToExistingAccount, addPasswordToPasskeyAccount, startPasskeyRegistration, removePasskey } from "../functions";
 import { Button } from "@/app/components/ui/button";
+import type { Credential } from "@prisma/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Input } from "@/app/components/ui/input";
 import { Label } from "@/app/components/ui/label";
@@ -71,6 +72,18 @@ export default function AuthSettings({ user }: { user: any }) {
     });
   };
   
+  // Client-side handler to remove a passkey
+  const handleRemovePasskey = async (credentialId: string) => {
+    const result = await removePasskey(credentialId);
+    if (result.success) {
+      setResult("Passkey removed successfully");
+      // Refresh the page to update the list
+      window.location.reload();
+    } else {
+      setResult("Failed to remove passkey: " + result.error);
+    }
+  };
+  
   return (
     <ClientOnly fallback={<CardSkeleton />}>
       <div className="container mx-auto py-8">
@@ -126,28 +139,27 @@ export default function AuthSettings({ user }: { user: any }) {
           </Card>
         )}
         
-        {user?.credentials?.length === 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Add Passkey</CardTitle>
-              <CardDescription>
-                Add a passkey for more secure authentication
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">
-                Passkeys provide a more secure way to sign in without having to remember passwords. 
-                They use biometric authentication (like fingerprint or face recognition) or your device's screen lock.
-              </p>
-              <Button 
-                onClick={() => startTransition(() => void addPasskey())} 
-                disabled={isPending}
-              >
-                {isPending ? "Adding..." : "Add Passkey"}
-              </Button>
-            </CardContent>
-          </Card>
-        )}
+        {/* Always show Add Passkey option to allow adding multiple devices */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Add Passkey</CardTitle>
+            <CardDescription>
+              Add a passkey for more secure authentication for this device
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Passkeys provide a more secure way to sign in without having to remember passwords.
+              They use biometric authentication (like fingerprint or face recognition) or your device's screen lock.
+            </p>
+            <Button
+              onClick={() => startTransition(() => void addPasskey())}
+              disabled={isPending}
+            >
+              {isPending ? "Adding..." : "Add Passkey"}
+            </Button>
+          </CardContent>
+        </Card>
         
         {/* Show current authentication methods */}
         <Card className="mt-6">
@@ -180,6 +192,35 @@ export default function AuthSettings({ user }: { user: any }) {
             </ul>
           </CardContent>
         </Card>
+        
+        {/* List existing passkeys if any */}
+        {user?.credentials?.length > 0 && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Your Passkeys</CardTitle>
+              <CardDescription>
+                Manage your registered passkeys
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-2">
+                {user.credentials.map((credential: Credential) => (
+                  <li key={credential.id} className="flex items-center justify-between gap-4">
+                    <span>{credential.deviceName || `Passkey ID: ${credential.credentialId}`}</span>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => startTransition(() => void handleRemovePasskey(credential.credentialId))}
+                      disabled={isPending}
+                    >
+                      Remove
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
         
         {result && (
           <div className={`mt-4 p-3 rounded-md ${result.includes("success") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}`}>

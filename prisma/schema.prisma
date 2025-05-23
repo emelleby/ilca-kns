@@ -34,6 +34,7 @@ model Credential {
   userId       String   @unique // Every credential is linked to a specific user
   user         User     @relation(fields: [userId], references: [id])
   createdAt    DateTime @default(now())
+  deviceName   String? // Human-readable name or identifier for the device/authenticator
   credentialId String   @unique // WebAuthn credential identifier
   publicKey    Bytes
   counter      Int      @default(0)

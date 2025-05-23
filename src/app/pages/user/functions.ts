@@ -100,6 +100,7 @@ export async function finishPasskeyRegistration(
       credentialId: verification.registrationInfo.credential.id,
       publicKey: verification.registrationInfo.credential.publicKey,
       counter: verification.registrationInfo.credential.counter,
+      deviceName: verification.registrationInfo.aaguid || null,
     },
   });
 
@@ -250,6 +251,7 @@ export async function addPasskeyToExistingAccount(userId: string, registration: 
         verification.registrationInfo.credentialPublicKey
       ),
       counter: verification.registrationInfo.counter,
+      deviceName: verification.registrationInfo.aaguid || null,
     },
   });
 
@@ -270,4 +272,28 @@ export async function addPasswordToPasskeyAccount(userId: string, email: string,
   });
   
   return true;
+}
+
+export async function removePasskey(credentialId: string) {
+  "use server";
+  const { ctx } = requestInfo;
+
+  if (!ctx.user) {
+    // Ensure user is authenticated
+    throw new Error("Unauthorized");
+  }
+
+  try {
+    // Delete the credential, ensuring it belongs to the authenticated user
+    await db.credential.delete({
+      where: {
+        credentialId: credentialId,
+        userId: ctx.user.id,
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Error removing passkey:", error);
+    return { success: false, error: error instanceof Error ? error.message : "Failed to remove passkey" };
+  }
 }
