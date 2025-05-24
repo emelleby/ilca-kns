@@ -5,40 +5,40 @@
 	"compatibility_date": "2024-09-23",
 	"compatibility_flags": ["nodejs_compat"],
 	"assets": {
-		"binding": "ASSETS"
+		"binding": "ASSETS",
 	},
 	"observability": {
-		"enabled": true
+		"enabled": true,
 	},
 	"durable_objects": {
 		"bindings": [
 			{
 				"name": "SESSION_DURABLE_OBJECT",
-				"class_name": "SessionDurableObject"
-			}
-		]
+				"class_name": "SessionDurableObject",
+			},
+		],
 	},
 	"vars": {
 		"WEBAUTHN_APP_NAME": "ilcakns",
-		"EMAIL_FROM": "noreply@yourdomain.com"
+		"EMAIL_FROM": "onboarding@resend.dev",
 	},
 	"migrations": [
 		{
 			"tag": "v1",
-			"new_sqlite_classes": ["SessionDurableObject"]
-		}
+			"new_sqlite_classes": ["SessionDurableObject"],
+		},
 	],
 	"d1_databases": [
 		{
 			"binding": "DB",
 			"database_name": "ilca2",
-			"database_id": "e8b88e37-b09d-4ab9-a46a-7ca1db170bb0"
-		}
+			"database_id": "e8b88e37-b09d-4ab9-a46a-7ca1db170bb0",
+		},
 	],
-	"send_email": [
+	"r2_buckets": [
 		{
-			"binding": "EMAIL_SENDER",
-			"destination": "ilcakns@protonmail.com"
-		}
-	]
+			"binding": "STORAGE",
+			"bucket_name": "ilca2",
+		},
+	],
 }

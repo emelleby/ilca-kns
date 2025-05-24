@@ -12,9 +12,9 @@ import { sessions } from "@/session/store";
 import { requestInfo } from "rwsdk/worker";
 import { db } from "@/db";
 import { env } from "cloudflare:workers";
-import { hashPassword, verifyPassword } from "@/app/utils/password";
+import { hashPassword, verifyPassword } from "@/app/auth/password";
 import { randomBytes } from "crypto";
-import { sendEmail, generatePasswordResetEmail } from "@/app/utils/email";
+import { sendEmail, generatePasswordResetEmail } from "@/app/auth/email";
 
 const IS_DEV = process.env.NODE_ENV === "development";
 
@@ -347,12 +347,27 @@ export async function requestPasswordReset(email: string) {
   const token = randomBytes(32).toString('hex');
   const expires = new Date(Date.now() + 3600000); // 1 hour from now
   
-  // Store token in database
-  await db.passwordReset.upsert({
-    where: { userId: user.id },
-    update: { token, expires },
-    create: { userId: user.id, token, expires },
+  // First check if a reset token already exists
+  const existingReset = await db.passwordReset.findFirst({
+    where: { userId: user.id }
   });
+  
+  if (existingReset) {
+    // Update existing token
+    await db.passwordReset.update({
+      where: { id: existingReset.id },
+      data: { token, expires }
+    });
+  } else {
+    // Create new token
+    await db.passwordReset.create({
+      data: {
+        userId: user.id,
+        token,
+        expires
+      }
+    });
+  }
   
   // Generate reset link
   const { request } = requestInfo;
@@ -361,7 +376,8 @@ export async function requestPasswordReset(email: string) {
   
   // Send email
   const emailContent = generatePasswordResetEmail(user.username, resetLink);
-  await sendEmail(email, "Password Reset Request", emailContent);
+  // await sendEmail(email, "Password Reset Request", emailContent);
+  await sendEmail("eivind.melleby@gmail.com", "Password Reset Request", emailContent);
   
   return true;
 }
