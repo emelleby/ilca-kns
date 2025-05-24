@@ -76,7 +76,7 @@ export function Login() {
     return (
       <AuthLayout>
         <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-bg">
-          <Card className="w-full max-w-md p-8 shadow-lg bg-background/60">
+          <Card className="w-full max-w-md p-4 sm:p-8 shadow-lg bg-background/60">
             <CardHeader>
               <CardTitle>Login to your account</CardTitle>
               <CardDescription>Loading...</CardDescription>
@@ -93,7 +93,7 @@ export function Login() {
   return (
     <AuthLayout>
     <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-bg">
-      <Card className="w-full max-w-md p-8 shadow-lg bg-background/60">
+      <Card className="w-full max-w-md sm:p-4 shadow-lg bg-background/60">
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
           <CardDescription>
@@ -104,6 +104,33 @@ export function Login() {
           </CardDescription>
         </CardHeader>
         <CardContent>
+          {/* Passkey Login/Register */}
+          <form className="flex flex-col gap-4" onSubmit={e => { e.preventDefault(); handlePerformPasskeyLogin(); }}>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                value={username}
+                onChange={e => setUsername(e.target.value)}
+                placeholder="Username"
+                autoComplete="username"
+                required
+              />
+            </div>
+            <Button type="submit" disabled={isPending} className="w-full">
+              {isPending ? <>...</> : "Login with passkey"}
+            </Button>
+            
+            {result && <div className="mt-4 text-center text-sm text-muted-foreground">{result}</div>}
+          </form>
+
+          {/* Divider */}
+          <div className="flex items-center my-6">
+            <div className="flex-grow border-t border-muted" />
+            <span className="mx-4 text-muted-foreground text-xs uppercase tracking-widest">or</span>
+            <div className="flex-grow border-t border-muted" />
+          </div>
 
           {/* Email/Password Login */}
           <form className="flex flex-col gap-4 mb-6" onSubmit={handlePasswordLogin}>
@@ -138,33 +165,9 @@ export function Login() {
             </div>
           </form>
 
-          {/* Divider */}
-          <div className="flex items-center my-6">
-            <div className="flex-grow border-t border-muted" />
-            <span className="mx-4 text-muted-foreground text-xs uppercase tracking-widest">or</span>
-            <div className="flex-grow border-t border-muted" />
-          </div>
+          
 
-          {/* Passkey Login/Register */}
-          <form className="flex flex-col gap-4" onSubmit={e => { e.preventDefault(); handlePerformPasskeyLogin(); }}>
-            <div className="flex flex-col gap-2">
-              <Label htmlFor="username">Username</Label>
-              <Input
-                id="username"
-                type="text"
-                value={username}
-                onChange={e => setUsername(e.target.value)}
-                placeholder="Username"
-                autoComplete="username"
-                required
-              />
-            </div>
-            <Button type="submit" disabled={isPending} className="w-full">
-              {isPending ? <>...</> : "Login with passkey"}
-            </Button>
-            
-            {result && <div className="mt-4 text-center text-sm text-muted-foreground">{result}</div>}
-          </form>
+          
         </CardContent>
       </Card>
     </div></AuthLayout>

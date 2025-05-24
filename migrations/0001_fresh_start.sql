@@ -2,7 +2,10 @@
 CREATE TABLE "User" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "username" TEXT NOT NULL,
+    "email" TEXT,
+    "password" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME,
     "role" TEXT NOT NULL DEFAULT 'USER'
 );
 
@@ -11,6 +14,7 @@ CREATE TABLE "Credential" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "userId" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deviceName" TEXT,
     "credentialId" TEXT NOT NULL,
     "publicKey" BLOB NOT NULL,
     "counter" INTEGER NOT NULL DEFAULT 0,
@@ -57,6 +61,9 @@ CREATE TABLE "Comment" (
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Credential_userId_key" ON "Credential"("userId");

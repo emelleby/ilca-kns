@@ -100,7 +100,24 @@ export async function finishPasskeyRegistration(
       credentialId: verification.registrationInfo.credential.id,
       publicKey: verification.registrationInfo.credential.publicKey,
       counter: verification.registrationInfo.credential.counter,
-      deviceName: verification.registrationInfo.aaguid || null,
+      deviceName: (() => {
+        const userAgent = request.headers.get('user-agent') || 'Unknown Device';
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        
+        // Extract device info from user agent
+        const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
+        const deviceType = isMobile ? 'Mobile' : 'Desktop';
+        
+        // Try to extract browser name
+        let browserName = 'Browser';
+        if (/Chrome/i.test(userAgent) && !/Chromium|Edge/i.test(userAgent)) browserName = 'Chrome';
+        else if (/Firefox/i.test(userAgent)) browserName = 'Firefox';
+        else if (/Safari/i.test(userAgent) && !/Chrome|Chromium|Edge/i.test(userAgent)) browserName = 'Safari';
+        else if (/Edge|Edg/i.test(userAgent)) browserName = 'Edge';
+        
+        return `${browserName} on ${deviceType} (${dateStr})`;
+      })(),
     },
   });
 
@@ -248,10 +265,27 @@ export async function addPasskeyToExistingAccount(userId: string, registration: 
       userId,
       credentialId: registration.id,
       publicKey: Buffer.from(
-        verification.registrationInfo.credentialPublicKey
+        verification.registrationInfo.credential.publicKey
       ),
-      counter: verification.registrationInfo.counter,
-      deviceName: verification.registrationInfo.aaguid || null,
+      counter: verification.registrationInfo.credential.counter,
+      deviceName: (() => {
+        const userAgent = request.headers.get('user-agent') || 'Unknown Device';
+        const now = new Date();
+        const dateStr = now.toISOString().split('T')[0];
+        
+        // Extract device info from user agent
+        const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
+        const deviceType = isMobile ? 'Mobile' : 'Desktop';
+        
+        // Try to extract browser name
+        let browserName = 'Browser';
+        if (/Chrome/i.test(userAgent) && !/Chromium|Edge/i.test(userAgent)) browserName = 'Chrome';
+        else if (/Firefox/i.test(userAgent)) browserName = 'Firefox';
+        else if (/Safari/i.test(userAgent) && !/Chrome|Chromium|Edge/i.test(userAgent)) browserName = 'Safari';
+        else if (/Edge|Edg/i.test(userAgent)) browserName = 'Edge';
+        
+        return `${browserName} on ${deviceType} (${dateStr})`;
+      })(),
     },
   });
 

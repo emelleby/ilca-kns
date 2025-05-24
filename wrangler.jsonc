@@ -30,8 +30,8 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "ilcakns-tart-barracuda",
-			"database_id": "66674ef7-b2aa-493f-99b6-8fd27886df1f"
+			"database_name": "ilca2",
+			"database_id": "e8b88e37-b09d-4ab9-a46a-7ca1db170bb0"
 		}
 	]
 }

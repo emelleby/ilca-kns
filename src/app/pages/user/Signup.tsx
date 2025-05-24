@@ -91,7 +91,7 @@ export function Signup() {
   return (
     <AuthLayout>
       <div className="flex min-h-[calc(100vh-96px)] items-center justify-center bg-bg">
-        <Card className="w-full max-w-md p-8 shadow-lg bg-background/60">
+        <Card className="w-full max-w-md sm:p-4 shadow-lg bg-background/60">
           <CardHeader>
             <CardTitle>Register a new account</CardTitle>
             <CardDescription>

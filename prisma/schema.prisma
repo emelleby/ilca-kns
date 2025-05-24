@@ -26,6 +26,7 @@ model User {
   username    String       @unique
   email       String?      @unique
   password    String?
+  club        String?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime?    @updatedAt
   role        Role         @default(USER)
