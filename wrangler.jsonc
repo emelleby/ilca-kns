@@ -19,7 +19,8 @@
 		]
 	},
 	"vars": {
-		"WEBAUTHN_APP_NAME": "ilcakns"
+		"WEBAUTHN_APP_NAME": "ilcakns",
+		"EMAIL_FROM": "noreply@yourdomain.com"
 	},
 	"migrations": [
 		{
@@ -32,6 +33,12 @@
 			"binding": "DB",
 			"database_name": "ilca2",
 			"database_id": "e8b88e37-b09d-4ab9-a46a-7ca1db170bb0"
+		}
+	],
+	"send_email": [
+		{
+			"binding": "EMAIL_SENDER",
+			"destination": "ilcakns@protonmail.com"
 		}
 	]
 }

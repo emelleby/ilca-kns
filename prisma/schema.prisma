@@ -22,18 +22,19 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid()) // User ID (UUID-based)
-  username    String       @unique
-  email       String?      @unique
-  password    String?
-  club        String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime?    @updatedAt
-  role        Role         @default(USER)
-  profile     Profile?
-  posts       Post[]
-  comments    Comment[]
-  credentials Credential[] // Relationship: One user can have many credentials
+  id             String          @id @default(uuid()) // User ID (UUID-based)
+  username       String          @unique
+  email          String?         @unique
+  password       String?
+  club           String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt
+  role           Role            @default(USER)
+  profile        Profile?
+  posts          Post[]
+  comments       Comment[]
+  credentials    Credential[] // Relationship: One user can have many credentials
+  passwordResets PasswordReset[]
 }
 
 model Credential {
@@ -96,4 +97,13 @@ enum Role {
   ADMIN
   COACH
   USER
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

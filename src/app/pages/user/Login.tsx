@@ -161,7 +161,7 @@ export function Login() {
               {isPending ? <>...</> : "Login with email"}
             </Button>
             <div className="mt-2 text-center text-sm text-muted-foreground">
-              <a href="#" className="underline underline-offset-4">Forgot your password?</a>
+              <a href={link('/user/forgot-password')}  className="underline underline-offset-4">Forgot your password?</a>
             </div>
           </form>
 

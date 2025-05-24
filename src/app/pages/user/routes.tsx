@@ -1,6 +1,8 @@
 import { route } from "rwsdk/router";
 import { Login } from "./Login";
 import { Signup } from "./Signup";
+import ForgotPassword from "./ForgotPassword";
+import ResetPassword from "./ResetPassword";
 import { sessions } from "@/session/store";
 import AuthSettings from "./settings/AuthSettings";
 import { AppContext } from "@/worker";
@@ -18,6 +20,9 @@ const isAuthenticated = ({ ctx }: { ctx: AppContext }) => {
 export const userRoutes = [
   route("/login", [Login]),
   route("/signup", [Signup]),
+  route("/forgot-password", ForgotPassword),
+  route("/reset-password", ResetPassword),
+  
   route("/:id/settings", [isAuthenticated, ({ ctx }) => {
     // Check if user exists in ctx (guaranteed by isAuthenticated middleware)
     if (!ctx.user) {

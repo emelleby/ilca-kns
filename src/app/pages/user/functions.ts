@@ -13,6 +13,8 @@ import { requestInfo } from "rwsdk/worker";
 import { db } from "@/db";
 import { env } from "cloudflare:workers";
 import { hashPassword, verifyPassword } from "@/app/utils/password";
+import { randomBytes } from "crypto";
+import { sendEmail, generatePasswordResetEmail } from "@/app/utils/email";
 
 const IS_DEV = process.env.NODE_ENV === "development";
 
@@ -330,4 +332,75 @@ export async function removePasskey(credentialId: string) {
     console.error("Error removing passkey:", error);
     return { success: false, error: error instanceof Error ? error.message : "Failed to remove passkey" };
   }
+}
+
+// Add password reset functions
+export async function requestPasswordReset(email: string) {
+  // Find user
+  const user = await db.user.findUnique({
+    where: { email },
+  });
+  
+  if (!user) return false; // Don't reveal if email exists
+  
+  // Generate token (random string)
+  const token = randomBytes(32).toString('hex');
+  const expires = new Date(Date.now() + 3600000); // 1 hour from now
+  
+  // Store token in database
+  await db.passwordReset.upsert({
+    where: { userId: user.id },
+    update: { token, expires },
+    create: { userId: user.id, token, expires },
+  });
+  
+  // Generate reset link
+  const { request } = requestInfo;
+  const baseUrl = new URL(request.url).origin;
+  const resetLink = `${baseUrl}/user/reset-password?token=${token}`;
+  
+  // Send email
+  const emailContent = generatePasswordResetEmail(user.username, resetLink);
+  await sendEmail(email, "Password Reset Request", emailContent);
+  
+  return true;
+}
+
+export async function verifyResetToken(token: string) {
+  const reset = await db.passwordReset.findFirst({
+    where: { 
+      token,
+      expires: { gt: new Date() }
+    },
+    include: { user: true }
+  });
+  
+  return reset ? reset.user : null;
+}
+
+export async function resetPassword(token: string, newPassword: string) {
+  const reset = await db.passwordReset.findFirst({
+    where: { 
+      token,
+      expires: { gt: new Date() }
+    }
+  });
+  
+  if (!reset) return false;
+  
+  // Hash new password
+  const hashedPassword = await hashPassword(newPassword);
+  
+  // Update user password
+  await db.user.update({
+    where: { id: reset.userId },
+    data: { password: hashedPassword }
+  });
+  
+  // Delete used token
+  await db.passwordReset.delete({
+    where: { id: reset.id }
+  });
+  
+  return true;
 }
