@@ -64,3 +64,13 @@ Solution pattern:
 - Feature flags for controlled rollout
 - Automated deployment pipelines
 - Monitoring and alerting
+
+## Email Service
+
+- Using Resend API for email delivery
+- Configuration via environment variables:
+  - `RESEND_API_KEY`: API key for Resend service
+- Email templates defined in `src/app/auth/email.ts`
+- Development mode: All emails are currently sent to a development email address
+- Production mode (to be implemented): Emails will be sent to the actual user's email address
+- Email content is HTML-formatted with responsive design

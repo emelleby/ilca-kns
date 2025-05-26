@@ -362,9 +362,10 @@ The below describes how you should be structuring new rule sections in this docu
     - Examples and explanations
   ```
 
-- **Section References:**
-  - Use `ALL_CAPS_SECTION` to reference files
-  - Example: `WINDSURF_RULES`
+- **File References:**
+  - Use `[filename](mdc:path/to/file)` ([filename](mdc:filename)) to reference files
+  - Example: [prisma.mdc](mdc:.cursor/rules/prisma.mdc) for rule references
+  - Example: [schema.prisma](mdc:prisma/schema.prisma) for code references
 
 - **Code Examples:**
   - Use language-specific code blocks

@@ -15,6 +15,7 @@ import { env } from "cloudflare:workers";
 import { hashPassword, verifyPassword } from "@/app/auth/password";
 import { randomBytes } from "crypto";
 import { sendEmail, generatePasswordResetEmail } from "@/app/auth/email";
+import { autoCreateUserProfile } from "./profile/functions";
 
 const IS_DEV = process.env.NODE_ENV === "development";
 
@@ -106,22 +107,31 @@ export async function finishPasskeyRegistration(
         const userAgent = request.headers.get('user-agent') || 'Unknown Device';
         const now = new Date();
         const dateStr = now.toISOString().split('T')[0];
-        
+
         // Extract device info from user agent
         const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
         const deviceType = isMobile ? 'Mobile' : 'Desktop';
-        
+
         // Try to extract browser name
         let browserName = 'Browser';
         if (/Chrome/i.test(userAgent) && !/Chromium|Edge/i.test(userAgent)) browserName = 'Chrome';
         else if (/Firefox/i.test(userAgent)) browserName = 'Firefox';
         else if (/Safari/i.test(userAgent) && !/Chrome|Chromium|Edge/i.test(userAgent)) browserName = 'Safari';
         else if (/Edge|Edg/i.test(userAgent)) browserName = 'Edge';
-        
+
         return `${browserName} on ${deviceType} (${dateStr})`;
       })(),
     },
   });
+
+  // Auto-create a basic profile for the new user
+  try {
+    await autoCreateUserProfile(user.id);
+    console.log("Auto-created profile for new passkey user:", user.id);
+  } catch (error) {
+    console.error("Failed to auto-create profile for passkey user:", error);
+    // Don't fail registration if profile creation fails
+  }
 
   return true;
 }
@@ -195,7 +205,7 @@ export async function finishPasskeyLogin(login: AuthenticationResponseJSON) {
 export async function registerWithPassword(username: string, email: string, password: string) {
   // Hash password
   const hashedPassword = await hashPassword(password);
-  
+
   // Create user
   const user = await db.user.create({
     data: {
@@ -204,13 +214,22 @@ export async function registerWithPassword(username: string, email: string, pass
       password: hashedPassword,
     },
   });
-  
+
+  // Auto-create a basic profile for the new user
+  try {
+    await autoCreateUserProfile(user.id);
+    console.log("Auto-created profile for new password user:", user.id);
+  } catch (error) {
+    console.error("Failed to auto-create profile for password user:", error);
+    // Don't fail registration if profile creation fails
+  }
+
   // Set session
   await sessions.save(requestInfo.headers, {
     userId: user.id,
     challenge: null,
   });
-  
+
   return user.id;
 }
 
@@ -220,19 +239,19 @@ export async function loginWithPassword(email: string, password: string) {
   const user = await db.user.findUnique({
     where: { email },
   });
-  
+
   if (!user || !user.password) return false;
-  
+
   // Verify password
   const isValid = verifyPassword(password, user.password);
   if (!isValid) return false;
-  
+
   // Set session
   await sessions.save(requestInfo.headers, {
     userId: user.id,
     challenge: null,
   });
-  
+
   return true;
 }
 
@@ -274,18 +293,18 @@ export async function addPasskeyToExistingAccount(userId: string, registration: 
         const userAgent = request.headers.get('user-agent') || 'Unknown Device';
         const now = new Date();
         const dateStr = now.toISOString().split('T')[0];
-        
+
         // Extract device info from user agent
         const isMobile = /Mobile|Android|iPhone|iPad/i.test(userAgent);
         const deviceType = isMobile ? 'Mobile' : 'Desktop';
-        
+
         // Try to extract browser name
         let browserName = 'Browser';
         if (/Chrome/i.test(userAgent) && !/Chromium|Edge/i.test(userAgent)) browserName = 'Chrome';
         else if (/Firefox/i.test(userAgent)) browserName = 'Firefox';
         else if (/Safari/i.test(userAgent) && !/Chrome|Chromium|Edge/i.test(userAgent)) browserName = 'Safari';
         else if (/Edge|Edg/i.test(userAgent)) browserName = 'Edge';
-        
+
         return `${browserName} on ${deviceType} (${dateStr})`;
       })(),
     },
@@ -297,7 +316,7 @@ export async function addPasskeyToExistingAccount(userId: string, registration: 
 // Add function to link email/password to passkey account
 export async function addPasswordToPasskeyAccount(userId: string, email: string, password: string) {
   const hashedPassword = await hashPassword(password);
-  
+
   // Update existing user
   await db.user.update({
     where: { id: userId },
@@ -306,7 +325,7 @@ export async function addPasswordToPasskeyAccount(userId: string, email: string,
       password: hashedPassword,
     },
   });
-  
+
   return true;
 }
 
@@ -340,18 +359,18 @@ export async function requestPasswordReset(email: string) {
   const user = await db.user.findUnique({
     where: { email },
   });
-  
+
   if (!user) return false; // Don't reveal if email exists
-  
+
   // Generate token (random string)
   const token = randomBytes(32).toString('hex');
   const expires = new Date(Date.now() + 3600000); // 1 hour from now
-  
+
   // First check if a reset token already exists
   const existingReset = await db.passwordReset.findFirst({
     where: { userId: user.id }
   });
-  
+
   if (existingReset) {
     // Update existing token
     await db.passwordReset.update({
@@ -368,55 +387,55 @@ export async function requestPasswordReset(email: string) {
       }
     });
   }
-  
+
   // Generate reset link
   const { request } = requestInfo;
   const baseUrl = new URL(request.url).origin;
   const resetLink = `${baseUrl}/user/reset-password?token=${token}`;
-  
+
   // Send email
   const emailContent = generatePasswordResetEmail(user.username, resetLink);
   // await sendEmail(email, "Password Reset Request", emailContent);
   await sendEmail("eivind.melleby@gmail.com", "Password Reset Request", emailContent);
-  
+
   return true;
 }
 
 export async function verifyResetToken(token: string) {
   const reset = await db.passwordReset.findFirst({
-    where: { 
+    where: {
       token,
       expires: { gt: new Date() }
     },
     include: { user: true }
   });
-  
+
   return reset ? reset.user : null;
 }
 
 export async function resetPassword(token: string, newPassword: string) {
   const reset = await db.passwordReset.findFirst({
-    where: { 
+    where: {
       token,
       expires: { gt: new Date() }
     }
   });
-  
+
   if (!reset) return false;
-  
+
   // Hash new password
   const hashedPassword = await hashPassword(newPassword);
-  
+
   // Update user password
   await db.user.update({
     where: { id: reset.userId },
     data: { password: hashedPassword }
   });
-  
+
   // Delete used token
   await db.passwordReset.delete({
     where: { id: reset.id }
   });
-  
+
   return true;
 }

@@ -60,7 +60,17 @@ model Profile {
   location        String?
   experienceLevel String?
   profilePicture  String?
-  privacySettings String?
+  privacySettings String? // JSON string for privacy settings
+
+  // Sailing-specific fields
+  sailingExperience String? // Years of experience or description
+  certifications    String? // JSON array of certifications
+  boatInformation   String? // JSON object with boat details
+  clubAffiliation   String? // Sailing club membership
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Post {
