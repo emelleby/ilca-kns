@@ -10,13 +10,22 @@
 - Authentication system with dual methods:
   - Passkey authentication (fully implemented)
   - Email/password authentication (implemented)
+- Password reset functionality implemented and working in development
 - Database schema updated with email and password fields for User model
 - Prisma migration workflow established and documented
+- User Profile Management (Task 4):
+  - Enhanced Profile model with sailing-specific fields
+  - Profile creation, editing, and viewing functionality
+  - Privacy settings for profile visibility
+  - Sailing experience and certification tracking
+  - Boat information management
+  - Profile navigation integrated into layout
 
 ## What's Left to Build
 
-- Account linking functionality (connecting passkey and email/password methods)
-- User profile management
+- Profile picture upload with R2 Storage integration
+- Profile deletion and account management
+- Activity statistics display for profiles
 - Community blog/news functionality
 - Personal sailing diary and training logs
 - Boat setup recording
@@ -28,9 +37,11 @@
 
 ## Current Status
 
-- Authentication implementation in progress
-- Database schema evolving to support new features
-- Basic user registration and login flows working
+- Task 4 (User Profile Management) largely completed
+- Core profile functionality implemented and working
+- Database schema enhanced with sailing-specific fields
+- Authentication system fully functional with dual methods
+- Ready to move on to profile picture upload and remaining features
 
 ## Known Issues
 

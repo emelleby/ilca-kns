@@ -22,18 +22,19 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid()) // User ID (UUID-based)
-  username    String       @unique
-  email       String?      @unique
-  password    String?
-  club        String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime?    @updatedAt
-  role        Role         @default(USER)
-  profile     Profile?
-  posts       Post[]
-  comments    Comment[]
-  credentials Credential[] // Relationship: One user can have many credentials
+  id             String          @id @default(uuid()) // User ID (UUID-based)
+  username       String          @unique
+  email          String?         @unique
+  password       String?
+  club           String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime?       @updatedAt
+  role           Role            @default(USER)
+  profile        Profile?
+  posts          Post[]
+  comments       Comment[]
+  credentials    Credential[] // Relationship: One user can have many credentials
+  passwordResets PasswordReset[]
 }
 
 model Credential {
@@ -59,7 +60,17 @@ model Profile {
   location        String?
   experienceLevel String?
   profilePicture  String?
-  privacySettings String?
+  privacySettings String? // JSON string for privacy settings
+
+  // Sailing-specific fields
+  sailingExperience String? // Years of experience or description
+  certifications    String? // JSON array of certifications
+  boatInformation   String? // JSON object with boat details
+  clubAffiliation   String? // Sailing club membership
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Post {
@@ -96,4 +107,13 @@ enum Role {
   ADMIN
   COACH
   USER
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
