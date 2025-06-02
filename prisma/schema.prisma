@@ -31,6 +31,7 @@ model User {
   updatedAt      DateTime?       @updatedAt
   role           Role            @default(USER)
   profile        Profile?
+  organizations OrganizationMembership[]
   posts          Post[]
   comments       Comment[]
   credentials    Credential[] // Relationship: One user can have many credentials
@@ -49,6 +50,27 @@ model Credential {
 
   @@index([credentialId])
   @@index([userId])
+}
+
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  members     OrganizationMembership[]
+}
+
+model OrganizationMembership {
+  id             String       @id @default(uuid())
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  role           String       // "ADMIN", "COACH", "MEMBER"
+  joinedAt       DateTime     @default(now())
+
+  @@unique([userId, organizationId])
 }
 
 model Profile {
@@ -104,9 +126,8 @@ model Comment {
 }
 
 enum Role {
-  ADMIN
-  COACH
   USER
+  SUPERUSER
 }
 
 model PasswordReset {
