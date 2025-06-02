@@ -1,7 +1,6 @@
 "use server";
 
 import { db } from "@/db";
-import { requestInfo } from "rwsdk/worker";
 
 // Types for profile data
 export interface ProfileData {
@@ -290,3 +289,5 @@ export async function getPublicProfile(userId: string, viewerId?: string) {
     return null;
   }
 }
+
+

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Button } from "@/app/components/ui/button";
 import { Input } from "@/app/components/ui/input";
@@ -99,7 +99,7 @@ export default function ProfileSetup({ user }: ProfileSetupProps) {
         if (success) {
           setResult("Profile created successfully!");
           // Redirect to profile view or home
-          window.location.href = `/user/${user.id}/profile`;
+          window.location.href = `/user/${user.username}/profile`;
         } else {
           setResult("Failed to create profile. Please try again.");
         }

@@ -70,10 +70,197 @@ For reusability, we've created a `ClientOnly` component that can wrap any conten
 </ClientOnly>
 ```
 
+## Server Data Fetching Patterns
+
+### RedwoodSDK Server Component Pattern
+
+Server components fetch data and pass serialized data to client components. This prevents "Only plain objects can be passed to Client Components" errors.
+
+```tsx
+// Server Component (ProfileEditPage.tsx)
+import { db } from "@/db";
+import { RequestInfo } from "rwsdk/worker";
+import { SimpleProfileEditForm } from "@/app/components/SimpleProfileEditForm";
+
+export default async function ProfileEditPage({ UserId, isOwnProfile, ctx }: RequestInfo & { UserId: string; isOwnProfile: boolean }) {
+  // Authentication check
+  if (!ctx.user || !isOwnProfile) {
+    return <div>Access Denied</div>;
+  }
+
+  // Fetch data on server
+  const profile = await getOrCreateUserProfile(UserId);
+  const user = await db.user.findUnique({ where: { id: UserId } });
+
+  // Serialize complex objects for client components
+  const profileData = {
+    id: profile.id,
+    name: profile.name,
+    bio: profile.bio,
+    // ... other fields
+    certifications: profile.certifications || [],
+    boatInformation: profile.boatInformation || {},
+    privacySettings: profile.privacySettings || {}
+  };
+
+  return (
+    <HomeLayout {...props}>
+      <SimpleProfileEditForm
+        profile={profileData}
+        userId={UserId}
+        username={user.username}
+      />
+    </HomeLayout>
+  );
+}
+```
+
+### Client Component with API Calls
+
+Client components handle user interactions and call API endpoints for data updates:
+
+```tsx
+// Client Component (SimpleProfileEditForm.tsx)
+"use client";
+
+import { useState } from "react";
+
+export function SimpleProfileEditForm({ profile, userId, username }) {
+  const [formData, setFormData] = useState(profile);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Call API endpoint instead of server function directly
+      const response = await fetch("/user/api/profile/update", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          profileData: formData
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        alert("Profile updated successfully!");
+        window.location.href = `/user/${username}/profile`;
+      } else {
+        alert(result.error || "Failed to update profile");
+      }
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+### API Route Pattern
+
+API routes handle HTTP requests and call server functions:
+
+```tsx
+// API Route (in routes.tsx)
+route("/api/profile/update", async ({ request }) => {
+  try {
+    const { ctx } = requestInfo;
+
+    // Authentication check
+    if (!ctx.user) {
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json() as { userId: string; profileData: any };
+    const { userId, profileData } = body;
+
+    // Authorization check
+    if (ctx.user.id !== userId) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Call server function
+    const result = await updateUserProfile(userId, profileData);
+
+    if (result) {
+      return Response.json({ success: true, profile: result });
+    } else {
+      return Response.json({ error: "Failed to update profile" }, { status: 500 });
+    }
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
+  }
+})
+```
+
+### Server Functions Pattern
+
+Server functions handle database operations and are marked with "use server":
+
+```tsx
+// Server Functions (functions.ts)
+"use server";
+
+import { db } from "@/db";
+
+export async function updateUserProfile(userId: string, profileData: Partial<ProfileData>) {
+  try {
+    const updateData: any = {};
+
+    // Handle simple fields
+    if (profileData.name !== undefined) updateData.name = profileData.name;
+    if (profileData.bio !== undefined) updateData.bio = profileData.bio;
+
+    // Handle JSON fields - must stringify for database
+    if (profileData.certifications !== undefined) {
+      updateData.certifications = JSON.stringify(profileData.certifications);
+    }
+    if (profileData.boatInformation !== undefined) {
+      updateData.boatInformation = JSON.stringify(profileData.boatInformation);
+    }
+
+    const profile = await db.profile.update({
+      where: { userId },
+      data: updateData,
+    });
+
+    return profile;
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    return null;
+  }
+}
+```
+
+### Key Patterns Summary
+
+1. **Server Components**: Fetch data, serialize objects, pass to client components
+2. **Client Components**: Handle UI interactions, call API endpoints
+3. **API Routes**: Handle HTTP requests, authenticate, call server functions
+4. **Server Functions**: Handle database operations, marked with "use server"
+5. **Cloudflare Workers Compatibility**: Use API endpoints instead of direct server function calls from client components
+
 ## Data Flow
 
 1. User authentication determines available capabilities
-2. Content creation flows through rich editing to storage
-3. Training data is captured, stored, and made available to appropriate users
-4. Events are created, discovered, and managed through the calendar system
-5. Administrators have oversight and control across all system aspects
+2. Server components fetch and serialize data for client components
+3. Client components handle user interactions and call API endpoints
+4. API routes authenticate requests and call server functions
+5. Server functions perform database operations and return results
+6. Content creation flows through rich editing to storage
+7. Training data is captured, stored, and made available to appropriate users
+8. Events are created, discovered, and managed through the calendar system
+9. Administrators have oversight and control across all system aspects

@@ -6,11 +6,13 @@ import ResetPassword from "./ResetPassword";
 import { sessions } from "@/session/store";
 import AuthSettings from "./settings/AuthSettings";
 import ProfileSetup from "./profile/ProfileSetup";
-import ProfileView from "./profile/ProfileView";
-import ProfileEdit from "./profile/ProfileEdit";
+
 import ProfilePage from "./profile/ProfilePage";
+import ProfileEditPage from "./profile/ProfileEditPage";
 import { AppContext } from "@/worker";
-import { hasUserProfile } from "./profile/functions";
+import { db } from "@/db";
+
+
 
 // Middleware to require authentication
 const isAuthenticated = ({ ctx }: { ctx: AppContext }) => {
@@ -28,40 +30,84 @@ export const userRoutes = [
   route("/forgot-password", ForgotPassword),
   route("/reset-password", ResetPassword),
 
-  route("/:id/settings", [isAuthenticated, ({ ctx }) => {
-    // Check if user exists in ctx (guaranteed by isAuthenticated middleware)
-    if (!ctx.user) {
-      // This case should not be reached due to isAuthenticated, but good practice
-       return new Response("Unauthorized", { status: 401 });
+  route("/:username/settings", [isAuthenticated, async ({ ctx }) => {
+    // User is guaranteed to exist due to isAuthenticated interceptor
+    // Fetch user with credentials for complete data
+    const userWithCredentials = await db.user.findUnique({
+      where: { id: ctx.user!.id },
+      include: { credentials: true }
+    });
+
+    if (!userWithCredentials) {
+      return new Response("User not found", { status: 404 });
     }
-    // Return the component with props for server rendering
-    // return { Component: AuthSettings, props: { user: ctx.user } };
-    return <AuthSettings user={ctx.user} />;
+
+    // Pass user data as props to client component
+    const userData = {
+      id: userWithCredentials.id,
+      username: userWithCredentials.username,
+      email: userWithCredentials.email,
+      role: userWithCredentials.role,
+      createdAt: userWithCredentials.createdAt?.toISOString(),
+      club: userWithCredentials.club,
+      password: !!userWithCredentials.password, // Just boolean for security
+      credentials: userWithCredentials.credentials || []
+    };
+
+    return <AuthSettings user={userData} />;
   }]),
 
   // Profile routes
-  route("/:id/profile/setup", [isAuthenticated, (props) => {
-    if (!props.ctx.user) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-    return <ProfileSetup user={props.ctx.user} />;
+  route("/:username/profile/setup", [isAuthenticated, ({ ctx }) => {
+    // User is guaranteed to exist due to isAuthenticated interceptor
+    const userData = {
+      id: ctx.user!.id,
+      username: ctx.user!.username,
+      email: ctx.user!.email,
+      role: ctx.user!.role,
+      createdAt: ctx.user!.createdAt?.toISOString(),
+      club: ctx.user!.club,
+    };
+
+    return <ProfileSetup user={userData} />;
   }]),
 
-  route("/:id/profile/edit", [isAuthenticated, (props) => {
-    if (!props.ctx.user) {
-      return new Response("Unauthorized", { status: 401 });
-    }
-    // Only allow users to edit their own profile
-    if (props.ctx.user.id !== props.params.id) {
-      return new Response("Forbidden", { status: 403 });
-    }
-    return <ProfileEdit user={props.ctx.user} />;
-  }]),
+  route("/:username/profile/edit", async (props) => {
+    const username = props.params.username;
+    const isOwnProfile = props.ctx.user?.username === username;
 
-  route("/:id/profile", [(props) => {
-    const isOwnProfile = props.ctx.user?.id === props.params.id;
-    return <ProfilePage profileUserId={props.params.id} isOwnProfile={isOwnProfile} {...props} />;
-  }]),
+    // Find the user by username to get their ID
+    const targetUser = await db.user.findUnique({
+      where: { username },
+      select: { id: true }
+    });
+
+    if (!targetUser) {
+      return new Response("User not found", { status: 404 });
+    }
+
+    return <ProfileEditPage UserId={targetUser.id} isOwnProfile={isOwnProfile} {...props} />;
+  }),
+
+  route("/:username/profile", async (props) => {
+    const username = props.params.username;
+    const isOwnProfile = props.ctx.user?.username === username;
+
+    // Find the user by username to get their ID
+    const targetUser = await db.user.findUnique({
+      where: { username },
+      select: { id: true }
+    });
+
+    if (!targetUser) {
+      return new Response("User not found", { status: 404 });
+    }
+
+    return <ProfilePage UserId={targetUser.id} isOwnProfile={isOwnProfile} {...props} />;
+  }),
+
+
+
   route("/logout", async function ({ request }) {
     const headers = new Headers();
     await sessions.remove(request, headers);

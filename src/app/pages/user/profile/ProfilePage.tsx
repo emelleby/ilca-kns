@@ -2,12 +2,35 @@ import { HomeLayout } from "@/app/layouts/HomeLayout";
 import { RequestInfo } from "rwsdk/worker";
 import { getOrCreateUserProfile } from "./functions";
 
+import { db } from "@/db"; // Add db import
+
 interface ProfilePageProps extends RequestInfo {
-  profileUserId: string;
+  UserId: string; // Changed from profileUserId
   isOwnProfile?: boolean;
 }
 
-export default async function ProfilePage({ profileUserId, isOwnProfile = false, ...props }: ProfilePageProps) {
+export default async function ProfilePage({ UserId, isOwnProfile = false, ...props }: ProfilePageProps) {
+  // Fetch user by id to get their Profile
+  const user = await db.user.findUnique({
+    where: { id: UserId },
+    include: { profile: true },
+  });
+
+  if (!user) {
+    return (
+      <HomeLayout {...props}>
+        <div className="container mx-auto px-4 py-8 max-w-4xl">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">User Not Found</h1>
+            <p className="text-muted-foreground">The profile you are looking for does not exist.</p>
+          </div>
+        </div>
+      </HomeLayout>
+    );
+  }
+
+  const profileUserName = user.username; // Now we have the ID
+  const profileUserId = user.id; // Now we have the ID
   const currentUserId = props.ctx.user?.id;
 
   // Auto-create profile if it doesn't exist
@@ -43,7 +66,7 @@ export default async function ProfilePage({ profileUserId, isOwnProfile = false,
 
   const formatDate = (dateString: string | Date) => {
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
-    return date.toLocaleDateString('en-US', {
+    return date.toLocaleDateString('no-NO', {
       year: 'numeric',
       month: 'long',
     });
@@ -80,7 +103,7 @@ export default async function ProfilePage({ profileUserId, isOwnProfile = false,
 
                 {isOwnProfile && (
                   <a
-                    href={`/user/${profileUserId}/profile/edit`}
+                    href={`/user/${profileUserName}/profile/edit`}
                     className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
                   >
                     Edit Profile

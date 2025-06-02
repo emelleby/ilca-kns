@@ -14,25 +14,26 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
           {ctx?.user && ctx.user.username ? (
             <ul className="flex items-center gap-4">
               <li>
-                <a href={`/user/${ctx.user.id}/profile`} className="text-white hover:underline">Profile</a>
+                <a href={link("/test")} className="text-white hover:underline">Test</a>
               </li>
               <li>
-                <a href={link("/user/:id/settings", {
-                    id: ctx.user.id || "",
-                  })} className="text-white hover:underline">Settings</a>
+                <a href={link("/user/:username/profile", { username: ctx.user.username })} className="text-white hover:underline">Profile</a>
+              </li>
+              <li>
+                <a href={link("/user/:username/settings", { username: ctx.user.username })} className="text-white hover:underline">Settings</a>
               </li>
               <li>
                 <a href={link("/user/logout")} className="text-white hover:underline">Logout</a>
               </li>
               <li>
-                <a href={`/user/${ctx.user.id}/profile`}>
+                <a href={link("/user/:username/profile", { username: ctx.user.username })}>
                   <Avatar>
                     <AvatarFallback>{ctx.user.username[0]?.toUpperCase() || "U"}</AvatarFallback>
                   </Avatar>
                 </a>
               </li>
               <li className="text-white font-medium">
-                <a href={`/user/${ctx.user.id}/profile`} className="text-white hover:underline">{ctx.user.username}</a>
+                <a href={link("/user/:username/profile", { username: ctx.user.username })} className="hover:underline">{ctx.user.username}</a>
               </li>
             </ul>
           ) : (

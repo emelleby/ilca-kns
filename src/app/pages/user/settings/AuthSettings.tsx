@@ -26,7 +26,6 @@ import { CardSkeleton } from "@/app/components/ui/skeleton";
 export default function AuthSettings({ user }: { user: any }) {
   const [isPending, startTransition] = useTransition();
   const [result, setResult] = useState("");
-  console.log("user", user);
 
   // Email/password states
   const [email, setEmail] = useState(user?.email || "");

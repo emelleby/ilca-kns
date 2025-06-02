@@ -2,10 +2,12 @@
 
 ## Current Focus
 
-- Implementing Task 4: User Profile Management
-- Building comprehensive profile creation, editing, and viewing functionality
-- Integrating sailing-specific features (experience, certifications, boat information)
-- Implementing password reset functionality
+- ✅ **Completed Task 4: User Profile Management**
+- ✅ Built comprehensive profile creation, editing, and viewing functionality
+- ✅ Integrated sailing-specific features (experience, certifications, boat information)
+- ✅ Implemented password reset functionality
+- ✅ **Resolved Cloudflare Workers compatibility issues**
+- Ready to move to next phase: Activity tracking and community features
 
 ## Recent Changes
 
@@ -24,6 +26,11 @@
   - Eliminates "no profile found" scenarios for better UX
 - Implemented password reset functionality with email notifications
 - Set up email sending via Resend API (currently configured for development only)
+- **Resolved Cloudflare Workers I/O issues:**
+  - Fixed "Only plain objects can be passed to Client Components" errors
+  - Implemented proper server-client data flow patterns
+  - Created API endpoint approach for client-server communication
+  - Established RedwoodSDK best practices for data fetching and component architecture
 
 ## Key Patterns and Preferences
 
@@ -37,6 +44,12 @@
 - Dual authentication methods (passkey-first with email/password as alternative)
 - Prisma workflow: `pnpm migrate:new "migration_name"` for schema changes, followed by server restart
 - Email notifications for account-related actions (currently in development mode)
+- **RedwoodSDK Data Flow Pattern:**
+  - Server components fetch data and serialize for client components
+  - Client components handle UI interactions and call API endpoints
+  - API routes handle HTTP requests and call server functions
+  - Server functions handle database operations (marked with "use server")
+  - Use API endpoints instead of direct server function calls from client components for Cloudflare Workers compatibility
 
 ## Active Decisions
 
