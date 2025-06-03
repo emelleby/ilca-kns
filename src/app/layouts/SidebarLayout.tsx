@@ -1,14 +1,14 @@
-import { AppSidebar } from "@/components/app-sidebar"
-import { NavActions } from "@/components/nav-actions"
+import { AppSidebar } from "@/app/layouts/components/app-sidebar"
+import { NavActions } from "@/app/layouts/components/nav-actions"
 
-import { Separator } from "@/components/ui/separator"
+import { Separator } from "@/app/components/ui/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@/components/ui/sidebar"
+} from "@/app/components/ui/sidebar"
 
-export default function Page() {
+export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -26,9 +26,8 @@ export default function Page() {
             <NavActions />
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 px-4 py-10">
-          <div className="bg-muted/50 mx-auto h-24 w-full max-w-3xl rounded-xl" />
-          <div className="bg-muted/50 mx-auto h-full w-full max-w-3xl rounded-xl" />
+        <div className="container max-w-5xl mx-auto p-4">
+        {children}
         </div>
       </SidebarInset>
     </SidebarProvider>

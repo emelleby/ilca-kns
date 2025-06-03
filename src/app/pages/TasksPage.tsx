@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { HomeLayout } from "@/app/layouts/HomeLayout";
+import { SidebarLayout } from "@/app/layouts/SidebarLayout";
 import { RequestInfo } from "rwsdk/worker";
 import { TasksTableClient } from "@/app/components/TasksTableClient";
 import tasksData from 'tasks/tasks.json';
@@ -30,11 +30,11 @@ export function TasksPage(props: RequestInfo & { children?: ReactNode }) {
   const tasks = getTasksData();
 
   return (
-    <HomeLayout {...props}>
+    <SidebarLayout {...props}>
       <div className="w-full px-6 mx-auto py-8">
         <h1 className="page-title">Tasks</h1>
         <TasksTableClient tasks={tasks} />
       </div>
-    </HomeLayout>
+    </SidebarLayout>
   );
 }
