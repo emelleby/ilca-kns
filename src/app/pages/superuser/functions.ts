@@ -38,14 +38,47 @@ export async function updateOrganization(
 
 export async function deleteOrganization(organizationId: string) {
   try {
-    // Delete all memberships and invitations first (cascade should handle this)
+    // First, get the organization to check if it exists and get member count
+    const organization = await db.organization.findUnique({
+      where: { id: organizationId },
+      include: {
+        _count: {
+          select: {
+            members: true,
+            invitations: true
+          }
+        }
+      }
+    });
+
+    if (!organization) {
+      return { success: false, error: "Organization not found" };
+    }
+
+    // Explicitly delete all memberships first (withdrawing users from organization)
+    // This ensures users remain in the system but lose their organization membership
+    await db.organizationMembership.deleteMany({
+      where: { organizationId }
+    });
+
+    // Delete all pending invitations
+    await db.organizationInvitation.deleteMany({
+      where: { organizationId }
+    });
+
+    // Finally, delete the organization itself
     await db.organization.delete({
       where: { id: organizationId },
     });
-    return true;
+
+    return {
+      success: true,
+      memberCount: organization._count.members,
+      invitationCount: organization._count.invitations
+    };
   } catch (error) {
     console.error("Error deleting organization:", error);
-    return false;
+    return { success: false, error: "Failed to delete organization" };
   }
 }
 

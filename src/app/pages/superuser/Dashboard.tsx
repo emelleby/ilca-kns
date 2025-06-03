@@ -9,9 +9,10 @@ import {
   TableHeader,
   TableRow
 } from "@/app/components/ui/table";
-import { Eye, Edit, Trash2 } from "lucide-react";
+import { Eye, Edit } from "lucide-react";
 import { RequestInfo } from "rwsdk/worker";
 import CreateOrganizationDialog from "./CreateOrganizationDialog";
+import DeleteOrganizationDialog from "./DeleteOrganizationDialog";
 import { getOrganizationsForDisplay } from "./functions";
 
 export default async function Dashboard(props: RequestInfo) {
@@ -158,10 +159,13 @@ export default async function Dashboard(props: RequestInfo) {
                               <Edit className="h-4 w-4" />
                               <span className="sr-only">Edit organization</span>
                             </Button>
-                            <Button variant="ghost" size="sm">
-                              <Trash2 className="h-4 w-4" />
-                              <span className="sr-only">Delete organization</span>
-                            </Button>
+                            <DeleteOrganizationDialog
+                              organization={{
+                                id: org.id,
+                                name: org.name,
+                                memberCount: org.memberCount
+                              }}
+                            />
                           </div>
                         </TableCell>
                       </TableRow>

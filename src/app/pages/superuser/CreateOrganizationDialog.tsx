@@ -62,9 +62,9 @@ export default function CreateOrganizationDialog({
         toast.success("Organization created successfully!");
 
         // Delay reload to let user see the toast
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500); // 1.5 second delay
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1500); // 1.5 second delay
       } else {
         toast.error("Failed to create organization. Please try again.");
       }
