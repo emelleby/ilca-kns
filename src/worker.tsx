@@ -71,7 +71,6 @@ export default defineApp([
     }),
     route("/tasks", TasksPage),
     route("/home", [isAuthenticated, Home]),
-    route("/homey", () => new Response("Home works!", { status: 200 })),
 
     route("/protected", [
       ({ ctx }) => {

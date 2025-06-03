@@ -24,50 +24,84 @@ export function PostCard({
   kudos = 0,
   comments = 0,
 }: PostCardProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInHours < 48) return 'Yesterday';
+    return date.toLocaleDateString();
+  };
+
   return (
-    <div style={{
-      background: "#fff",
-      borderRadius: 12,
-      boxShadow: "0 1px 6px rgba(0,0,0,0.07)",
-      marginBottom: 32,
-      overflow: "hidden",
-      maxWidth: 600,
-      marginLeft: "auto",
-      marginRight: "auto",
-    }}>
-      <div style={{ display: "flex", alignItems: "center", padding: 16, borderBottom: "1px solid #eee" }}>
-        <img src={user.avatarUrl} alt={user.name} style={{ width: 44, height: 44, borderRadius: "50%", marginRight: 14 }} />
-        <div style={{ flex: 1 }}>
-          <div style={{ fontWeight: 700 }}>{user.name}</div>
-          <div style={{ fontSize: 13, color: "#888" }}>{new Date(publishedAt).toLocaleString()}</div>
+    <article className="bg-bg rounded-xl border border-gray-200 shadow-sm mb-6 overflow-hidden hover:shadow-md transition-shadow">
+      {/* Post Header */}
+      <div className="flex items-center p-4 border-b border-gray-100">
+        <div className="w-11 h-11 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
+          {user.name.split(' ').map(n => n[0]).join('')}
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <span title="Kudos" style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span role="img" aria-label="kudos">👍</span> {kudos}
-          </span>
-          <span title="Comments" style={{ display: "flex", alignItems: "center", gap: 4 }}>
-            <span role="img" aria-label="comments">💬</span> {comments}
-          </span>
+        <div className="flex-1">
+          <div className="font-semibold text-gray-900">{user.name}</div>
+          <div className="text-sm text-gray-500">{formatDate(publishedAt)}</div>
+        </div>
+        <div className="flex items-center gap-4 text-sm text-gray-500">
+          <button className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+            <span>👍</span>
+            <span>{kudos}</span>
+          </button>
+          <button className="flex items-center gap-1 hover:text-blue-600 transition-colors">
+            <span>💬</span>
+            <span>{comments}</span>
+          </button>
         </div>
       </div>
-      <div style={{ padding: 24 }}>
-        <h2 style={{ margin: "0 0 10px 0", fontSize: 28, lineHeight: 1.1 }}>{title}</h2>
-        <div style={{ color: "#444", fontSize: 17, marginBottom: 18, whiteSpace: "pre-line" }}>{content}</div>
+
+      {/* Post Content */}
+      <div className="p-6">
+        <h2 className="text-xl font-bold text-gray-900 mb-3 leading-tight">{title}</h2>
+        <div className="text-gray-700 leading-relaxed whitespace-pre-line mb-4">{content}</div>
+
         {imageUrl && (
-          <img src={imageUrl} alt={title} style={{ width: "100%", borderRadius: 10, marginTop: 18, marginBottom: 6 }} />
+          <div className="mb-4">
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full rounded-lg object-cover max-h-96"
+            />
+          </div>
         )}
+
         {category && (
-          <span style={{
-            fontSize: 13,
-            background: "#e3e8f0",
-            color: "#4b5563",
-            borderRadius: 6,
-            padding: "2px 10px",
-            marginTop: 10,
-            display: "inline-block",
-          }}>{category}</span>
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+              {category}
+            </span>
+          </div>
         )}
       </div>
-    </div>
+
+      {/* Post Actions */}
+      <div className="px-6 pb-4 flex items-center justify-between border-t border-gray-100 pt-4">
+        <div className="flex items-center gap-4">
+          <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            <span>👍</span>
+            <span>Like</span>
+          </button>
+          <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            <span>💬</span>
+            <span>Comment</span>
+          </button>
+          <button className="flex items-center gap-2 text-sm text-gray-600 hover:text-blue-600 transition-colors">
+            <span>📤</span>
+            <span>Share</span>
+          </button>
+        </div>
+        <button className="text-sm text-gray-500 hover:text-gray-700">
+          <span>⋯</span>
+        </button>
+      </div>
+    </article>
   );
 }
