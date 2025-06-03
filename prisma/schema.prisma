@@ -59,6 +59,7 @@ model Organization {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   members     OrganizationMembership[]
+  invitations OrganizationInvitation[]
 }
 
 model OrganizationMembership {
@@ -137,4 +138,21 @@ model PasswordReset {
   expires   DateTime
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model OrganizationInvitation {
+  id             String       @id @default(uuid())
+  email          String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String
+  role           String       // "ADMIN", "COACH", "MEMBER"
+  status         String       @default("PENDING") // "PENDING", "ACCEPTED", "REJECTED", "EXPIRED"
+  token          String       @unique
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  createdBy      String       // User ID of who created the invitation
+  acceptedAt     DateTime?
+
+  @@index([email])
+  @@index([token])
 }

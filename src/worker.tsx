@@ -7,6 +7,7 @@ import AuthSettings from "@/app/pages/user/settings/AuthSettings";
 import { TasksPage } from "@/app/pages/TasksPage";
 import { setCommonHeaders } from "@/app/headers";
 import { userRoutes } from "@/app/pages/user/routes";
+import { routes as superuserRoutes } from "@/app/pages/superuser/routes";
 import { sessions, setupSessionStore } from "./session/store";
 import { Session } from "./session/durableObject";
 import { type User, setupDb, db } from "./db";
@@ -83,5 +84,6 @@ export default defineApp([
       Home,
     ]),
     prefix("/user", userRoutes),
+    prefix("/superuser", superuserRoutes),
   ]),
 ]);

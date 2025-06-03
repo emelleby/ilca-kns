@@ -1,6 +1,7 @@
 import { RequestInfo } from "rwsdk/worker";
 import { link } from '@/app/shared/links'
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
+import { ClientToaster } from "@/app/components/ClientToaster";
 
 const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode }) => {
   return (
@@ -51,6 +52,7 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
       <main className="">
         {children}
       </main>
+      <ClientToaster />
     </div>
   );
 };

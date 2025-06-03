@@ -245,13 +245,119 @@ export async function updateUserProfile(userId: string, profileData: Partial<Pro
 }
 ```
 
+## React 19 Server Actions Pattern (Preferred)
+
+With React 19 and RedwoodSDK, we can use server actions directly from client components instead of API routes. This provides better performance and simpler code.
+
+### Server Action Form Submission Pattern
+
+```tsx
+// Server Functions (functions.ts)
+"use server";
+
+import { db } from "@/db";
+
+export async function createOrganization(name: string, description?: string) {
+  try {
+    const organization = await db.organization.create({
+      data: { name, description },
+    });
+    return organization; // Return success result
+  } catch (error) {
+    console.error("Error creating organization:", error);
+    return null; // Return failure result
+  }
+}
+```
+
+```tsx
+// Client Component (CreateOrganizationDialog.tsx)
+"use client";
+
+import { useState } from "react";
+import { createOrganization } from "./functions";
+
+export default function CreateOrganizationDialog() {
+  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Call server function directly - no API route needed
+      const result = await createOrganization(
+        formData.name.trim(),
+        formData.description.trim() || undefined
+      );
+
+      if (result) {
+        // Handle success within client component
+        setFormData({ name: "", description: "" });
+        alert("Organization created successfully!");
+
+        // Refresh page to show new data
+        window.location.reload();
+      } else {
+        alert("Failed to create organization. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error creating organization:", error);
+      alert("Failed to create organization. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Form fields */}
+    </form>
+  );
+}
+```
+
+```tsx
+// Server Component (Dashboard.tsx)
+export default async function Dashboard(props: RequestInfo) {
+  // Fetch data on server
+  const organizations = await getOrganizationsForDisplay();
+
+  return (
+    <div>
+      {/* Pass data to client components, but NO event handlers */}
+      <CreateOrganizationDialog />
+      <OrganizationsTable organizations={organizations} />
+    </div>
+  );
+}
+```
+
+### Key Rules for React 19 Server Actions
+
+1. **No Event Handler Passing**: Never pass functions from server to client components
+2. **Client Self-Management**: Client components handle their own success/failure states
+3. **Direct Server Calls**: Client components call server functions directly
+4. **Return Status**: Server functions return success/failure status, not void
+5. **Page Refresh**: Use `window.location.reload()` for data refresh after mutations
+6. **Graceful Degradation**: Server actions work even without JavaScript
+
+### Benefits of Server Actions vs API Routes
+
+- ✅ **Simpler Code**: No API route boilerplate needed
+- ✅ **Better Performance**: Direct function calls, no HTTP overhead
+- ✅ **Type Safety**: Full TypeScript support across server/client boundary
+- ✅ **Graceful Degradation**: Works without JavaScript enabled
+- ✅ **Less Boilerplate**: No request/response handling needed
+
 ### Key Patterns Summary
 
 1. **Server Components**: Fetch data, serialize objects, pass to client components
-2. **Client Components**: Handle UI interactions, call API endpoints
-3. **API Routes**: Handle HTTP requests, authenticate, call server functions
-4. **Server Functions**: Handle database operations, marked with "use server"
-5. **Cloudflare Workers Compatibility**: Use API endpoints instead of direct server function calls from client components
+2. **Client Components**: Handle UI interactions, call server functions directly (React 19)
+3. **Server Functions**: Handle database operations, return success/failure status
+4. **No Event Handlers**: Never pass functions from server to client components
+5. **Self-Contained Client Logic**: Client components manage their own state and refresh
 
 ## Data Flow
 
