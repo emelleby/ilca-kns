@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { RequestInfo } from "rwsdk/worker";
 import { link } from '@/app/shared/links'
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
@@ -50,7 +51,9 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
         </nav>
       </header>
       <main className="">
-        {children}
+        <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>
+          {children}
+        </Suspense>
       </main>
       <ClientToaster />
     </div>

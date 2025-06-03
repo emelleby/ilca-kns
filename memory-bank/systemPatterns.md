@@ -359,6 +359,135 @@ export default async function Dashboard(props: RequestInfo) {
 4. **No Event Handlers**: Never pass functions from server to client components
 5. **Self-Contained Client Logic**: Client components manage their own state and refresh
 
+## Cloudflare Workers Promise Management Patterns
+
+**CRITICAL**: Cloudflare Workers has strict Promise resolution requirements that must be followed to prevent hanging Promise errors.
+
+### Hanging Promise Prevention Pattern
+
+Always follow these rules when creating async server components:
+
+```tsx
+// ✅ CORRECT: Async server component with Suspense
+export function ParentComponent() {
+  return (
+    <div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <AsyncDataComponent />
+      </Suspense>
+    </div>
+  );
+}
+
+export async function AsyncDataComponent() {
+  try {
+    const data = await db.model.findMany();
+    return <div>{data.map(item => <Item key={item.id} {...item} />)}</div>;
+  } catch (error) {
+    console.error('Error:', error);
+    return <div>Failed to load data</div>;
+  }
+}
+
+// ❌ INCORRECT: Async component without Suspense
+export function ParentComponent() {
+  return (
+    <div>
+      <AsyncDataComponent /> {/* This can cause hanging Promise errors */}
+    </div>
+  );
+}
+```
+
+### Static Data Pattern
+
+For static data that doesn't require async operations, avoid unnecessary async functions:
+
+```tsx
+// ✅ CORRECT: Synchronous function for static data
+function getStaticPosts(): PostItem[] {
+  return [
+    { id: "1", title: "Post 1", content: "Content 1" },
+    { id: "2", title: "Post 2", content: "Content 2" }
+  ];
+}
+
+export function PostList() {
+  const posts = getStaticPosts();
+  return <div>{posts.map(post => <PostCard key={post.id} {...post} />)}</div>;
+}
+
+// ❌ INCORRECT: Unnecessary async for static data
+async function getStaticPosts(): Promise<PostItem[]> {
+  return [
+    { id: "1", title: "Post 1", content: "Content 1" },
+    { id: "2", title: "Post 2", content: "Content 2" }
+  ];
+}
+
+export async function PostList() {
+  const posts = await getStaticPosts(); // Unnecessary Promise creation
+  return <div>{posts.map(post => <PostCard key={post.id} {...post} />)}</div>;
+}
+```
+
+### Database Query Pattern
+
+For real database operations, use proper async handling with error boundaries:
+
+```tsx
+// ✅ CORRECT: Proper async database query
+export async function UserList() {
+  try {
+    const users = await db.user.findMany({
+      include: { profile: true },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    return (
+      <div>
+        {users.map(user => (
+          <UserCard key={user.id} user={user} />
+        ))}
+      </div>
+    );
+  } catch (error) {
+    console.error('Failed to fetch users:', error);
+    return <div>Unable to load users</div>;
+  }
+}
+
+// Parent component MUST wrap with Suspense
+export function UsersPage() {
+  return (
+    <div>
+      <h1>Users</h1>
+      <Suspense fallback={<div>Loading users...</div>}>
+        <UserList />
+      </Suspense>
+    </div>
+  );
+}
+```
+
+### Error Patterns to Avoid
+
+1. **Async components without Suspense boundaries**
+2. **Unnecessary async functions for static data**
+3. **Missing error handling in async operations**
+4. **Promise chains that don't resolve properly**
+5. **I/O operations spanning multiple request contexts**
+
+### Resolution Checklist
+
+When encountering hanging Promise errors:
+
+1. ✅ **Check if async is necessary** - make synchronous if possible
+2. ✅ **Add Suspense boundaries** around async components
+3. ✅ **Add try-catch blocks** to all async operations
+4. ✅ **Verify Promise resolution** in all async functions
+5. ✅ **Test in development** before deploying
+
 ## Data Flow
 
 1. User authentication determines available capabilities

@@ -58,7 +58,7 @@ export default function DeleteOrganizationDialog({
         setConfirmationText("");
         setOpen(false);
 
-        const memberMessage = result.memberCount > 0
+        const memberMessage = (typeof result.memberCount === "number" && result.memberCount > 0)
           ? ` ${result.memberCount} member${result.memberCount === 1 ? '' : 's'} have been withdrawn from the organization.`
           : "";
 

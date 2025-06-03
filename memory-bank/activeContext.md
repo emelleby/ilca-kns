@@ -31,6 +31,17 @@
   - Implemented proper server-client data flow patterns
   - Created API endpoint approach for client-server communication
   - Established RedwoodSDK best practices for data fetching and component architecture
+- **Resolved Cloudflare Workers hanging Promise issues:**
+  - Fixed PostList component that was causing "hanging Promise" errors
+  - Converted unnecessary async functions to synchronous for static data
+  - Fixed TasksPage hot-reload hanging Promise issue by converting from client to server component
+  - Created TasksTableClient component to isolate interactive functionality
+  - Fixed ErrorBoundary class component instantiation issue by creating ClientErrorBoundary for client components
+  - Restructured HomeLayout Suspense boundaries to prevent RSC hot-update errors
+  - Implemented dynamic JSON loading to avoid hot-reload module resolution issues
+  - Documented comprehensive prevention patterns for future development
+  - Established rules for proper Suspense boundary usage with async server components
+  - Documented hot-reload specific patterns for client components with server props
 
 ## Key Patterns and Preferences
 

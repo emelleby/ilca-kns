@@ -2,6 +2,7 @@ import { defineApp, ErrorResponse } from "rwsdk/worker";
 import { route, render, prefix } from "rwsdk/router";
 import { Document } from "@/app/Document";
 import { Home } from "@/app/pages/Home";
+import { FrontPage } from "@/app/pages/FrontPage";
 import { Test } from "@/app/pages/Test";
 import AuthSettings from "@/app/pages/user/settings/AuthSettings";
 import { TasksPage } from "@/app/pages/TasksPage";
@@ -63,13 +64,13 @@ export default defineApp([
     }
   },
   render(Document, [
-    route("/", () => new Response("Hello, World!")),
+    route("/", FrontPage),
     route("/test", [isAuthenticated, Test]),
     route("/pingo", function () {
       return <h1>Pongo!</h1>;
     }),
     route("/tasks", TasksPage),
-    route("/home", Home),
+    route("/home", [isAuthenticated, Home]),
     route("/homey", () => new Response("Home works!", { status: 200 })),
 
     route("/protected", [
