@@ -74,3 +74,226 @@ Solution pattern:
 - Development mode: All emails are currently sent to a development email address
 - Production mode (to be implemented): Emails will be sent to the actual user's email address
 - Email content is HTML-formatted with responsive design
+
+## Cloudflare Workers Promise Handling
+
+**CRITICAL**: Cloudflare Workers has strict limitations on Promise resolution that can cause "hanging Promise" errors.
+
+### Common Causes of Hanging Promises
+
+1. **Async Server Components without Suspense**: Async components not wrapped in Suspense boundaries
+2. **Unnecessary Async Functions**: Functions marked as async that don't perform actual async operations
+3. **I/O Context Violations**: Promises created in one request handler cannot be accessed from different request handlers
+4. **Unresolved Promise Chains**: Complex Promise chains without proper resolution or error handling
+
+### Error Symptoms
+
+```
+A hanging Promise was canceled. This happens when the worker runtime is waiting for a Promise from JavaScript to resolve, but has detected that the Promise cannot possibly ever resolve because all code and events related to the Promise's I/O context have already finished.
+
+[vite] Internal server error: The script will never generate a response.
+```
+
+### Prevention Patterns
+
+#### 1. Always Use Suspense for Async Server Components
+
+```tsx
+// ✅ Good - Async component wrapped in Suspense
+<Suspense fallback={<div>Loading...</div>}>
+  <AsyncServerComponent />
+</Suspense>
+
+// ❌ Bad - Async component without Suspense
+<AsyncServerComponent />
+```
+
+#### 2. Avoid Unnecessary Async Functions
+
+```tsx
+// ❌ Bad - unnecessary async for static data
+async function getStaticData() {
+  return staticData;
+}
+
+// ✅ Good - synchronous for static data
+function getStaticData() {
+  return staticData;
+}
+```
+
+#### 3. Proper Error Handling for Database Queries
+
+```tsx
+// ✅ Good - proper async with error handling
+export async function DataComponent() {
+  try {
+    const data = await db.model.findMany();
+    return <div>{data.map(item => <Item key={item.id} {...item} />)}</div>;
+  } catch (error) {
+    console.error('Database error:', error);
+    return <div>Failed to load data</div>;
+  }
+}
+```
+
+#### 4. Server Functions for Complex Operations
+
+```tsx
+// functions.ts
+"use server";
+
+export async function getComplexData() {
+  return await db.model.findMany({
+    include: { relations: true },
+    orderBy: { createdAt: 'desc' }
+  });
+}
+
+// Component.tsx
+export async function Component() {
+  const data = await getComplexData();
+  return <div>{/* render data */}</div>;
+}
+```
+
+### Monitoring for Hanging Promises
+
+Watch for these patterns that can cause hanging promises:
+- Async functions that don't actually await anything
+- Missing error handling in async operations
+- Complex Promise chains without proper resolution
+- I/O operations that span multiple request contexts
+- Server components without Suspense boundaries
+
+### Resolution Steps
+
+1. **Identify the async component** causing the issue
+2. **Check if the async operation is necessary** - make synchronous if possible
+3. **Add Suspense boundaries** around truly async components
+4. **Add proper error handling** to all async operations
+5. **Test thoroughly** in development environment
+
+### Hot-Reload Specific Issues
+
+**Client Components with Server Props**: Client components that receive server-side `RequestInfo` props can cause hanging Promise errors during hot-reload because:
+
+- Hot-reload re-evaluates client components but server context may not be available
+- JSON imports can have inconsistent timing during hot-reload vs. cold start
+- Two-pass rendering patterns can cause state initialization timing issues
+
+**Solution Pattern**: Convert to server component and extract interactive parts:
+
+```tsx
+// ❌ Problematic: Client component with server props and JSON import
+"use client"
+export function TasksPage(props: RequestInfo) {
+  const [isClient, setIsClient] = useState(false);
+  // JSON import at module level can cause hot-reload issues
+  import tasksData from 'tasks/tasks.json';
+
+  useEffect(() => setIsClient(true), []);
+  // Two-pass rendering with server props
+}
+
+// ✅ Solution: Server component + separate client component
+export function TasksPage(props: RequestInfo) {
+  const tasks = getTasksData(); // Synchronous data loading
+  return (
+    <HomeLayout {...props}>
+      <TasksTableClient tasks={tasks} />
+    </HomeLayout>
+  );
+}
+
+// Separate client component for interactivity
+"use client"
+export function TasksTableClient({ tasks }) {
+  const [selectedTask, setSelectedTask] = useState(null);
+  // Client-only state and interactions
+}
+```
+
+This pattern prevents hanging Promise errors by:
+- Eliminating server-client prop boundary issues
+- Moving JSON imports to server component scope
+- Removing two-pass rendering complexity
+- Isolating client-side state to pure client components
+
+### Additional Hot-Reload Fixes
+
+**Layout Suspense Boundary Issues**: Wrapping entire layouts in Suspense can cause RSC hot-update errors:
+
+```tsx
+// ❌ Problematic: Suspense wrapping entire layout
+const HomeLayout = ({ ctx, children }) => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <header>{/* server context usage */}</header>
+      <main>{children}</main>
+      <ClientComponent />
+    </Suspense>
+  );
+};
+
+// ✅ Solution: Targeted Suspense boundaries
+const HomeLayout = ({ ctx, children }) => {
+  return (
+    <div>
+      <header>{/* server context usage */}</header>
+      <main>
+        <ErrorBoundary>
+          <Suspense fallback={<div>Loading...</div>}>
+            {children}
+          </Suspense>
+        </ErrorBoundary>
+      </main>
+      <ClientComponent />
+    </div>
+  );
+};
+```
+
+**JSON Import Hot-Reload Issues**: The issue was initially thought to be static JSON imports, but the real problem was using `require()` in ES modules context:
+
+```tsx
+// ❌ Problematic: Using require() in ES modules
+function getTasksData() {
+  try {
+    const tasksData = require('tasks/tasks.json'); // ReferenceError: require is not defined
+    return tasksData.tasks || [];
+  } catch (error) {
+    return [];
+  }
+}
+
+// ✅ Solution: Static import with error handling wrapper
+import tasksData from 'tasks/tasks.json';
+
+function getTasksData() {
+  try {
+    return tasksData.tasks || [];
+  } catch (error) {
+    console.error('Failed to load tasks data:', error);
+    return [];
+  }
+}
+
+export function TasksPage(props) {
+  const tasks = getTasksData(); // Load data with error handling
+  return <TasksTableClient tasks={tasks} />;
+}
+```
+
+**Key Learning**: Static imports are actually fine in server components. The hot-reload issues were primarily caused by improper Suspense boundary placement and client-server component mixing, not JSON imports.
+
+**Error Boundary for Hot-Reload Stability**: Add error boundaries to catch and recover from hot-reload errors:
+
+```tsx
+// ErrorBoundary component helps catch hot-reload issues
+<ErrorBoundary>
+  <Suspense fallback={<div>Loading...</div>}>
+    {children}
+  </Suspense>
+</ErrorBoundary>
+```

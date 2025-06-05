@@ -2,11 +2,13 @@ import { defineApp, ErrorResponse } from "rwsdk/worker";
 import { route, render, prefix } from "rwsdk/router";
 import { Document } from "@/app/Document";
 import { Home } from "@/app/pages/Home";
+import { FrontPage } from "@/app/pages/FrontPage";
 import { Test } from "@/app/pages/Test";
 import AuthSettings from "@/app/pages/user/settings/AuthSettings";
 import { TasksPage } from "@/app/pages/TasksPage";
 import { setCommonHeaders } from "@/app/headers";
 import { userRoutes } from "@/app/pages/user/routes";
+import { routes as superuserRoutes } from "@/app/pages/superuser/routes";
 import { sessions, setupSessionStore } from "./session/store";
 import { Session } from "./session/durableObject";
 import { type User, setupDb, db } from "./db";
@@ -62,14 +64,13 @@ export default defineApp([
     }
   },
   render(Document, [
-    route("/", () => new Response("Hello, World!")),
+    route("/", FrontPage),
     route("/test", [isAuthenticated, Test]),
     route("/pingo", function () {
       return <h1>Pongo!</h1>;
     }),
     route("/tasks", TasksPage),
-    route("/home", Home),
-    route("/homey", () => new Response("Home works!", { status: 200 })),
+    route("/home", [isAuthenticated, Home]),
 
     route("/protected", [
       ({ ctx }) => {
@@ -83,5 +84,6 @@ export default defineApp([
       Home,
     ]),
     prefix("/user", userRoutes),
+    prefix("/superuser", superuserRoutes),
   ]),
 ]);
