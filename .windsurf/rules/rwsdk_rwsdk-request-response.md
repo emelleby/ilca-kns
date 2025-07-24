@@ -1,7 +1,7 @@
 ---
+trigger: model_decision
 description: RedwoodSDK: Request handling and responses
 globs: worker.tsc,src/app/**/routes.ts,src/app/**/*/routes.ts
-alwaysApply: false
 ---
 
 # RedwoodSDK: Request handling and responses

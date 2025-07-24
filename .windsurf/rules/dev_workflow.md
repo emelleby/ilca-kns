@@ -1,7 +1,7 @@
 ---
+trigger: always_on
 description: Guide for using Task Master to manage task-driven development workflows
 globs: **/*
-alwaysApply: true
 ---
 # Task Master Development Workflow
 

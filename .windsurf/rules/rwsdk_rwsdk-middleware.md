@@ -1,7 +1,7 @@
 ---
+trigger: model_decision
 description: RedwoodSDK: Middleware
 globs: worker.tsx,middleware.ts,middleware.tsx
-alwaysApply: false
 ---
 
 

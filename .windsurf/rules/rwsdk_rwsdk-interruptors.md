@@ -1,7 +1,7 @@
 ---
+trigger: model_decision
 description: RedwoodSDK: Request Interruptors
 globs: worker.tsx,src/app/**/routes.ts,src/app/**/*/routes.ts
-alwaysApply: false
 ---
 
 

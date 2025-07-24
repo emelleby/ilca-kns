@@ -1,7 +1,7 @@
 ---
+trigger: always_on
 description: Comprehensive reference for Taskmaster MCP tools and CLI commands.
 globs: **/*
-alwaysApply: true
 ---
 # Taskmaster Tool & Command Reference
 

@@ -1,8 +1,7 @@
 ---
+trigger: always_on
 description: Guidelines for continuously improving Cursor rules based on emerging code patterns and best practices.
 globs: **/*
-filesToApplyRule: **/*
-alwaysApply: true
 ---
 
 - **Rule Improvement Triggers:**
@@ -70,4 +69,4 @@ alwaysApply: true
   - Update references to external docs
   - Maintain links between related rules
   - Document breaking changes
-Follow [windsurf_rules.mdc](mdc:.windsurf/rules/windsurf_rules.mdc) for proper rule formatting and structure.
+Follow [cursor_rules.mdc](mdc:.cursor/rules/cursor_rules.mdc) for proper rule formatting and structure.

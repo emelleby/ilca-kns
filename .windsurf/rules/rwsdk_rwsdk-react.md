@@ -1,7 +1,7 @@
 ---
+trigger: model_decision
 description: RedwoodSDK: React, React Server Components, and React Server Functions Rules
 globs: src/app/**/*/*.tsx,Document.tsx
-alwaysApply: false
 ---
 
 # React, React Server Components, and React Server Functions Rules

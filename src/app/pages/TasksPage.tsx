@@ -1,8 +1,9 @@
-import { ReactNode } from 'react';
-import { SidebarLayout } from "@/app/layouts/SidebarLayout";
-import { RequestInfo } from "rwsdk/worker";
+"use client";
+
+import { HomeLayout } from "@/app/layouts/HomeLayout";
 import { TasksTableClient } from "@/app/components/TasksTableClient";
 import tasksData from 'tasks/tasks.json';
+import { RequestInfo } from "rwsdk/worker";
 
 interface Task {
   id: number;
@@ -26,15 +27,17 @@ function getTasksData(): Task[] {
   }
 }
 
-export function TasksPage(props: RequestInfo & { children?: ReactNode }) {
+export function TasksPage(props: RequestInfo) {
   const tasks = getTasksData();
 
   return (
-    <SidebarLayout {...props}>
+    <HomeLayout {...props}>
       <div className="w-full px-6 mx-auto py-8">
-        <h1 className="page-title">Tasks</h1>
-        <TasksTableClient tasks={tasks} />
+        <h1 className="page-title">Tasks</h1> 
+ 
+          <TasksTableClient tasks={tasks} />
+
       </div>
-    </SidebarLayout>
+    </HomeLayout>
   );
 }
