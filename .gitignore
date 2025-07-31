@@ -79,6 +79,7 @@ node_modules/
 # Editor directories and files
 .idea
 .vscode
+.gemini
 # OS specific
 # Task files
 tasks.json

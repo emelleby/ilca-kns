@@ -63,6 +63,7 @@ excluded_tools: []
 
 # initial prompt for the project. It will always be given to the LLM upon activating the project
 # (contrary to the memories, which are loaded on demand).
-initial_prompt: "Please read through the /windsurf/rules folder and the memory-bank folder. I keep information about the project in these folders. Always update the memory bank with the progress and new things to keep as a reference for the future."
+initial_prompt: ""
+# Please read through the /windsurf/rules folder and the memory-bank folder. I keep information about the project in these folders. Always update the memory bank with the progress and new things to keep as a reference for the future.
 
 project_name: "ilcakns"

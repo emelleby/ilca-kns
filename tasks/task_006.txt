@@ -1,0 +1,35 @@
+# Task ID: 6
+# Title: Community Blog/News Feature
+# Status: pending
+# Dependencies: 2, 3, 5
+# Priority: medium
+# Description: Implement the community blog/news functionality including post creation, editing, viewing, and interaction features.
+# Details:
+1. Create rich text editor component
+   - Text formatting options
+   - List creation
+   - Table insertion
+   - Link embedding
+   - Media insertion
+2. Implement post creation functionality
+   - Post form with rich text editor
+   - Media upload capability
+   - YouTube video embedding
+   - Category selection
+   - Draft saving
+   - Scheduled publishing
+3. Create post listing and viewing
+   - Chronological feed
+   - Featured/pinned posts
+   - Category filtering
+   - Post detail view
+4. Implement post interaction features
+   - Commenting system
+   - Like/reaction functionality
+   - Sharing options
+   - Content flagging
+5. Create notification system for post interactions
+6. Implement post search and discovery features
+
+# Test Strategy:
+Test rich text editor functionality. Verify post creation with various content types. Test media upload and embedding. Verify draft saving and scheduled publishing. Test post listing with different filters. Verify comment, like, and sharing functionality. Test notification delivery for interactions. Verify search functionality returns relevant results.

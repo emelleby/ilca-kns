@@ -1,0 +1,37 @@
+# Task ID: 7
+# Title: Personal Sailing Diary Implementation
+# Status: pending
+# Dependencies: 2, 3, 5
+# Priority: medium
+# Description: Implement the personal sailing diary feature allowing users to create, edit, and view diary entries with training logs and boat setup records.
+# Details:
+1. Create diary entry form
+   - Date and time selection
+   - Location tagging
+   - Weather conditions recording
+   - Training type categorization
+   - Duration tracking
+   - Rich text description
+   - Media attachment
+   - Privacy settings
+2. Implement training hours logging
+   - Start and end time recording
+   - Activity type selection
+   - Intensity level selection
+   - Goals and objectives fields
+   - Achievements and milestones tracking
+   - Automatic calculation of total hours
+3. Create boat setup recording functionality
+   - Equipment configuration details
+   - Sail settings
+   - Rigging specifications
+   - Performance notes
+   - Condition-specific setups
+   - Setup comparison
+   - Setup sharing
+4. Implement diary entry listing and filtering
+5. Create diary entry detail view
+6. Implement privacy controls for diary entries
+
+# Test Strategy:
+Test diary entry creation with various inputs. Verify training hours calculation. Test boat setup recording and comparison. Verify privacy settings control visibility appropriately. Test diary entry listing with different filters. Verify media attachment functionality. Test coach access to student diary entries based on permissions.
