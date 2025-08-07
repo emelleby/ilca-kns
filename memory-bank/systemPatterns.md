@@ -14,8 +14,8 @@ The sailing community application follows a modern web architecture using Redwoo
 
 ## Design Patterns
 
-- **Server Components**: UI components rendered on the server for performance
-- **Client Components**: Interactive UI components requiring the "use client"; directive.
+- **Server Components**: *See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#react-server-vs-client-components) for full conventions.*
+- **Client Components**: *See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#client-components) for full conventions.*
 - **Role-Based Access Control**: Different capabilities based on user role
 - **Rich Content Editing**: Supporting text, media, and embedded content
 - **Mobile-First Design**: Optimized for mobile with responsive layouts
@@ -73,6 +73,8 @@ For reusability, we've created a `ClientOnly` component that can wrap any conten
 ## Server Data Fetching Patterns
 
 ### RedwoodSDK Server Component Pattern
+
+*See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#data-fetching-in-server-components) for full conventions.*
 
 Server components fetch data and pass serialized data to client components. This prevents "Only plain objects can be passed to Client Components" errors.
 
@@ -170,6 +172,8 @@ export function SimpleProfileEditForm({ profile, userId, username }) {
 
 ### API Route Pattern
 
+*See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#routing--response-patterns) for full conventions.*
+
 API routes handle HTTP requests and call server functions:
 
 ```tsx
@@ -246,6 +250,8 @@ export async function updateUserProfile(userId: string, profileData: Partial<Pro
 ```
 
 ## React 19 Server Actions Pattern (Preferred)
+
+*See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#server-functions--server-actions) for full conventions.*
 
 With React 19 and RedwoodSDK, we can use server actions directly from client components instead of API routes. This provides better performance and simpler code.
 
@@ -336,6 +342,8 @@ export default async function Dashboard(props: RequestInfo) {
 
 ### Key Rules for React 19 Server Actions
 
+*See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#server-functions--server-actions) for full conventions and examples.*
+
 1. **No Event Handler Passing**: Never pass functions from server to client components
 2. **Client Self-Management**: Client components handle their own success/failure states
 3. **Direct Server Calls**: Client components call server functions directly
@@ -361,7 +369,9 @@ export default async function Dashboard(props: RequestInfo) {
 
 ## Cloudflare Workers Promise Management Patterns
 
-**CRITICAL**: Cloudflare Workers has strict Promise resolution requirements that must be followed to prevent hanging Promise errors.
+**CRITICAL**: *See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#cloudflare-workers-promise-handling-cheat-sheet) for full conventions.*
+
+Cloudflare Workers has strict Promise resolution requirements that must be followed to prevent hanging Promise errors.
 
 ### Hanging Promise Prevention Pattern
 
@@ -471,6 +481,8 @@ export function UsersPage() {
 ```
 
 ### Error Patterns to Avoid
+
+*See [`redwoodSDKPatterns.md`](./redwoodSDKPatterns.md#common-pitfalls--solutions) for full conventions.*
 
 1. **Async components without Suspense boundaries**
 2. **Unnecessary async functions for static data**
