@@ -1,0 +1,630 @@
+---
+description: RedwoodSDK: Environment Variables and Secrets Management
+globs: src/app/**/*.ts,src/app/**/*.tsx,src/worker.ts,src/worker.tsx,.env,worker-configuration.d.ts
+alwaysApply: false
+---
+
+# RedwoodSDK: Environment Variables and Secrets Management
+
+You're an expert at Cloudflare Workers, TypeScript, and building web apps with RedwoodSDK. Generate high quality **environment variable and secrets management** that adheres to the following best practices:
+
+## Guidelines
+
+1. Store sensitive information in environment variables, never hardcode secrets
+2. Use proper typing for environment variables
+3. Implement fallback values for optional environment variables
+4. Validate required environment variables at startup
+5. Organize environment variables by service or functionality
+6. Document the purpose of each environment variable
+
+## Example Templates
+
+### Basic Environment Variable Setup
+
+Set up and access environment variables in your RedwoodSDK application:
+
+```tsx
+// src/worker.tsx
+import { defineApp } from "rwsdk/worker";
+import { route } from "rwsdk/router";
+import { env } from "cloudflare:workers";
+
+// Validate required environment variables at startup
+function validateEnvironment() {
+  const requiredVars = [
+    'API_KEY',
+    'DATABASE_URL',
+    'JWT_SECRET'
+  ];
+  
+  const missing = requiredVars.filter(varName => !env[varName]);
+  
+  if (missing.length > 0) {
+    console.error(`Missing required environment variables: ${missing.join(', ')}`);
+    // In development, provide more helpful messages
+    if (env.NODE_ENV === 'development') {
+      console.error(`
+        Please add the missing variables to your .env file:
+        
+        ${missing.map(varName => `${varName}=your_${varName.toLowerCase()}_here`).join('\n')}
+        
+        Then run: npx wrangler types
+      `);
+    }
+  }
+}
+
+// Call validation at startup
+validateEnvironment();
+
+// Define your routes
+const app = defineApp([
+  route('/api/config', function handler() {
+    // Return non-sensitive configuration
+    return Response.json({
+      apiEndpoint: env.API_ENDPOINT || 'https://api.default-endpoint.com',
+      region: env.REGION || 'us-east-1',
+      features: {
+        enableNewUI: env.ENABLE_NEW_UI === 'true',
+        enableBetaFeatures: env.ENABLE_BETA_FEATURES === 'true'
+      }
+    });
+  })
+]);
+
+export default {
+  fetch: app.fetch
+} satisfies ExportedHandler<Env>;
+```
+
+### Environment Variable Helper
+
+Create a utility for working with environment variables:
+
+```tsx
+// src/lib/env.ts
+import { env } from "cloudflare:workers";
+
+// Type for environment variable configuration
+type EnvVarConfig<T> = {
+  required?: boolean;
+  default?: T;
+  transform?: (value: string) => T;
+  validate?: (value: T) => boolean;
+};
+
+// Helper function to get environment variables with validation and transformation
+export function getEnv<T = string>(
+  key: string, 
+  config: EnvVarConfig<T> = {}
+): T {
+  const value = env[key];
+  
+  // Check if required but missing
+  if (config.required && value === undefined) {
+    throw new Error(`Required environment variable ${key} is missing`);
+  }
+  
+  // Return default value if undefined
+  if (value === undefined && config.default !== undefined) {
+    return config.default;
+  }
+  
+  // Transform the value if needed
+  let transformedValue: T;
+  if (config.transform) {
+    transformedValue = config.transform(value as string);
+  } else {
+    // Default transformation based on type of default value
+    if (config.default !== undefined) {
+      if (typeof config.default === 'number') {
+        transformedValue = Number(value) as unknown as T;
+      } else if (typeof config.default === 'boolean') {
+        transformedValue = (value === 'true') as unknown as T;
+      } else {
+        transformedValue = value as unknown as T;
+      }
+    } else {
+      transformedValue = value as unknown as T;
+    }
+  }
+  
+  // Validate the value if needed
+  if (config.validate && !config.validate(transformedValue)) {
+    throw new Error(`Environment variable ${key} failed validation`);
+  }
+  
+  return transformedValue;
+}
+
+// Helper for boolean environment variables
+export function getBoolEnv(key: string, defaultValue = false): boolean {
+  return getEnv(key, {
+    default: defaultValue,
+    transform: (value) => value === 'true' || value === '1'
+  });
+}
+
+// Helper for number environment variables
+export function getNumEnv(key: string, defaultValue?: number): number {
+  return getEnv(key, {
+    default: defaultValue,
+    transform: (value) => Number(value),
+    validate: (value) => !isNaN(value)
+  });
+}
+
+// Helper for JSON environment variables
+export function getJsonEnv<T>(key: string, defaultValue?: T): T {
+  return getEnv(key, {
+    default: defaultValue,
+    transform: (value) => JSON.parse(value),
+    validate: (value) => {
+      try {
+        JSON.parse(JSON.stringify(value));
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  });
+}
+
+// Helper for URL environment variables
+export function getUrlEnv(key: string, defaultValue?: string): URL {
+  return getEnv(key, {
+    default: defaultValue,
+    transform: (value) => new URL(value),
+    validate: (value) => {
+      try {
+        new URL(value.toString());
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  });
+}
+
+// Application configuration derived from environment variables
+export const config = {
+  app: {
+    environment: getEnv('NODE_ENV', { default: 'development' }),
+    region: getEnv('REGION', { default: 'us-east-1' }),
+    debug: getBoolEnv('DEBUG', false)
+  },
+  api: {
+    key: getEnv('API_KEY', { required: true }),
+    endpoint: getUrlEnv('API_ENDPOINT', 'https://api.default.com'),
+    timeout: getNumEnv('API_TIMEOUT', 30000)
+  },
+  database: {
+    url: getEnv('DATABASE_URL', { required: true }),
+    maxConnections: getNumEnv('DB_MAX_CONNECTIONS', 10)
+  },
+  auth: {
+    jwtSecret: getEnv('JWT_SECRET', { required: true }),
+    tokenExpiry: getNumEnv('TOKEN_EXPIRY', 3600),
+    webauthnRpId: getEnv('WEBAUTHN_RP_ID', { default: '' })
+  },
+  features: {
+    enableNewUI: getBoolEnv('ENABLE_NEW_UI', false),
+    enableBetaFeatures: getBoolEnv('ENABLE_BETA_FEATURES', false)
+  }
+};
+```
+
+### Environment-Specific Configuration
+
+```tsx
+// src/lib/config.ts
+import { env } from "cloudflare:workers";
+import { getEnv, getBoolEnv, getNumEnv } from "./env";
+
+// Base configuration
+const baseConfig = {
+  app: {
+    name: "MyRedwoodApp",
+    version: "1.0.0"
+  },
+  api: {
+    timeout: getNumEnv('API_TIMEOUT', 30000),
+    retries: getNumEnv('API_RETRIES', 3)
+  },
+  cache: {
+    enabled: getBoolEnv('CACHE_ENABLED', true),
+    ttl: getNumEnv('CACHE_TTL', 3600)
+  }
+};
+
+// Environment-specific configurations
+const envConfigs = {
+  development: {
+    api: {
+      endpoint: "http://localhost:8000",
+      timeout: 60000 // Longer timeout for development
+    },
+    logging: {
+      level: "debug",
+      verbose: true
+    }
+  },
+  staging: {
+    api: {
+      endpoint: "https://api-staging.example.com"
+    },
+    logging: {
+      level: "info",
+      verbose: true
+    }
+  },
+  production: {
+    api: {
+      endpoint: "https://api.example.com"
+    },
+    logging: {
+      level: "warn",
+      verbose: false
+    }
+  }
+};
+
+// Determine current environment
+const currentEnv = getEnv('NODE_ENV', { default: 'development' });
+
+// Validate environment
+if (!['development', 'staging', 'production'].includes(currentEnv)) {
+  console.warn(`Unknown environment: ${currentEnv}, falling back to development`);
+}
+
+// Merge configurations
+const envConfig = envConfigs[currentEnv] || envConfigs.development;
+
+// Deep merge helper
+function deepMerge(target, source) {
+  const result = { ...target };
+  
+  for (const key in source) {
+    if (source[key] instanceof Object && key in target) {
+      result[key] = deepMerge(target[key], source[key]);
+    } else {
+      result[key] = source[key];
+    }
+  }
+  
+  return result;
+}
+
+// Export the merged configuration
+export const config = deepMerge(baseConfig, envConfig);
+
+// Override with environment variables if provided
+if (env.API_ENDPOINT) {
+  config.api.endpoint = env.API_ENDPOINT;
+}
+
+// Export environment helpers
+export const isDevelopment = currentEnv === 'development';
+export const isStaging = currentEnv === 'staging';
+export const isProduction = currentEnv === 'production';
+```
+
+### Environment Variable Documentation
+
+Create a documentation file for your environment variables:
+
+```tsx
+// .env.example
+# Application Environment
+NODE_ENV=development # development, staging, production
+
+# API Configuration
+API_KEY=your_api_key_here # Required: API key for external service
+API_ENDPOINT=https://api.example.com # API endpoint URL
+API_TIMEOUT=30000 # API request timeout in milliseconds
+API_RETRIES=3 # Number of API request retries
+
+# Database Configuration
+DATABASE_URL=your_database_url_here # Required: Database connection string
+DB_MAX_CONNECTIONS=10 # Maximum database connections
+
+# Authentication
+JWT_SECRET=your_jwt_secret_here # Required: Secret for JWT token generation
+TOKEN_EXPIRY=3600 # Token expiry time in seconds
+WEBAUTHN_RP_ID=example.com # WebAuthn Relying Party ID
+
+# Feature Flags
+ENABLE_NEW_UI=false # Enable new UI features
+ENABLE_BETA_FEATURES=false # Enable beta features
+
+# Caching
+CACHE_ENABLED=true # Enable caching
+CACHE_TTL=3600 # Cache TTL in seconds
+
+# Logging
+LOG_LEVEL=info # Logging level (debug, info, warn, error)
+VERBOSE_LOGGING=false # Enable verbose logging
+```
+
+### Accessing Environment Variables in Routes
+
+```tsx
+// src/app/routes.ts
+import { route } from "rwsdk/router";
+import { env } from "cloudflare:workers";
+import { config } from "../lib/config";
+
+export default [
+  // Route that uses environment variables
+  route("/api/external-data", async function handler({ request }) {
+    try {
+      // Use environment variables for API request
+      const response = await fetch(`${config.api.endpoint}/data`, {
+        headers: {
+          "Authorization": `Bearer ${env.API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        timeout: config.api.timeout
+      });
+      
+      if (!response.ok) {
+        throw new Error(`API request failed with status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      return Response.json(data);
+    } catch (error) {
+      console.error("Error fetching external data:", error);
+      
+      return Response.json({
+        error: "Failed to fetch external data",
+        // Include more details in development
+        details: config.app.environment === "development" ? error.message : undefined
+      }, { status: 500 });
+    }
+  }),
+  
+  // Route that returns environment-specific configuration
+  route("/api/config", function handler() {
+    // Only return non-sensitive configuration
+    return Response.json({
+      environment: config.app.environment,
+      features: config.features,
+      version: config.app.version
+    });
+  })
+];
+```
+
+### Environment Variable Validation at Startup
+
+```tsx
+// src/lib/validateEnv.ts
+import { env } from "cloudflare:workers";
+
+// Define environment variable requirements
+const envRequirements = {
+  // Required variables with no default
+  required: [
+    'API_KEY',
+    'DATABASE_URL',
+    'JWT_SECRET'
+  ],
+  
+  // Variables with validation rules
+  validated: [
+    {
+      name: 'API_TIMEOUT',
+      validate: (value) => !value || (Number(value) > 0 && Number(value) < 120000),
+      message: 'API_TIMEOUT must be a positive number less than 120000'
+    },
+    {
+      name: 'NODE_ENV',
+      validate: (value) => !value || ['development', 'staging', 'production'].includes(value),
+      message: 'NODE_ENV must be one of: development, staging, production'
+    }
+  ]
+};
+
+// Validate environment variables
+export function validateEnvironment() {
+  const errors = [];
+  
+  // Check required variables
+  for (const varName of envRequirements.required) {
+    if (!env[varName]) {
+      errors.push(`Missing required environment variable: ${varName}`);
+    }
+  }
+  
+  // Check validation rules
+  for (const rule of envRequirements.validated) {
+    if (env[rule.name] && !rule.validate(env[rule.name])) {
+      errors.push(rule.message);
+    }
+  }
+  
+  // Report errors
+  if (errors.length > 0) {
+    console.error('Environment validation failed:');
+    for (const error of errors) {
+      console.error(`- ${error}`);
+    }
+    
+    // In development, provide more helpful information
+    if (env.NODE_ENV === 'development') {
+      console.error(`
+        Please check your .env file and make sure all required variables are set correctly.
+        After updating your .env file, run: npx wrangler types
+      `);
+    }
+    
+    // In production, we might want to throw an error to prevent startup
+    if (env.NODE_ENV === 'production') {
+      throw new Error(`Environment validation failed: ${errors.join(', ')}`);
+    }
+  }
+  
+  return errors.length === 0;
+}
+
+// Usage in worker.tsx
+// import { validateEnvironment } from './lib/validateEnv';
+// validateEnvironment();
+```
+
+### Secrets Management for External Services
+
+```tsx
+// src/lib/services/externalApi.ts
+import { env } from "cloudflare:workers";
+import { getEnv, getNumEnv } from "../env";
+
+export class ExternalApiService {
+  private apiKey: string;
+  private baseUrl: string;
+  private timeout: number;
+  
+  constructor() {
+    // Get required API key
+    this.apiKey = getEnv('API_KEY', { required: true });
+    
+    // Get API URL with fallback
+    this.baseUrl = getEnv('API_ENDPOINT', { 
+      default: 'https://api.example.com',
+      validate: (url) => url.startsWith('https://') || url.startsWith('http://localhost')
+    });
+    
+    // Get timeout with validation
+    this.timeout = getNumEnv('API_TIMEOUT', 30000);
+    if (this.timeout < 1000 || this.timeout > 60000) {
+      console.warn(`API_TIMEOUT value (${this.timeout}) is outside recommended range (1000-60000)`);
+    }
+  }
+  
+  async fetchData(endpoint: string, options: RequestInit = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+    
+    const response = await fetch(url, {
+      ...options,
+      headers: {
+        "Authorization": `Bearer ${this.apiKey}`,
+        "Content-Type": "application/json",
+        ...options.headers
+      },
+      signal: AbortSignal.timeout(this.timeout)
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+    }
+    
+    return response.json();
+  }
+  
+  // Example methods using the API
+  async getUsers() {
+    return this.fetchData('/users');
+  }
+  
+  async getUserById(id: string) {
+    return this.fetchData(`/users/${id}`);
+  }
+  
+  async createUser(userData: any) {
+    return this.fetchData('/users', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    });
+  }
+}
+
+// Create and export a singleton instance
+export const externalApi = new ExternalApiService();
+```
+
+### Environment-Based Feature Flags
+
+```tsx
+// src/lib/features.ts
+import { getBoolEnv } from "./env";
+
+// Define feature flags with defaults
+export const features = {
+  // UI Features
+  newUserInterface: getBoolEnv('ENABLE_NEW_UI', false),
+  darkModeDefault: getBoolEnv('DARK_MODE_DEFAULT', false),
+  
+  // Functional Features
+  betaFeatures: getBoolEnv('ENABLE_BETA_FEATURES', false),
+  advancedAnalytics: getBoolEnv('ENABLE_ADVANCED_ANALYTICS', false),
+  
+  // Performance Features
+  caching: getBoolEnv('ENABLE_CACHING', true),
+  prefetching: getBoolEnv('ENABLE_PREFETCHING', false),
+  
+  // Integration Features
+  thirdPartyAuth: getBoolEnv('ENABLE_THIRD_PARTY_AUTH', false),
+  socialSharing: getBoolEnv('ENABLE_SOCIAL_SHARING', true),
+  
+  // Check if a feature is enabled
+  isEnabled(featureName: keyof typeof features): boolean {
+    return !!this[featureName];
+  }
+};
+
+// Usage example:
+// if (features.isEnabled('newUserInterface')) {
+//   // Render new UI
+// } else {
+//   // Render classic UI
+// }
+```
+
+### Environment Variable Types
+
+```tsx
+// worker-configuration.d.ts
+// This file is typically generated by wrangler, but here's what it might look like
+
+declare namespace Cloudflare {
+  interface Env {
+    // Application Environment
+    NODE_ENV: string;
+    
+    // API Configuration
+    API_KEY: string;
+    API_ENDPOINT: string;
+    API_TIMEOUT: string;
+    API_RETRIES: string;
+    
+    // Database Configuration
+    DATABASE_URL: string;
+    DB_MAX_CONNECTIONS: string;
+    
+    // Authentication
+    JWT_SECRET: string;
+    TOKEN_EXPIRY: string;
+    WEBAUTHN_RP_ID: string;
+    
+    // Feature Flags
+    ENABLE_NEW_UI: string;
+    ENABLE_BETA_FEATURES: string;
+    
+    // Caching
+    CACHE_ENABLED: string;
+    CACHE_TTL: string;
+    
+    // Logging
+    LOG_LEVEL: string;
+    VERBOSE_LOGGING: string;
+    
+    // Cloudflare Bindings
+    DB: D1Database;
+    KV: KVNamespace;
+    R2: R2Bucket;
+    QUEUE: Queue;
+  }
+}
+```
