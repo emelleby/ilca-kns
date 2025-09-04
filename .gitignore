@@ -82,5 +82,3 @@ node_modules/
 .gemini
 # OS specific
 # Task files
-tasks.json
-tasks/ 
