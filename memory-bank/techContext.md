@@ -21,6 +21,99 @@ As specified in the PRD:
 - Server-Side Rendering (SSR) for performance
 - Local emulation via Miniflare
 
+## RedwoodSDK Conventions
+
+RedwoodSDK is a React framework optimized for Cloudflare Workers that provides SSR, React Server Components, and more. Key conventions:
+
+### Server vs Client Components
+
+- **Default to Server Components**: Components are server-side by default unless marked with `"use client"`
+- **Server Component Rules**:
+  - Can perform async operations directly (database queries, API calls)
+  - Cannot use browser APIs, event handlers, or hooks
+  - Must wrap async components in Suspense boundaries
+  - Can import and render client components
+- **Client Component Rules**:
+  - Mark with `"use client"` directive at the top
+  - Can use hooks, browser APIs, and event handlers
+  - Cannot directly import server-only code
+  - Props must be serializable (no functions, dates as objects)
+
+### Middleware and Interruptors
+
+- **Interruptors**: RedwoodSDK's middleware system for request/response handling
+- Run before route handlers to add authentication, headers, logging
+- Defined in `src/interruptors.ts` or route-specific files
+- Can modify request context passed to components
+- Should handle errors gracefully to avoid blocking requests
+
+### Routing System
+
+- **File-based routing**: Pages in `src/app/pages/*` directory
+- **Route definitions**: Centralized in `src/app/routes.ts`
+- **Dynamic routes**: Use `[param]` syntax for dynamic segments
+- **Layouts**: Can be nested, inherit from parent routes
+- **Route matching**: First match wins, order matters in `routes.ts`
+
+### Suspense and Promise Handling
+
+- **Critical**: All async server components MUST be wrapped in Suspense
+- **Hanging Promise Prevention**:
+  - Avoid unnecessary async functions
+  - Ensure all Promises resolve or reject
+  - Don't mix server context across request boundaries
+  - Use proper error boundaries
+- **Hot-reload considerations**: 
+  - Separate server and client logic cleanly
+  - Avoid complex state initialization in mixed components
+
+### File and Folder Layout
+
+```
+src/
+├── app/
+│   ├── pages/          # Route components
+│   │   ├── index.tsx   # Home page
+│   │   └── [slug].tsx  # Dynamic routes
+│   ├── routes.ts       # Route configuration
+│   └── layout.tsx      # Root layout
+├── components/         # Shared components
+├── lib/               # Utilities and helpers
+├── interruptors.ts    # Middleware
+└── worker.tsx         # Entry point
+```
+
+### Key Files
+
+- **`worker.tsx`**: Application entry point, configures RedwoodSDK
+- **`routes.ts`**: Defines URL patterns and component mappings
+- **`interruptors.ts`**: Global middleware configuration
+- **`layout.tsx`**: Root or nested layouts for consistent UI
+
+### Best Practices
+
+1. **Component Organization**:
+   - Keep server and client logic separated
+   - Use server components for data fetching
+   - Use client components for interactivity
+
+2. **Data Loading**:
+   - Fetch data in server components
+   - Pass serialized data to client components
+   - Use server functions (`"use server"`) for mutations
+
+3. **Error Handling**:
+   - Wrap async components in error boundaries
+   - Provide meaningful fallbacks
+   - Log errors appropriately
+
+4. **Performance**:
+   - Minimize client-side JavaScript
+   - Use streaming SSR for faster TTFB
+   - Leverage Cloudflare's edge caching
+
+For detailed patterns and code examples, see `redwoodSDKPatterns.md`.
+
 ## Technical Requirements
 
 - Page load time under 2 seconds

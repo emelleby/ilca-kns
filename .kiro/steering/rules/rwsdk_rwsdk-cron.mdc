@@ -1,0 +1,773 @@
+---
+description: RedwoodSDK: Scheduled tasks with Cloudflare Cron Triggers
+globs: src/app/**/*.ts,src/app/**/*.tsx,src/worker.ts,src/worker.tsx
+alwaysApply: false
+---
+
+# RedwoodSDK: Scheduled tasks with Cloudflare Cron Triggers
+
+You're an expert at Cloudflare Workers, Cron Triggers, TypeScript, and building web apps with RedwoodSDK. Generate high quality **scheduled task implementations** that adhere to the following best practices:
+
+## Guidelines
+
+1. Use Cloudflare Cron Triggers for scheduling recurring tasks
+2. Organize cron handlers for maintainability and readability
+3. Implement proper error handling for scheduled tasks
+4. Use appropriate cron expressions for different scheduling needs
+5. Separate concerns between scheduled tasks and other worker functionality
+6. Log execution details for monitoring and debugging
+
+## Example Templates
+
+### Basic Cron Setup
+
+Set up the required components for using Cloudflare Cron Triggers:
+
+```tsx
+// src/worker.tsx
+import { defineApp } from "rwsdk/worker";
+import { env } from "cloudflare:workers";
+
+// Define your routes
+const app = defineApp([
+  // Your routes here
+]);
+
+// Export both the fetch handler and scheduled handler
+export default {
+  fetch: app.fetch,
+  
+  async scheduled(controller, env, ctx) {
+    console.log(`Running scheduled task: ${controller.cron}`);
+    
+    // Use a switch statement to handle different cron schedules
+    switch (controller.cron) {
+      // Runs every minute
+      case "* * * * *":
+        await minutelyTask(env);
+        break;
+        
+      // Runs every hour at minute 0
+      case "0 * * * *":
+        await hourlyTask(env);
+        break;
+        
+      // Runs every day at midnight
+      case "0 0 * * *":
+        await dailyTask(env);
+        break;
+        
+      // Runs every Sunday at midnight
+      case "0 0 * * 0":
+        await weeklyTask(env);
+        break;
+        
+      // Runs on the first day of every month at midnight
+      case "0 0 1 * *":
+        await monthlyTask(env);
+        break;
+        
+      default:
+        console.log(`Unknown cron schedule: ${controller.cron}`);
+    }
+    
+    console.log(`Completed scheduled task: ${controller.cron}`);
+  }
+} satisfies ExportedHandler<Env>;
+
+// Task implementations
+async function minutelyTask(env: Env) {
+  try {
+    console.log("Running minutely task");
+    // Implementation for task that runs every minute
+    // For example, checking for pending notifications
+  } catch (error) {
+    console.error("Error in minutely task:", error);
+  }
+}
+
+async function hourlyTask(env: Env) {
+  try {
+    console.log("Running hourly task");
+    // Implementation for task that runs every hour
+    // For example, aggregating analytics data
+  } catch (error) {
+    console.error("Error in hourly task:", error);
+  }
+}
+
+async function dailyTask(env: Env) {
+  try {
+    console.log("Running daily task");
+    // Implementation for task that runs every day
+    // For example, generating daily reports
+  } catch (error) {
+    console.error("Error in daily task:", error);
+  }
+}
+
+async function weeklyTask(env: Env) {
+  try {
+    console.log("Running weekly task");
+    // Implementation for task that runs every week
+    // For example, sending weekly newsletters
+  } catch (error) {
+    console.error("Error in weekly task:", error);
+  }
+}
+
+async function monthlyTask(env: Env) {
+  try {
+    console.log("Running monthly task");
+    // Implementation for task that runs every month
+    // For example, generating monthly invoices
+  } catch (error) {
+    console.error("Error in monthly task:", error);
+  }
+}
+```
+
+### Organized Cron Handlers
+
+```tsx
+// src/lib/cron/index.ts
+import { cleanupExpiredSessions } from './tasks/sessions';
+import { generateDailyReports } from './tasks/reports';
+import { processScheduledEmails } from './tasks/emails';
+import { updateCacheData } from './tasks/cache';
+import { runDatabaseMaintenance } from './tasks/database';
+
+// Map cron expressions to their handlers
+export const cronHandlers = {
+  // Every 15 minutes
+  "*/15 * * * *": async (env: Env) => {
+    await cleanupExpiredSessions(env);
+  },
+  
+  // Every hour
+  "0 * * * *": async (env: Env) => {
+    await updateCacheData(env);
+  },
+  
+  // Every day at midnight
+  "0 0 * * *": async (env: Env) => {
+    await generateDailyReports(env);
+    await processScheduledEmails(env);
+  },
+  
+  // Every Sunday at 2 AM
+  "0 2 * * 0": async (env: Env) => {
+    await runDatabaseMaintenance(env);
+  }
+};
+
+// Main cron handler function
+export async function handleScheduledEvent(controller: ScheduledController, env: Env) {
+  const cronExpression = controller.cron;
+  console.log(`Running scheduled task for cron: ${cronExpression}`);
+  
+  const handler = cronHandlers[cronExpression];
+  
+  if (handler) {
+    try {
+      const startTime = Date.now();
+      await handler(env);
+      const duration = Date.now() - startTime;
+      
+      console.log(`Completed scheduled task for cron: ${cronExpression} in ${duration}ms`);
+    } catch (error) {
+      console.error(`Error in scheduled task for cron: ${cronExpression}`, error);
+    }
+  } else {
+    console.warn(`No handler found for cron: ${cronExpression}`);
+  }
+}
+```
+
+```tsx
+// src/worker.tsx
+import { defineApp } from "rwsdk/worker";
+import { handleScheduledEvent } from "./lib/cron";
+
+const app = defineApp([
+  // Your routes here
+]);
+
+export default {
+  fetch: app.fetch,
+  
+  async scheduled(controller, env, ctx) {
+    await handleScheduledEvent(controller, env);
+  }
+} satisfies ExportedHandler<Env>;
+```
+
+### Data Cleanup Task
+
+```tsx
+// src/lib/cron/tasks/cleanup.ts
+export async function cleanupExpiredData(env: Env) {
+  console.log("Starting cleanup of expired data");
+  
+  try {
+    // 1. Clean up expired sessions
+    const sessionCleanupResult = await cleanupExpiredSessions(env);
+    console.log(`Cleaned up ${sessionCleanupResult.count} expired sessions`);
+    
+    // 2. Clean up temporary files
+    const fileCleanupResult = await cleanupTemporaryFiles(env);
+    console.log(`Cleaned up ${fileCleanupResult.count} temporary files`);
+    
+    // 3. Clean up expired tokens
+    const tokenCleanupResult = await cleanupExpiredTokens(env);
+    console.log(`Cleaned up ${tokenCleanupResult.count} expired tokens`);
+    
+    return {
+      success: true,
+      sessionCount: sessionCleanupResult.count,
+      fileCount: fileCleanupResult.count,
+      tokenCount: tokenCleanupResult.count
+    };
+  } catch (error) {
+    console.error("Error during data cleanup:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function cleanupExpiredSessions(env: Env) {
+  // Get current timestamp
+  const now = new Date().toISOString();
+  
+  // Delete expired sessions from the database
+  const result = await env.DB.prepare(`
+    DELETE FROM sessions
+    WHERE expires_at < ?
+  `).bind(now).run();
+  
+  return {
+    count: result.meta.changes
+  };
+}
+
+async function cleanupTemporaryFiles(env: Env) {
+  // List objects in the temporary folder
+  const objects = await env.R2.list({ prefix: "temp/" });
+  
+  // Set expiration threshold (e.g., 24 hours ago)
+  const expirationThreshold = new Date();
+  expirationThreshold.setHours(expirationThreshold.getHours() - 24);
+  
+  // Delete expired files
+  let count = 0;
+  
+  for (const object of objects.objects) {
+    if (object.uploaded < expirationThreshold) {
+      await env.R2.delete(object.key);
+      count++;
+    }
+  }
+  
+  return { count };
+}
+
+async function cleanupExpiredTokens(env: Env) {
+  // Get current timestamp
+  const now = new Date().toISOString();
+  
+  // Delete expired tokens from the database
+  const result = await env.DB.prepare(`
+    DELETE FROM tokens
+    WHERE expires_at < ?
+  `).bind(now).run();
+  
+  return {
+    count: result.meta.changes
+  };
+}
+```
+
+### Report Generation Task
+
+```tsx
+// src/lib/cron/tasks/reports.ts
+export async function generateDailyReports(env: Env) {
+  console.log("Starting daily report generation");
+  
+  try {
+    // Get yesterday's date range
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    yesterday.setHours(0, 0, 0, 0);
+    
+    const endOfYesterday = new Date(yesterday);
+    endOfYesterday.setHours(23, 59, 59, 999);
+    
+    const startDate = yesterday.toISOString();
+    const endDate = endOfYesterday.toISOString();
+    
+    // Generate user activity report
+    const userReport = await generateUserActivityReport(env, startDate, endDate);
+    
+    // Generate sales report
+    const salesReport = await generateSalesReport(env, startDate, endDate);
+    
+    // Generate error report
+    const errorReport = await generateErrorReport(env, startDate, endDate);
+    
+    // Store reports in R2 for archiving
+    const dateString = yesterday.toISOString().split('T')[0];
+    
+    await env.R2.put(
+      `reports/${dateString}/user-activity.json`,
+      JSON.stringify(userReport)
+    );
+    
+    await env.R2.put(
+      `reports/${dateString}/sales.json`,
+      JSON.stringify(salesReport)
+    );
+    
+    await env.R2.put(
+      `reports/${dateString}/errors.json`,
+      JSON.stringify(errorReport)
+    );
+    
+    // Send email notification with report links
+    await sendReportNotification(env, dateString, [
+      { name: "User Activity", path: `reports/${dateString}/user-activity.json` },
+      { name: "Sales", path: `reports/${dateString}/sales.json` },
+      { name: "Errors", path: `reports/${dateString}/errors.json` }
+    ]);
+    
+    return {
+      success: true,
+      date: dateString,
+      reports: ["user-activity", "sales", "errors"]
+    };
+  } catch (error) {
+    console.error("Error generating daily reports:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function generateUserActivityReport(env: Env, startDate: string, endDate: string) {
+  // Query database for user activity
+  const { results } = await env.DB.prepare(`
+    SELECT
+      COUNT(DISTINCT user_id) as active_users,
+      COUNT(*) as total_actions,
+      action_type,
+      COUNT(*) as action_count
+    FROM user_actions
+    WHERE created_at BETWEEN ? AND ?
+    GROUP BY action_type
+    ORDER BY action_count DESC
+  `).bind(startDate, endDate).all();
+  
+  return {
+    generated_at: new Date().toISOString(),
+    period: { startDate, endDate },
+    data: results
+  };
+}
+
+async function generateSalesReport(env: Env, startDate: string, endDate: string) {
+  // Query database for sales data
+  const { results } = await env.DB.prepare(`
+    SELECT
+      COUNT(*) as total_orders,
+      SUM(amount) as total_revenue,
+      AVG(amount) as average_order_value,
+      currency,
+      COUNT(*) as currency_count
+    FROM orders
+    WHERE created_at BETWEEN ? AND ?
+    GROUP BY currency
+    ORDER BY total_revenue DESC
+  `).bind(startDate, endDate).all();
+  
+  return {
+    generated_at: new Date().toISOString(),
+    period: { startDate, endDate },
+    data: results
+  };
+}
+
+async function generateErrorReport(env: Env, startDate: string, endDate: string) {
+  // Query database for error logs
+  const { results } = await env.DB.prepare(`
+    SELECT
+      error_type,
+      COUNT(*) as error_count,
+      MIN(created_at) as first_occurrence,
+      MAX(created_at) as last_occurrence
+    FROM error_logs
+    WHERE created_at BETWEEN ? AND ?
+    GROUP BY error_type
+    ORDER BY error_count DESC
+  `).bind(startDate, endDate).all();
+  
+  return {
+    generated_at: new Date().toISOString(),
+    period: { startDate, endDate },
+    data: results
+  };
+}
+
+async function sendReportNotification(env: Env, dateString: string, reports: Array<{ name: string, path: string }>) {
+  // Get admin users who should receive reports
+  const { results: admins } = await env.DB.prepare(`
+    SELECT email, name FROM users
+    WHERE role = 'admin' AND report_notifications = 1
+  `).all();
+  
+  // Generate report links
+  const reportLinks = reports.map(report => {
+    return `${report.name}: https://your-app.com/admin/reports/${report.path}`;
+  }).join('\n');
+  
+  // Send email to each admin
+  for (const admin of admins) {
+    // Implementation depends on your email service
+    console.log(`Sending report notification to ${admin.email}`);
+    
+    // Example using a queue for email sending
+    await env.EMAIL_QUEUE.send({
+      type: 'EMAIL',
+      recipient: admin.email,
+      subject: `Daily Reports for ${dateString}`,
+      body: `Hello ${admin.name},\n\nThe daily reports for ${dateString} are now available:\n\n${reportLinks}\n\nRegards,\nYour App Team`
+    });
+  }
+}
+```
+
+### Database Maintenance Task
+
+```tsx
+// src/lib/cron/tasks/database.ts
+export async function runDatabaseMaintenance(env: Env) {
+  console.log("Starting database maintenance");
+  
+  try {
+    // 1. Run vacuum to optimize database
+    await runVacuum(env);
+    
+    // 2. Update database statistics
+    await updateStatistics(env);
+    
+    // 3. Check for database integrity
+    const integrityCheck = await checkIntegrity(env);
+    
+    if (!integrityCheck.valid) {
+      // Send alert if integrity check fails
+      await sendDatabaseAlert(env, "Database integrity check failed", integrityCheck.errors);
+    }
+    
+    // 4. Archive old data
+    const archiveResult = await archiveOldData(env);
+    
+    return {
+      success: true,
+      vacuum: "completed",
+      statistics: "updated",
+      integrity: integrityCheck,
+      archived: archiveResult
+    };
+  } catch (error) {
+    console.error("Error during database maintenance:", error);
+    
+    // Send alert about maintenance failure
+    await sendDatabaseAlert(env, "Database maintenance failed", error.message);
+    
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function runVacuum(env: Env) {
+  // D1 doesn't directly support VACUUM, but you can use similar optimizations
+  // This is a placeholder for database-specific optimizations
+  console.log("Running database optimization");
+}
+
+async function updateStatistics(env: Env) {
+  // Update table statistics for query optimization
+  // This is a placeholder for database-specific statistics updates
+  console.log("Updating database statistics");
+}
+
+async function checkIntegrity(env: Env) {
+  // Check database integrity
+  // This is a placeholder for database-specific integrity checks
+  console.log("Checking database integrity");
+  
+  // Example implementation
+  const tables = ["users", "sessions", "orders", "products"];
+  const errors = [];
+  
+  for (const table of tables) {
+    try {
+      // Check if table exists and can be queried
+      await env.DB.prepare(`SELECT COUNT(*) FROM ${table}`).all();
+    } catch (error) {
+      errors.push(`Table ${table}: ${error.message}`);
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+}
+
+async function archiveOldData(env: Env) {
+  console.log("Archiving old data");
+  
+  // Get date threshold for archiving (e.g., data older than 1 year)
+  const archiveThreshold = new Date();
+  archiveThreshold.setFullYear(archiveThreshold.getFullYear() - 1);
+  const thresholdDate = archiveThreshold.toISOString();
+  
+  // Tables to archive with their timestamp column
+  const archiveTables = [
+    { name: "logs", timestampColumn: "created_at" },
+    { name: "audit_trail", timestampColumn: "timestamp" },
+    { name: "old_orders", timestampColumn: "created_at" }
+  ];
+  
+  const results = {};
+  
+  for (const table of archiveTables) {
+    try {
+      // Get old records
+      const { results: oldRecords } = await env.DB.prepare(`
+        SELECT * FROM ${table.name}
+        WHERE ${table.timestampColumn} < ?
+      `).bind(thresholdDate).all();
+      
+      if (oldRecords.length > 0) {
+        // Store in R2 for archiving
+        const archiveKey = `archives/${table.name}/${Date.now()}.json`;
+        await env.R2.put(archiveKey, JSON.stringify(oldRecords));
+        
+        // Delete archived records
+        const deleteResult = await env.DB.prepare(`
+          DELETE FROM ${table.name}
+          WHERE ${table.timestampColumn} < ?
+        `).bind(thresholdDate).run();
+        
+        results[table.name] = {
+          archived: oldRecords.length,
+          deleted: deleteResult.meta.changes,
+          archiveKey
+        };
+      } else {
+        results[table.name] = {
+          archived: 0,
+          deleted: 0
+        };
+      }
+    } catch (error) {
+      console.error(`Error archiving ${table.name}:`, error);
+      results[table.name] = {
+        error: error.message
+      };
+    }
+  }
+  
+  return results;
+}
+
+async function sendDatabaseAlert(env: Env, subject: string, details: any) {
+  // Send alert to database administrators
+  console.error(`DATABASE ALERT: ${subject}`, details);
+  
+  // Get database admin emails
+  const { results: dbAdmins } = await env.DB.prepare(`
+    SELECT email, name FROM users
+    WHERE role = 'db_admin'
+  `).all();
+  
+  // Send email alert
+  for (const admin of dbAdmins) {
+    await env.EMAIL_QUEUE.send({
+      type: 'EMAIL',
+      priority: 'high',
+      recipient: admin.email,
+      subject: `[URGENT] Database Alert: ${subject}`,
+      body: `Hello ${admin.name},\n\nA database issue has been detected:\n\n${subject}\n\nDetails:\n${JSON.stringify(details, null, 2)}\n\nPlease investigate immediately.\n\nRegards,\nSystem Monitoring`
+    });
+  }
+}
+```
+
+### Cache Refresh Task
+
+```tsx
+// src/lib/cron/tasks/cache.ts
+export async function refreshCaches(env: Env) {
+  console.log("Starting cache refresh");
+  
+  try {
+    // 1. Refresh product cache
+    const productCacheResult = await refreshProductCache(env);
+    
+    // 2. Refresh configuration cache
+    const configCacheResult = await refreshConfigCache(env);
+    
+    // 3. Refresh content cache
+    const contentCacheResult = await refreshContentCache(env);
+    
+    return {
+      success: true,
+      products: productCacheResult,
+      config: configCacheResult,
+      content: contentCacheResult
+    };
+  } catch (error) {
+    console.error("Error refreshing caches:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function refreshProductCache(env: Env) {
+  console.log("Refreshing product cache");
+  
+  try {
+    // Get all active products
+    const { results: products } = await env.DB.prepare(`
+      SELECT * FROM products
+      WHERE status = 'active'
+      ORDER BY updated_at DESC
+    `).all();
+    
+    // Store in KV cache
+    await env.KV.put(
+      "cache:products",
+      JSON.stringify(products),
+      { expirationTtl: 3600 } // 1 hour
+    );
+    
+    // Also cache individual products
+    for (const product of products) {
+      await env.KV.put(
+        `cache:product:${product.id}`,
+        JSON.stringify(product),
+        { expirationTtl: 3600 } // 1 hour
+      );
+    }
+    
+    return {
+      success: true,
+      count: products.length
+    };
+  } catch (error) {
+    console.error("Error refreshing product cache:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function refreshConfigCache(env: Env) {
+  console.log("Refreshing configuration cache");
+  
+  try {
+    // Get all configuration settings
+    const { results: configs } = await env.DB.prepare(`
+      SELECT * FROM configurations
+      WHERE environment = ?
+    `).bind(env.ENVIRONMENT || "production").all();
+    
+    // Transform into a key-value object
+    const configObject = configs.reduce((acc, config) => {
+      acc[config.key] = config.value;
+      return acc;
+    }, {});
+    
+    // Store in KV cache
+    await env.KV.put(
+      "cache:config",
+      JSON.stringify(configObject),
+      { expirationTtl: 3600 * 24 } // 24 hours
+    );
+    
+    return {
+      success: true,
+      count: configs.length
+    };
+  } catch (error) {
+    console.error("Error refreshing config cache:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+
+async function refreshContentCache(env: Env) {
+  console.log("Refreshing content cache");
+  
+  try {
+    // Get all published content
+    const { results: contents } = await env.DB.prepare(`
+      SELECT * FROM contents
+      WHERE status = 'published'
+      AND (expires_at IS NULL OR expires_at > ?)
+      ORDER BY updated_at DESC
+    `).bind(new Date().toISOString()).all();
+    
+    // Store in KV cache by content type
+    const contentByType = contents.reduce((acc, content) => {
+      if (!acc[content.type]) {
+        acc[content.type] = [];
+      }
+      acc[content.type].push(content);
+      return acc;
+    }, {});
+    
+    // Cache each content type
+    for (const [type, items] of Object.entries(contentByType)) {
+      await env.KV.put(
+        `cache:content:${type}`,
+        JSON.stringify(items),
+        { expirationTtl: 3600 } // 1 hour
+      );
+    }
+    
+    // Also cache individual content items
+    for (const content of contents) {
+      await env.KV.put(
+        `cache:content:item:${content.id}`,
+        JSON.stringify(content),
+        { expirationTtl: 3600 } // 1 hour
+      );
+    }
+    
+    return {
+      success: true,
+      count: contents.length,
+      types: Object.keys(contentByType)
+    };
+  } catch (error) {
+    console.error("Error refreshing content cache:", error);
+    return {
+      success: false,
+      error: error.message
+    };
+  }
+}
+```
