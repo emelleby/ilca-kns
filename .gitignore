@@ -80,6 +80,3 @@ node_modules/
 .idea
 .vscode
 # OS specific
-# Task files
-tasks.json
-tasks/ 
