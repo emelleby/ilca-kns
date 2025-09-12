@@ -24,6 +24,7 @@ As defined in the PRD:
    - Profile customization and privacy settings
 
 2. **Community Content Interaction**
+   - Communities are public or specific to a club or a group within a club
    - Creating and consuming blog posts
    - Commenting, liking, and sharing content
    - Media uploads and YouTube embedding
