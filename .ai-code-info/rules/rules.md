@@ -1,6 +1,6 @@
 ---
-description: Guidelines for creating and maintaining Cursor rules to ensure consistency and effectiveness.
-globs: .cursor/rules/*.mdc
+description: Guidelines for creating and maintaining AI code info rules to ensure consistency and effectiveness.
+globs: .ai-code-info/rules/*.mdc
 alwaysApply: true
 ---
 
