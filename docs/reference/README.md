@@ -2,6 +2,9 @@
 
 This folder contains detailed documentation for various workflows and components used in the project. Below is a summary of each document to help you quickly find the information you need.
 
+## Memory Bank
+
+
 ## Workflows
 
 ### [Interrupters](./workflows/interrupters.md)

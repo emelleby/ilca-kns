@@ -1,13 +1,16 @@
-import path from "path";
 import { defineConfig } from "vite";
-import tailwindcss from "@tailwindcss/vite";
+import path from "path";
 import { redwood } from "rwsdk/vite";
+import tailwindcss from "@tailwindcss/vite";
+import { cloudflare } from "@cloudflare/vite-plugin";
 
 export default defineConfig({
   environments: {
     ssr: {},
   },
-  plugins: [redwood(), tailwindcss()],
+  plugins: [cloudflare({
+    viteEnvironment: { name: "worker" },
+  }), redwood(), tailwindcss()],
   define: {
     'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'),
   },

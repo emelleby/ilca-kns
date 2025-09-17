@@ -69,4 +69,4 @@ globs: **/*
   - Update references to external docs
   - Maintain links between related rules
   - Document breaking changes
-Follow [cursor_rules.mdc](mdc:.cursor/rules/cursor_rules.mdc) for proper rule formatting and structure.
+Follow [rules.md](md:.ai-coding-info/rules/rules.md) for proper rule formatting and structure.
