@@ -4,6 +4,26 @@ This folder contains detailed documentation for various workflows and components
 
 ## Memory Bank
 
+### [Active Context](./memory-bank/activeContext.md)
+Current project focus, recent changes, key patterns, active decisions, and next steps for the sailing community application.
+
+### [Product Context](./memory-bank/productContext.md)
+Problem statement, user experience goals, target users, and key workflows for the sailing community platform.
+
+### [Progress](./memory-bank/progress.md)
+Summary of completed features, remaining work, current status, known issues, and evolution of project decisions.
+
+### [Project Brief](./memory-bank/projectbrief.md)
+Core purpose, key requirements, and project goals for the sailing community application.
+
+### [RedwoodSDK Patterns](./memory-bank/redwoodSDKPatterns.md)
+Comprehensive reference for RedwoodSDK-specific patterns, rules, and best practices for building modern web applications with React Server Components, Cloudflare Workers, and TypeScript.
+
+### [System Patterns](./memory-bank/systemPatterns.md)
+Architecture overview, key components, design patterns, and system patterns for the sailing community application, including server-client data flow patterns and Cloudflare Workers Promise management.
+
+### [Technical Context](./memory-bank/techContext.md)
+Core technologies, development environment, RedwoodSDK conventions, technical requirements, database workflow, and Cloudflare Workers Promise handling guidelines.
 
 ## Workflows
 

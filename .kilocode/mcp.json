@@ -2,26 +2,53 @@
   "mcpServers": {
     "context7": {
       "command": "npx",
-      "args": ["-y", "@upstash/context7-mcp"],
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
       "env": {
         "DEFAULT_MINIMUM_TOKENS": ""
       }
     },
     "sequentialthinking": {
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"]
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
     },
     "cloudflare": {
       "command": "npx",
-      "args": ["mcp-remote", "https://observability.mcp.cloudflare.com/sse"]
+      "args": [
+        "mcp-remote",
+        "https://observability.mcp.cloudflare.com/sse"
+      ]
     },
     "playwright": {
       "command": "npx",
-      "args": ["@playwright/mcp@latest"]
+      "args": [
+        "@playwright/mcp@latest"
+      ]
     },
     "serena": {
       "command": "/home/eivind/.local/bin/uvx",
-      "args": ["--from", "git+https://github.com/oraios/serena", "serena-mcp-server", "--context", "ide-assistant"]
+      "args": [
+        "--from",
+        "git+https://github.com/oraios/serena",
+        "serena-mcp-server",
+        "--context",
+        "ide-assistant"
+      ],
+      "alwaysAllow": [
+        "list_dir",
+        "search_for_pattern",
+        "activate_project",
+        "write_memory",
+        "list_memories",
+        "think_about_whether_you_are_done",
+        "read_memory",
+        "think_about_collected_information"
+      ]
     }
   }
 }
