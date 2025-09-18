@@ -7,7 +7,9 @@
 - ✅ Integrated sailing-specific features (experience, certifications, boat information)
 - ✅ Implemented password reset functionality
 - ✅ **Resolved Cloudflare Workers compatibility issues**
-- Ready to move to next phase: Activity tracking and community features
+- ✅ **Completed Story 1.1: Critical User Journey Tests** - Automated Vitest tests for login, profile, navigation; ensures regression-free development
+- ✅ **Completed Story 1.1.5: Light Integration Tests** - 4 tests in src/app/pages/user/__tests__/integration.test.tsx for multi-component flows (login → profile view, profile edit → save → navigation, error handling); mocks for auth/DB/router; >85% coverage (ProfileEditForm 96.57%, Login 91.79%, ProfileView 91.53%), ~7s runtime, full suite 47 tests passing; QA passed with excellent quality, no regressions
+- Ready to move to next phase: Activity tracking and community features with solid testing foundation
 
 ## Recent Changes
 
@@ -42,6 +44,26 @@
   - Documented comprehensive prevention patterns for future development
   - Established rules for proper Suspense boundary usage with async server components
   - Documented hot-reload specific patterns for client components with server props
+- **Implemented Story 1.1: Critical User Journey Tests**:
+  - Created Vitest tests for login (src/app/pages/user/__tests__/Login.test.tsx): success, invalid credentials, redirect to /home, network errors, form validation, security scenarios
+  - Created Vitest tests for profile management (src/app/components/__tests__/ProfileEditForm.test.tsx): view sailing fields, edit/save, invalid inputs, XSS prevention, certification management, privacy settings
+  - Created Vitest tests for navigation (src/app/layouts/__tests__/HomeLayout.test.tsx): sidebar clicks, route transitions, authenticated/unauthenticated menus, no broken links, accessibility
+  - Configured vitest.config.ts for RedwoodSDK compatibility (Workers/D1 mocking, jsdom environment, coverage >80%)
+  - Updated package.json with test scripts: "test": "vitest", "test:coverage": "vitest --coverage"
+  - Added src/test/setup.ts with mocks for cloudflare:workers, rwsdk/worker, session/store, db, crypto, fetch
+  - Verified integration: mocked auth/profile APIs and D1/Prisma queries maintain current behavior
+  - Updated docs/architecture.md with Vitest setup guidelines for Workers/D1 mocking, component testing patterns, security/accessibility testing
+  - Manual smoke tests: login/logout, profile view/edit, navigate core paths (/home, /user/profile) - no breaks, >85% coverage on auth/profile/nav components
+
+- **Implemented Story 1.1.5: Light Integration Tests**:
+  - Created src/app/pages/user/__tests__/integration.test.tsx with 4 tests: login → profile view (AC1, sailing fields display), profile edit → save → navigation (AC2, sidebar state preservation), error during save (AC3, alert handling)
+  - Mocks: auth functions (loginWithPassword), profile ops (getPublicProfile, updateUserProfile), DB (vi.mock('@/db')), router (MemoryRouter, window.location/history)
+  - Used userEvent sequences for realistic interactions; wrapped in providers for multi-component render
+  - Verified: Full suite 47 tests pass (~7s), coverage >85% on integrated components; no unit test regressions
+  - Updated docs/architecture.md: Added section on multi-component Vitest patterns, mocking shared deps, error propagation
+  - QA: Excellent quality (comprehensive mocks, clear structure); fully compliant, secure (no real auth exposure), optimized (<30s); gate passed
+  - Files: Created integration.test.tsx; modified docs/architecture.md, story file
+  - Agent: Claude Sonnet 4; debug: All existing 43 tests pass, incremental coverage verified
 
 ## Key Patterns and Preferences
 

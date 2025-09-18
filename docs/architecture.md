@@ -805,6 +805,7 @@ async function enhancedAuthMiddleware({ ctx, request, headers }) {
 - **Login Flow**: 11 comprehensive tests covering authentication, error handling, and security
 - **Profile Management**: 19 tests covering form validation, XSS prevention, and API integration
 - **Navigation**: 13 tests covering layout rendering, role-based navigation, and accessibility
+- **Integration Tests**: 4 tests covering multi-component workflows and critical user journeys
 
 **Testing Guidelines**:
 
@@ -835,7 +836,29 @@ async function enhancedAuthMiddleware({ ctx, request, headers }) {
    }));
    ```
 
-3. **Security Testing**:
+3. **Integration Testing Patterns**:
+   ```typescript
+   // Test multi-component workflows
+   describe('Integration Tests: Critical User Journeys', () => {
+     it('should login and navigate to profile with data loading', async () => {
+       // Mock authentication success
+       mockLoginWithPassword.mockResolvedValue(true);
+       mockGetPublicProfile.mockResolvedValue(mockProfileData);
+
+       // Test login flow
+       render(<Login />);
+       await user.type(screen.getByLabelText(/email/i), 'test@example.com');
+       await user.click(screen.getByRole('button', { name: /login/i }));
+
+       // Verify navigation and profile loading
+       expect(mockLocation.href).toBe('/home');
+       render(<ProfileView profileUserId="user-123" />);
+       expect(screen.getByText('ILCA 6')).toBeInTheDocument();
+     });
+   });
+   ```
+
+4. **Security Testing**:
    - XSS prevention testing with malicious input strings
    - Form validation testing with edge cases
    - Authentication flow testing with invalid credentials
