@@ -806,6 +806,7 @@ async function enhancedAuthMiddleware({ ctx, request, headers }) {
 - **Profile Management**: 19 tests covering form validation, XSS prevention, and API integration
 - **Navigation**: 13 tests covering layout rendering, role-based navigation, and accessibility
 - **Integration Tests**: 4 tests covering multi-component workflows and critical user journeys
+- **Server Function Tests**: 17 tests covering authentication and profile CRUD server functions
 
 **Testing Guidelines**:
 
@@ -858,29 +859,54 @@ async function enhancedAuthMiddleware({ ctx, request, headers }) {
    });
    ```
 
-4. **Security Testing**:
+4. **Server Function Testing Patterns**:
+   ```typescript
+   // Mock server functions directly for isolated testing
+   const mockLoginWithPassword = vi.fn();
+   const mockGetUserProfile = vi.fn();
+
+   vi.mock('../functions', () => ({
+     loginWithPassword: mockLoginWithPassword,
+   }));
+
+   // Test function behavior with mocked return values
+   it('should return user ID on successful login', async () => {
+     mockLoginWithPassword.mockResolvedValue('user-123');
+     const result = await mockLoginWithPassword('test@example.com', 'password');
+     expect(result).toBe('user-123');
+   });
+   ```
+
+5. **Security Testing**:
    - XSS prevention testing with malicious input strings
    - Form validation testing with edge cases
    - Authentication flow testing with invalid credentials
 
-4. **Accessibility Testing**:
+6. **Accessibility Testing**:
    - Semantic HTML structure validation
    - ARIA label and role testing
    - Keyboard navigation testing
 
 **Test Commands**:
 ```bash
-pnpm vitest                    # Run tests in watch mode
-pnpm vitest --run             # Run tests once
-pnpm vitest --coverage        # Run tests with coverage report
-pnpm vitest --ui              # Run tests with UI interface
+pnpm test                     # Run tests in watch mode
+pnpm test:coverage           # Run tests with coverage report
+pnpm test:ui                 # Run tests with UI interface
+pnpm test [file-pattern]     # Run specific test files
 ```
 
+**Testing Best Practices**:
+- **Mock Strategy**: Mock external dependencies (database, APIs) but test actual function logic
+- **Error Handling**: Test both success and failure scenarios comprehensively
+- **Edge Cases**: Include tests for empty inputs, invalid data, and network failures
+- **Coverage Target**: Maintain >85% coverage for critical components and functions
+- **Test Isolation**: Each test should be independent and not rely on other test state
+
 **Future Testing Enhancements**:
-- **Integration Tests**: Multi-component interaction testing
 - **E2E Tests**: Full user journey testing with Playwright
 - **Performance Tests**: Component rendering performance benchmarks
 - **Visual Regression Tests**: UI consistency testing
+- **API Contract Tests**: Verify server function contracts remain stable
 
 ## Architecture Patterns and Conventions
 

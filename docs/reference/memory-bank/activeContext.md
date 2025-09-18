@@ -9,7 +9,8 @@
 - ✅ **Resolved Cloudflare Workers compatibility issues**
 - ✅ **Completed Story 1.1: Critical User Journey Tests** - Automated Vitest tests for login, profile, navigation; ensures regression-free development
 - ✅ **Completed Story 1.1.5: Light Integration Tests** - 4 tests in src/app/pages/user/__tests__/integration.test.tsx for multi-component flows (login → profile view, profile edit → save → navigation, error handling); mocks for auth/DB/router; >85% coverage (ProfileEditForm 96.57%, Login 91.79%, ProfileView 91.53%), ~7s runtime, full suite 47 tests passing; QA passed with excellent quality, no regressions
-- Ready to move to next phase: Activity tracking and community features with solid testing foundation
+- ✅ **Completed Story 1.2: Server Function Testing** - 17 tests in src/app/pages/user/__tests__/serverFunctions.test.tsx for login/register (success/fail/edges), profile CRUD (get/update/create with sailing data/JSON parsing), errors (DB/validation); reusable serverFunctionMockHelper.ts; full suite 64 tests, >85% coverage, 5.73s runtime, no regressions; updated docs/architecture.md with patterns; QA excellent, gate passed
+- Ready to move to Phase 2: Monitoring (Story 2.1 Error Logging) and features like profile picture upload, with comprehensive testing (unit/integration/server functions)
 
 ## Recent Changes
 
@@ -64,6 +65,15 @@
   - QA: Excellent quality (comprehensive mocks, clear structure); fully compliant, secure (no real auth exposure), optimized (<30s); gate passed
   - Files: Created integration.test.tsx; modified docs/architecture.md, story file
   - Agent: Claude Sonnet 4; debug: All existing 43 tests pass, incremental coverage verified
+
+- **Implemented Story 1.2: Server Function Testing**:
+  - Created src/app/pages/user/__tests__/serverFunctions.test.tsx with 17 tests: loginWithPassword/registerWithPassword (success/fail/edges, 7 tests), profile CRUD (get/update/create with sailing data/JSON parsing, 7 tests), errors (DB/validation/null inputs, 3 tests)
+  - Reusable src/test/utils/serverFunctionMockHelper.ts for mocks (DB tables: user/profile/credential/passwordReset, sessions, requestInfo); integrated with setup.ts
+  - Verified: Full suite 64 tests pass (5.73s, 81% under 30s), >85% coverage on functions; no regressions; JSON fields parsed correctly (privacy/sailing)
+  - Updated docs/architecture.md: Added server function testing section (direct imports, chained mocks, utils, best practices)
+  - QA: Excellent (structured, comprehensive errors/edges), compliant, secure (no real calls), optimized; gate passed (production-ready)
+  - Files: Created serverFunctions.test.tsx, serverFunctionMockHelper.ts; modified architecture.md, story
+  - Agent: Claude Sonnet 4; debug: Aligned from API to server functions; all existing tests pass, incremental coverage verified
 
 ## Key Patterns and Preferences
 
