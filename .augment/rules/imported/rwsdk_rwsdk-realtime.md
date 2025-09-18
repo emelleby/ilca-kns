@@ -1,0 +1,845 @@
+---
+type: "agent_requested"
+---
+
+# RedwoodSDK: Realtime updates with WebSockets and Durable Objects
+
+You're an expert at Cloudflare Durable Objects, WebSockets, TypeScript, and building web apps with RedwoodSDK. Generate high quality **realtime functionality** that adheres to the following best practices:
+
+## Guidelines
+
+1. Use WebSockets and Durable Objects for realtime updates between clients
+2. Properly scope realtime connections using appropriate keys
+3. Implement efficient client-to-server and server-to-client communication
+4. Handle WebSocket connection lifecycle properly (connect, disconnect, reconnect)
+5. Structure realtime updates to minimize unnecessary re-renders
+6. Implement proper error handling for realtime connections
+
+## Example Templates
+
+### Basic Realtime Setup
+
+Set up the three required components for realtime functionality:
+
+#### 1. Client Setup
+
+```tsx
+// src/client.tsx
+import { initRealtimeClient } from "rwsdk/realtime/client";
+
+// Initialize realtime client with a key that groups related clients
+// This is typically based on the current page or resource
+export function setupRealtime() {
+  initRealtimeClient({
+    key: window.location.pathname, // Use the current path as the key
+  });
+}
+
+// Call this function when your app initializes
+setupRealtime();
+```
+
+#### 2. Durable Object Export
+
+```tsx
+// src/worker.ts
+// Export the Durable Object class that will handle realtime connections
+export { RealtimeDurableObject } from "rwsdk/realtime/durableObject";
+```
+
+#### 3. Worker Route Setup
+
+```tsx
+// src/worker.ts
+import { defineApp } from "rwsdk/worker";
+import { realtimeRoute } from "rwsdk/realtime/worker";
+import { env } from "cloudflare:workers";
+
+export default defineApp([
+  // Add the realtime route handler
+  realtimeRoute(() => env.REALTIME_DURABLE_OBJECT),
+  
+  // Your other routes go here
+  // ...
+]);
+```
+
+### Collaborative Document Editing
+
+```tsx
+// src/app/pages/document/[id].tsx
+import { useState, useTransition } from "react";
+import { initRealtimeClient } from "rwsdk/realtime/client";
+import { useParams } from "rwsdk/router";
+
+// Server component that renders the document
+export default async function DocumentPage({ ctx }) {
+  const { id } = useParams();
+  const document = await ctx.db.document.findUnique({
+    where: { id },
+  });
+  
+  if (!document) {
+    return <div>Document not found</div>;
+  }
+  
+  return (
+    <div className="document-page">
+      <h1>{document.title}</h1>
+      <DocumentEditor 
+        id={document.id} 
+        initialContent={document.content} 
+      />
+    </div>
+  );
+}
+
+// Client component for editing
+function DocumentEditor({ id, initialContent }) {
+  const [content, setContent] = useState(initialContent);
+  const [isPending, startTransition] = useTransition();
+  
+  // Set up realtime connection when component mounts
+  useEffect(() => {
+    initRealtimeClient({
+      key: `/documents/${id}`,
+    });
+    
+    return () => {
+      // Cleanup if needed
+    };
+  }, [id]);
+  
+  const handleContentChange = async (newContent) => {
+    // Update local state immediately for responsive UI
+    setContent(newContent);
+    
+    // Debounce updates to avoid too many server calls
+    startTransition(async () => {
+      try {
+        // Call server action to update the document
+        await updateDocument(id, newContent);
+      } catch (error) {
+        console.error("Failed to update document:", error);
+      }
+    });
+  };
+  
+  return (
+    <div className="editor">
+      <textarea
+        value={content}
+        onChange={(e) => handleContentChange(e.target.value)}
+        className={isPending ? "saving" : ""}
+      />
+      {isPending && <div className="saving-indicator">Saving...</div>}
+    </div>
+  );
+}
+
+// Server action to update the document
+async function updateDocument(id, content) {
+  "use server";
+  
+  import { renderRealtimeClients } from "rwsdk/realtime/worker";
+  import { env } from "cloudflare:workers";
+  
+  try {
+    // Update the document in the database
+    await db.document.update({
+      where: { id },
+      data: { content, updatedAt: new Date() },
+    });
+    
+    // Notify all connected clients about the update
+    await renderRealtimeClients({
+      durableObjectNamespace: env.REALTIME_DURABLE_OBJECT,
+      key: `/documents/${id}`,
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update document:", error);
+    return { success: false, error: error.message };
+  }
+}
+```
+
+### Real-time Chat Application
+
+```tsx
+// src/app/pages/chat/[roomId].tsx
+import { useState, useEffect } from "react";
+import { initRealtimeClient } from "rwsdk/realtime/client";
+import { useParams } from "rwsdk/router";
+
+// Server component that renders the chat room
+export default async function ChatRoom({ ctx }) {
+  const { roomId } = useParams();
+  
+  // Fetch chat room data and recent messages
+  const room = await ctx.db.chatRoom.findUnique({
+    where: { id: roomId },
+  });
+  
+  const messages = await ctx.db.chatMessage.findMany({
+    where: { roomId },
+    orderBy: { createdAt: "asc" },
+    include: { user: true },
+    take: 50,
+  });
+  
+  if (!room) {
+    return <div>Chat room not found</div>;
+  }
+  
+  return (
+    <div className="chat-room">
+      <h1>{room.name}</h1>
+      <ChatMessages initialMessages={messages} roomId={roomId} />
+    </div>
+  );
+}
+
+// Client component for the chat interface
+function ChatMessages({ initialMessages, roomId }) {
+  const [messages, setMessages] = useState(initialMessages);
+  const [newMessage, setNewMessage] = useState("");
+  const [user, setUser] = useState(null);
+  
+  // Get current user
+  useEffect(() => {
+    async function fetchUser() {
+      const response = await fetch("/api/me");
+      if (response.ok) {
+        const userData = await response.json();
+        setUser(userData);
+      }
+    }
+    
+    fetchUser();
+  }, []);
+  
+  // Set up realtime connection
+  useEffect(() => {
+    initRealtimeClient({
+      key: `/chat/${roomId}`,
+    });
+    
+    // Listen for new messages
+    const handleNewMessage = (event) => {
+      if (event.type === "new-message" && event.roomId === roomId) {
+        setMessages((prev) => [...prev, event.message]);
+      }
+    };
+    
+    window.addEventListener("realtime-update", handleNewMessage);
+    
+    return () => {
+      window.removeEventListener("realtime-update", handleNewMessage);
+    };
+  }, [roomId]);
+  
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    
+    if (!newMessage.trim() || !user) return;
+    
+    try {
+      await sendChatMessage(roomId, user.id, newMessage);
+      setNewMessage("");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+    }
+  };
+  
+  return (
+    <div className="chat-container">
+      <div className="messages-list">
+        {messages.map((message) => (
+          <div key={message.id} className="message">
+            <div className="message-header">
+              <span className="username">{message.user.name}</span>
+              <span className="timestamp">
+                {new Date(message.createdAt).toLocaleTimeString()}
+              </span>
+            </div>
+            <div className="message-content">{message.content}</div>
+          </div>
+        ))}
+      </div>
+      
+      <form onSubmit={handleSendMessage} className="message-form">
+        <input
+          type="text"
+          value={newMessage}
+          onChange={(e) => setNewMessage(e.target.value)}
+          placeholder="Type a message..."
+        />
+        <button type="submit" disabled={!user}>Send</button>
+      </form>
+    </div>
+  );
+}
+
+// Server action to send a chat message
+async function sendChatMessage(roomId, userId, content) {
+  "use server";
+  
+  import { renderRealtimeClients } from "rwsdk/realtime/worker";
+  import { env } from "cloudflare:workers";
+  
+  try {
+    // Create the message in the database
+    const message = await db.chatMessage.create({
+      data: {
+        content,
+        roomId,
+        userId,
+        createdAt: new Date(),
+      },
+      include: { user: true },
+    });
+    
+    // Notify all connected clients about the new message
+    await renderRealtimeClients({
+      durableObjectNamespace: env.REALTIME_DURABLE_OBJECT,
+      key: `/chat/${roomId}`,
+      // You can also pass custom data that will be available in the event
+      data: {
+        type: "new-message",
+        roomId,
+        message,
+      },
+    });
+    
+    return { success: true, message };
+  } catch (error) {
+    console.error("Failed to send message:", error);
+    return { success: false, error: error.message };
+  }
+}
+```
+
+### Real-time Notifications
+
+```tsx
+// src/app/components/NotificationCenter.tsx
+import { useState, useEffect } from "react";
+import { initRealtimeClient } from "rwsdk/realtime/client";
+
+export function NotificationCenter({ userId }) {
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
+  // Set up realtime connection for this user's notifications
+  useEffect(() => {
+    if (!userId) return;
+    
+    initRealtimeClient({
+      key: `/notifications/user/${userId}`,
+    });
+    
+    // Listen for new notifications
+    const handleNewNotification = (event) => {
+      if (event.type === "new-notification" && event.userId === userId) {
+        setNotifications((prev) => [event.notification, ...prev]);
+        setUnreadCount((prev) => prev + 1);
+      }
+    };
+    
+    window.addEventListener("realtime-update", handleNewNotification);
+    
+    // Fetch initial notifications
+    fetchNotifications();
+    
+    return () => {
+      window.removeEventListener("realtime-update", handleNewNotification);
+    };
+  }, [userId]);
+  
+  const fetchNotifications = async () => {
+    try {
+      const response = await fetch(`/api/notifications?userId=${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setNotifications(data.notifications);
+        setUnreadCount(data.unreadCount);
+      }
+    } catch (error) {
+      console.error("Failed to fetch notifications:", error);
+    }
+  };
+  
+  const markAsRead = async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId);
+      
+      // Update local state
+      setNotifications((prev) =>
+        prev.map((notification) =>
+          notification.id === notificationId
+            ? { ...notification, read: true }
+            : notification
+        )
+      );
+      
+      setUnreadCount((prev) => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error("Failed to mark notification as read:", error);
+    }
+  };
+  
+  const markAllAsRead = async () => {
+    try {
+      await markAllNotificationsAsRead(userId);
+      
+      // Update local state
+      setNotifications((prev) =>
+        prev.map((notification) => ({ ...notification, read: true }))
+      );
+      
+      setUnreadCount(0);
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
+  };
+  
+  return (
+    <div className="notification-center">
+      <div className="notification-header">
+        <h3>Notifications</h3>
+        <span className="badge">{unreadCount}</span>
+        {unreadCount > 0 && (
+          <button onClick={markAllAsRead}>Mark all as read</button>
+        )}
+      </div>
+      
+      <div className="notification-list">
+        {notifications.length === 0 ? (
+          <div className="empty-state">No notifications</div>
+        ) : (
+          notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`notification-item ${notification.read ? "read" : "unread"}`}
+              onClick={() => !notification.read && markAsRead(notification.id)}
+            >
+              <div className="notification-content">
+                {notification.content}
+              </div>
+              <div className="notification-time">
+                {new Date(notification.createdAt).toLocaleTimeString()}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Server action to mark a notification as read
+async function markNotificationAsRead(notificationId) {
+  "use server";
+  
+  try {
+    await db.notification.update({
+      where: { id: notificationId },
+      data: { read: true },
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to mark notification as read:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Server action to mark all notifications as read
+async function markAllNotificationsAsRead(userId) {
+  "use server";
+  
+  try {
+    await db.notification.updateMany({
+      where: { userId, read: false },
+      data: { read: true },
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to mark all notifications as read:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Function to send a notification to a user (call this from anywhere in your app)
+export async function sendNotification(userId, content, type = "info") {
+  import { renderRealtimeClients } from "rwsdk/realtime/worker";
+  import { env } from "cloudflare:workers";
+  
+  try {
+    // Create the notification in the database
+    const notification = await db.notification.create({
+      data: {
+        userId,
+        content,
+        type,
+        read: false,
+        createdAt: new Date(),
+      },
+    });
+    
+    // Notify the user in real-time
+    await renderRealtimeClients({
+      durableObjectNamespace: env.REALTIME_DURABLE_OBJECT,
+      key: `/notifications/user/${userId}`,
+      data: {
+        type: "new-notification",
+        userId,
+        notification,
+      },
+    });
+    
+    return { success: true, notification };
+  } catch (error) {
+    console.error("Failed to send notification:", error);
+    return { success: false, error: error.message };
+  }
+}
+```
+
+### Real-time Dashboard with Live Updates
+
+```tsx
+// src/app/pages/dashboard.tsx
+import { useState, useEffect } from "react";
+import { initRealtimeClient } from "rwsdk/realtime/client";
+
+// Server component that renders the dashboard
+export default async function Dashboard({ ctx }) {
+  // Fetch initial dashboard data
+  const stats = await ctx.db.stats.findFirst({
+    orderBy: { createdAt: "desc" },
+  });
+  
+  const recentOrders = await ctx.db.order.findMany({
+    orderBy: { createdAt: "desc" },
+    take: 5,
+  });
+  
+  return (
+    <div className="dashboard">
+      <h1>Dashboard</h1>
+      <LiveStats initialStats={stats} />
+      <LiveOrdersFeed initialOrders={recentOrders} />
+    </div>
+  );
+}
+
+// Client component for live stats
+function LiveStats({ initialStats }) {
+  const [stats, setStats] = useState(initialStats);
+  
+  // Set up realtime connection for dashboard stats
+  useEffect(() => {
+    initRealtimeClient({
+      key: "/dashboard/stats",
+    });
+    
+    // Listen for stats updates
+    const handleStatsUpdate = (event) => {
+      if (event.type === "stats-update") {
+        setStats(event.stats);
+      }
+    };
+    
+    window.addEventListener("realtime-update", handleStatsUpdate);
+    
+    return () => {
+      window.removeEventListener("realtime-update", handleStatsUpdate);
+    };
+  }, []);
+  
+  return (
+    <div className="stats-grid">
+      <div className="stat-card">
+        <h3>Revenue</h3>
+        <div className="stat-value">${stats.revenue.toFixed(2)}</div>
+        <div className={`trend ${stats.revenueTrend >= 0 ? "up" : "down"}`}>
+          {stats.revenueTrend}%
+        </div>
+      </div>
+      
+      <div className="stat-card">
+        <h3>Orders</h3>
+        <div className="stat-value">{stats.orderCount}</div>
+        <div className={`trend ${stats.orderTrend >= 0 ? "up" : "down"}`}>
+          {stats.orderTrend}%
+        </div>
+      </div>
+      
+      <div className="stat-card">
+        <h3>Users</h3>
+        <div className="stat-value">{stats.userCount}</div>
+        <div className={`trend ${stats.userTrend >= 0 ? "up" : "down"}`}>
+          {stats.userTrend}%
+        </div>
+      </div>
+      
+      <div className="stat-card">
+        <h3>Active Now</h3>
+        <div className="stat-value">{stats.activeUsers}</div>
+      </div>
+    </div>
+  );
+}
+
+// Client component for live orders feed
+function LiveOrdersFeed({ initialOrders }) {
+  const [orders, setOrders] = useState(initialOrders);
+  
+  // Set up realtime connection for orders feed
+  useEffect(() => {
+    initRealtimeClient({
+      key: "/dashboard/orders",
+    });
+    
+    // Listen for new orders
+    const handleNewOrder = (event) => {
+      if (event.type === "new-order") {
+        setOrders((prev) => [event.order, ...prev.slice(0, 4)]);
+      }
+    };
+    
+    window.addEventListener("realtime-update", handleNewOrder);
+    
+    return () => {
+      window.removeEventListener("realtime-update", handleNewOrder);
+    };
+  }, []);
+  
+  return (
+    <div className="orders-feed">
+      <h2>Recent Orders</h2>
+      <div className="orders-list">
+        {orders.map((order) => (
+          <div key={order.id} className="order-item">
+            <div className="order-header">
+              <span className="order-id">#{order.id}</span>
+              <span className="order-time">
+                {new Date(order.createdAt).toLocaleTimeString()}
+              </span>
+            </div>
+            <div className="order-customer">{order.customerName}</div>
+            <div className="order-amount">${order.amount.toFixed(2)}</div>
+            <div className={`order-status status-${order.status}`}>
+              {order.status}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Function to update dashboard stats (call this from a background worker or after significant events)
+export async function updateDashboardStats(newStats) {
+  import { renderRealtimeClients } from "rwsdk/realtime/worker";
+  import { env } from "cloudflare:workers";
+  
+  try {
+    // Save the new stats to the database
+    await db.stats.create({
+      data: {
+        ...newStats,
+        createdAt: new Date(),
+      },
+    });
+    
+    // Notify all dashboard viewers
+    await renderRealtimeClients({
+      durableObjectNamespace: env.REALTIME_DURABLE_OBJECT,
+      key: "/dashboard/stats",
+      data: {
+        type: "stats-update",
+        stats: newStats,
+      },
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update dashboard stats:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Function to broadcast a new order to the dashboard
+export async function broadcastNewOrder(order) {
+  import { renderRealtimeClients } from "rwsdk/realtime/worker";
+  import { env } from "cloudflare:workers";
+  
+  try {
+    // Notify all dashboard viewers
+    await renderRealtimeClients({
+      durableObjectNamespace: env.REALTIME_DURABLE_OBJECT,
+      key: "/dashboard/orders",
+      data: {
+        type: "new-order",
+        order,
+      },
+    });
+    
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to broadcast new order:", error);
+    return { success: false, error: error.message };
+  }
+}
+```
+
+### Handling WebSocket Reconnection
+
+```tsx
+// src/app/utils/realtimeConnection.ts
+import { initRealtimeClient } from "rwsdk/realtime/client";
+
+export class RealtimeConnection {
+  private key: string;
+  private isConnected: boolean = false;
+  private reconnectAttempts: number = 0;
+  private maxReconnectAttempts: number = 5;
+  private reconnectDelay: number = 1000;
+  private listeners: Map<string, Set<(data: any) => void>> = new Map();
+  
+  constructor(key: string) {
+    this.key = key;
+    this.setupConnectionHandlers();
+  }
+  
+  async connect() {
+    try {
+      await initRealtimeClient({
+        key: this.key,
+      });
+      
+      this.isConnected = true;
+      this.reconnectAttempts = 0;
+      console.log(`Realtime connection established for key: ${this.key}`);
+    } catch (error) {
+      console.error(`Failed to connect to realtime for key ${this.key}:`, error);
+      this.handleDisconnect();
+    }
+  }
+  
+  private setupConnectionHandlers() {
+    // Listen for realtime updates
+    window.addEventListener("realtime-update", this.handleRealtimeUpdate);
+    
+    // Listen for connection status changes
+    window.addEventListener("realtime-connected", () => {
+      this.isConnected = true;
+      this.reconnectAttempts = 0;
+      this.emit("connection", { status: "connected" });
+    });
+    
+    window.addEventListener("realtime-disconnected", () => {
+      this.isConnected = false;
+      this.handleDisconnect();
+      this.emit("connection", { status: "disconnected" });
+    });
+    
+    // Handle page visibility changes to reconnect when tab becomes visible again
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && !this.isConnected) {
+        this.connect();
+      }
+    });
+  }
+  
+  private handleRealtimeUpdate = (event: CustomEvent) => {
+    const { type, ...data } = event.detail;
+    
+    // Emit the event to all listeners for this type
+    this.emit(type, data);
+  };
+  
+  private handleDisconnect() {
+    this.isConnected = false;
+    
+    if (this.reconnectAttempts < this.maxReconnectAttempts) {
+      this.reconnectAttempts++;
+      const delay = this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1);
+      
+      console.log(`Attempting to reconnect in ${delay}ms (attempt ${this.reconnectAttempts})`);
+      
+      setTimeout(() => {
+        this.connect();
+      }, delay);
+    } else {
+      console.error(`Failed to reconnect after ${this.maxReconnectAttempts} attempts`);
+      this.emit("connection", { 
+        status: "failed", 
+        error: "Maximum reconnection attempts reached" 
+      });
+    }
+  }
+  
+  on(eventType: string, callback: (data: any) => void) {
+    if (!this.listeners.has(eventType)) {
+      this.listeners.set(eventType, new Set());
+    }
+    
+    this.listeners.get(eventType)!.add(callback);
+    
+    // Return an unsubscribe function
+    return () => {
+      const callbacks = this.listeners.get(eventType);
+      if (callbacks) {
+        callbacks.delete(callback);
+      }
+    };
+  }
+  
+  private emit(eventType: string, data: any) {
+    const callbacks = this.listeners.get(eventType);
+    if (callbacks) {
+      callbacks.forEach((callback) => {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error(`Error in realtime event handler for ${eventType}:`, error);
+        }
+      });
+    }
+  }
+  
+  disconnect() {
+    // Clean up event listeners
+    window.removeEventListener("realtime-update", this.handleRealtimeUpdate);
+    window.removeEventListener("realtime-connected", () => {});
+    window.removeEventListener("realtime-disconnected", () => {});
+    
+    // Clear all listeners
+    this.listeners.clear();
+    
+    // Additional cleanup if needed
+    console.log(`Realtime connection closed for key: ${this.key}`);
+  }
+}
+
+// Example usage:
+// const chatConnection = new RealtimeConnection(`/chat/${roomId}`);
+// chatConnection.connect();
+// 
+// chatConnection.on("new-message", (data) => {
+//   console.log("New message:", data.message);
+// });
+// 
+// chatConnection.on("connection", (data) => {
+//   console.log("Connection status:", data.status);
+// });
+// 
+// // Later, when component unmounts:
+// chatConnection.disconnect();
+```
