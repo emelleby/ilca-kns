@@ -1,0 +1,30 @@
+# Task ID: 4
+# Title: User Profile Management
+# Status: pending
+# Dependencies: 2, 3
+# Priority: medium
+# Description: Implement user profile creation, editing, and viewing functionality, including profile picture upload using R2 Storage.
+# Details:
+1. Create profile setup form for new users
+   - Personal information fields
+   - Sailing experience and certifications
+   - Boat information
+   - Privacy settings
+2. Implement profile picture upload
+   - Image upload to R2 Storage
+   - Image resizing and optimization
+   - Default profile picture for new users
+3. Create profile edit functionality
+   - Form for updating profile information
+   - Validation for all fields
+4. Implement profile viewing
+   - Public profile view
+   - Private profile view (for profile owner)
+   - Activity statistics display
+5. Create privacy settings management
+   - Control visibility of profile sections
+   - Control visibility of activities and posts
+6. Implement profile deletion and account management
+
+# Test Strategy:
+Test profile creation with various inputs. Verify profile picture upload, storage, and retrieval. Test profile editing and validation. Verify privacy settings affect visibility appropriately. Test profile viewing as different user roles. Verify profile deletion functionality.

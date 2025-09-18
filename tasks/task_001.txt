@@ -1,0 +1,20 @@
+# Task ID: 1
+# Title: Project Setup with RedwoodSDK
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Initialize the project using RedwoodSDK framework on Cloudflare, set up the development environment, and configure basic project structure.
+# Details:
+1. Install RedwoodSDK CLI tools
+2. Create a new project with `npx create-redwood-app sailing-community`
+3. Configure project to use Cloudflare Workers, D1, and R2
+4. Set up local development environment with Miniflare
+5. Initialize Git repository
+6. Configure CI/CD pipeline
+7. Set up development, staging, and production environments
+8. Install and configure Tailwind CSS v4
+9. Set up Shadcn component library
+10. Create initial project structure following RedwoodSDK conventions
+
+# Test Strategy:
+Verify that the development environment runs without errors. Test the connection to Cloudflare services. Ensure that the project structure follows RedwoodSDK conventions. Confirm that Tailwind CSS and Shadcn components are properly integrated.

@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect } from "react";
 import { startRegistration } from "@simplewebauthn/browser";
+import { SidebarLayout } from "@/app/layouts/SidebarLayout";
 import {
   addPasskeyToExistingAccount,
   addPasswordToPasskeyAccount,
@@ -99,8 +100,9 @@ export default function AuthSettings({ user }: { user: any }) {
   };
 
   return (
+    <SidebarLayout>
     <ClientOnly fallback={<CardSkeleton />}>
-      <div className="container mx-auto py-8">
+      
         <h1 className="text-2xl font-bold mb-6">Authentication Settings</h1>
 
         {/* Show appropriate card based on user's current auth method */}
@@ -279,7 +281,8 @@ export default function AuthSettings({ user }: { user: any }) {
             {result}
           </div>
         )}
-      </div>
+
     </ClientOnly>
+    </SidebarLayout>
   );
 }
