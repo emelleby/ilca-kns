@@ -1,9 +1,7 @@
-'use client'
-
-import { HomeLayout } from '@/app/layouts/HomeLayout'
+import { SidebarPageLayout } from '@/app/layouts/SidebarPageLayout'
 import { TasksTableClient } from '@/app/components/TasksTableClient'
 import tasksJson from '/tasks/tasks.json?raw'
-import { RequestInfo } from 'rwsdk/worker'
+import type { RequestInfo } from 'rwsdk/worker'
 
 interface Task {
   id: number
@@ -31,12 +29,12 @@ export function TasksPage(props: RequestInfo) {
   const tasks = getTasksData()
 
   return (
-    <HomeLayout {...props}>
+    <SidebarPageLayout {...props}>
       <div className="w-full px-6 mx-auto py-8">
         <h1 className="page-title">Tasks</h1>
 
         <TasksTableClient tasks={tasks} />
       </div>
-    </HomeLayout>
+    </SidebarPageLayout>
   )
 }

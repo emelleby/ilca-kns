@@ -1,6 +1,6 @@
+import { SidebarPageLayout } from '@/app/layouts/SidebarPageLayout'
 import { RequestInfo } from 'rwsdk/worker'
 import { db } from 'src/db'
-import { Suspense } from 'react'
 
 async function Testing({ ctx }: RequestInfo) {
   const user = await db.user.findUnique({ where: { id: ctx.user?.id } })
@@ -19,11 +19,11 @@ export async function Test(props: RequestInfo) {
   const content = await Testing(props)
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <SidebarPageLayout {...props}>
       <div className="container max-w-5xl mx-auto p-4">
         <h1>Testing</h1>
         {content}
       </div>
-    </Suspense>
+    </SidebarPageLayout>
   )
 }
