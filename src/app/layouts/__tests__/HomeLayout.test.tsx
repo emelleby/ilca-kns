@@ -11,18 +11,18 @@ vi.mock('@/app/shared/links', () => ({
       return path.replace(':username', params.username)
     }
     return path
-  }),
+  })
 }))
 
 // Mock ClientToaster component
 vi.mock('@/app/components/ClientToaster', () => ({
-  ClientToaster: () => <div data-testid="client-toaster">Toaster</div>,
+  ClientToaster: () => <div data-testid="client-toaster">Toaster</div>
 }))
 
 // Mock Avatar components
 vi.mock('@/app/components/ui/avatar', () => ({
   Avatar: ({ children }: { children: React.ReactNode }) => <div data-testid="avatar">{children}</div>,
-  AvatarFallback: ({ children }: { children: React.ReactNode }) => <div data-testid="avatar-fallback">{children}</div>,
+  AvatarFallback: ({ children }: { children: React.ReactNode }) => <div data-testid="avatar-fallback">{children}</div>
 }))
 
 describe('HomeLayout Component', () => {
@@ -33,12 +33,12 @@ describe('HomeLayout Component', () => {
       id: 'user-123',
       username: 'testuser',
       email: 'test@example.com',
-      role: 'USER',
-    },
+      role: 'USER'
+    }
   }
 
   const mockUnauthenticatedContext = {
-    user: null,
+    user: null
   }
 
   beforeEach(() => {
@@ -94,7 +94,7 @@ describe('HomeLayout Component', () => {
 
     it('should generate correct navigation links with username', () => {
       const mockLink = vi.mocked(link)
-      
+
       render(
         <HomeLayout ctx={mockAuthenticatedContext}>
           <div>Content</div>
@@ -140,8 +140,8 @@ describe('HomeLayout Component', () => {
           id: 'user-456',
           username: 'sailorjoe',
           email: 'joe@example.com',
-          role: 'USER',
-        },
+          role: 'USER'
+        }
       }
 
       render(
@@ -160,8 +160,8 @@ describe('HomeLayout Component', () => {
           id: 'user-789',
           username: '',
           email: 'empty@example.com',
-          role: 'USER',
-        },
+          role: 'USER'
+        }
       }
 
       render(
@@ -176,6 +176,17 @@ describe('HomeLayout Component', () => {
       expect(screen.queryByRole('link', { name: 'Profile' })).not.toBeInTheDocument()
       expect(screen.queryByTestId('avatar')).not.toBeInTheDocument()
     })
+    it('should hide navigation when hideNavigation is true but keep user info', () => {
+      render(
+        <HomeLayout ctx={mockAuthenticatedContext} hideNavigation>
+          <div>Content</div>
+        </HomeLayout>
+      )
+
+      expect(screen.queryByRole('navigation')).not.toBeInTheDocument()
+      expect(screen.getByTestId('avatar')).toBeInTheDocument()
+      expect(screen.getByText('testuser')).toBeInTheDocument()
+    })
   })
 
   describe('Unauthenticated User Navigation', () => {
@@ -189,7 +200,7 @@ describe('HomeLayout Component', () => {
       // Check unauthenticated navigation links
       expect(screen.getByRole('link', { name: /login/i })).toBeInTheDocument()
       expect(screen.getByRole('link', { name: /signup/i })).toBeInTheDocument()
-      
+
       // Should not show authenticated links
       expect(screen.queryByRole('link', { name: /profile/i })).not.toBeInTheDocument()
       expect(screen.queryByRole('link', { name: /settings/i })).not.toBeInTheDocument()
@@ -226,7 +237,7 @@ describe('HomeLayout Component', () => {
         { name: 'Tasks', href: '/tasks' },
         { name: 'Profile', href: '/user/testuser/profile' },
         { name: 'Settings', href: '/user/testuser/settings' },
-        { name: 'Logout', href: '/user/logout' },
+        { name: 'Logout', href: '/user/logout' }
       ]
 
       coreLinks.forEach(({ name, href }) => {
@@ -245,11 +256,10 @@ describe('HomeLayout Component', () => {
       )
 
       const logoLinks = screen.getAllByRole('link')
-      const homeLogoLink = logoLinks.find(link => 
-        link.querySelector('img[alt="KNS"]') || 
-        link.textContent?.includes('ILCA-KNS')
+      const homeLogoLink = logoLinks.find(
+        (link) => link.querySelector('img[alt="KNS"]') || link.textContent?.includes('ILCA-KNS')
       )
-      
+
       expect(homeLogoLink).toBeDefined()
       expect(homeLogoLink).toHaveAttribute('href', '/home')
     })

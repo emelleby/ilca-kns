@@ -9,6 +9,7 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -31,9 +32,10 @@ const iconMap = {
 
 interface SidebarLayoutClientProps {
   items: SidebarItem[]
+  children: React.ReactNode
 }
 
-export function SidebarLayoutClient({ items }: SidebarLayoutClientProps) {
+export function SidebarLayoutClient({ items, children }: SidebarLayoutClientProps) {
   return (
     <SidebarProvider>
       <Sidebar>
@@ -60,6 +62,9 @@ export function SidebarLayoutClient({ items }: SidebarLayoutClientProps) {
           </SidebarGroup>
         </SidebarContent>
       </Sidebar>
+      <SidebarInset>
+        <div className="container max-w-5xl mx-auto p-4">{children}</div>
+      </SidebarInset>
     </SidebarProvider>
   )
 }

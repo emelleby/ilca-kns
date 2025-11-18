@@ -4,7 +4,21 @@ import { link } from '@/app/shared/links'
 import { Avatar, AvatarFallback } from '@/app/components/ui/avatar'
 import { ClientToaster } from '@/app/components/ClientToaster'
 
-const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode }) => {
+interface HomeLayoutProps extends RequestInfo {
+  children: React.ReactNode
+  /**
+   * When true, hides the primary navigation menu.
+   * Useful for pages that provide their own navigation (e.g. sidebar layouts).
+   */
+  hideNavigation?: boolean
+}
+
+const HomeLayout = ({ ctx, children, hideNavigation }: HomeLayoutProps) => {
+  const username = ctx?.user?.username
+
+  const showAuthenticatedNav = !!username && !hideNavigation
+  const showUnauthenticatedNav = (!ctx?.user || !username) && !hideNavigation
+
   return (
     <div className="">
       <header className="w-full h-16 bg-primary flex items-center justify-between px-8 shadow-md">
@@ -12,8 +26,9 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
           <img src="/images/!logo.png" alt="KNS" className="h-10 w-10 rounded-full object-contain" />
           <span className="text-white text-xl font-bold tracking-wide">ILCA-KNS</span>
         </a>
-        <nav>
-          {ctx?.user && ctx.user.username ? (
+
+        {showAuthenticatedNav && (
+          <nav>
             <ul className="flex items-center gap-4">
               <li>
                 <a href={link('/test')} className="text-white hover:underline">
@@ -26,18 +41,12 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
                 </a>
               </li>
               <li>
-                <a
-                  href={link('/user/:username/profile', { username: ctx.user.username })}
-                  className="text-white hover:underline"
-                >
+                <a href={link('/user/:username/profile', { username })} className="text-white hover:underline">
                   Profile
                 </a>
               </li>
               <li>
-                <a
-                  href={link('/user/:username/settings', { username: ctx.user.username })}
-                  className="text-white hover:underline"
-                >
+                <a href={link('/user/:username/settings', { username })} className="text-white hover:underline">
                   Settings
                 </a>
               </li>
@@ -47,19 +56,23 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
                 </a>
               </li>
               <li>
-                <a href={link('/user/:username/profile', { username: ctx.user.username })}>
+                <a href={link('/user/:username/profile', { username })}>
                   <Avatar>
-                    <AvatarFallback>{ctx.user.username[0]?.toUpperCase() || 'U'}</AvatarFallback>
+                    <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
                   </Avatar>
                 </a>
               </li>
               <li className="text-white font-medium">
-                <a href={link('/user/:username/profile', { username: ctx.user.username })} className="hover:underline">
-                  {ctx.user.username}
+                <a href={link('/user/:username/profile', { username })} className="hover:underline">
+                  {username}
                 </a>
               </li>
             </ul>
-          ) : (
+          </nav>
+        )}
+
+        {showUnauthenticatedNav && (
+          <nav>
             <ul className="flex items-center gap-4">
               <li>
                 <a href={link('/user/login')} className="text-white hover:underline">
@@ -72,8 +85,21 @@ const HomeLayout = ({ ctx, children }: RequestInfo & { children: React.ReactNode
                 </a>
               </li>
             </ul>
-          )}
-        </nav>
+          </nav>
+        )}
+
+        {hideNavigation && username && (
+          <div className="flex items-center gap-4 text-white">
+            <a href={link('/user/:username/profile', { username })}>
+              <Avatar>
+                <AvatarFallback>{username[0]?.toUpperCase() || 'U'}</AvatarFallback>
+              </Avatar>
+            </a>
+            <a href={link('/user/:username/profile', { username })} className="hover:underline font-medium">
+              {username}
+            </a>
+          </div>
+        )}
       </header>
       <main className="">
         <Suspense fallback={<div className="p-4 text-center">Loading...</div>}>{children}</Suspense>
