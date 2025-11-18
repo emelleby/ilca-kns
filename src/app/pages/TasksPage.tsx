@@ -1,4 +1,4 @@
-import { SidebarPageLayout } from '@/app/layouts/SidebarPageLayout'
+import { SidebarLayout } from '@/app/layouts/SidebarLayout'
 import { TasksTableClient } from '@/app/components/TasksTableClient'
 import tasksJson from '/tasks/tasks.json?raw'
 import type { RequestInfo } from 'rwsdk/worker'
@@ -29,12 +29,12 @@ export function TasksPage(props: RequestInfo) {
   const tasks = getTasksData()
 
   return (
-    <SidebarPageLayout {...props}>
+    <SidebarLayout {...props}>
       <div className="w-full px-6 mx-auto py-8">
         <h1 className="page-title">Tasks</h1>
 
         <TasksTableClient tasks={tasks} />
       </div>
-    </SidebarPageLayout>
+    </SidebarLayout>
   )
 }

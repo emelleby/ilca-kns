@@ -20,10 +20,8 @@ export async function Test(props: RequestInfo) {
 
   return (
     <SidebarPageLayout {...props}>
-      <div className="container max-w-5xl mx-auto p-4">
-        <h1>Testing</h1>
-        {content}
-      </div>
+      <h1>Testing</h1>
+      {content}
     </SidebarPageLayout>
   )
 }

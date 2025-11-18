@@ -1,23 +1,29 @@
 import type { RequestInfo } from 'rwsdk/worker'
+import React from 'react'
 import { link } from '@/app/shared/links'
+import { Home, ListTodo, TestTube, User, Settings } from 'lucide-react'
+import { AppSidebar } from '@/app/layouts/components/app-sidebar'
+import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/app/components/ui/sidebar'
+import SidebarHeader from '@/app/layouts/components/SidebarHeader'
 
 interface SidebarNavItem {
   title: string
   href: string
+  icon: React.ComponentType<{ className?: string }>
 }
 
-function getSidebarItems(ctx: RequestInfo['ctx']): SidebarNavItem[] {
+async function getSidebarItems(ctx: RequestInfo['ctx']): Promise<SidebarNavItem[]> {
   const items: SidebarNavItem[] = [
-    { title: 'Home', href: link('/home') },
-    { title: 'Tasks', href: link('/tasks') },
-    { title: 'Test', href: link('/test') }
+    { title: 'Home', href: link('/home'), icon: Home },
+    { title: 'Tasks', href: link('/tasks'), icon: ListTodo },
+    { title: 'Test', href: link('/test'), icon: TestTube }
   ]
 
   if (ctx?.user?.username) {
     const username = ctx.user.username
     items.push(
-      { title: 'Profile', href: link('/user/:username/profile', { username }) },
-      { title: 'Settings', href: link('/user/:username/settings', { username }) }
+      { title: 'Profile', href: link('/user/:username/profile', { username }), icon: User },
+      { title: 'Settings', href: link('/user/:username/settings', { username }), icon: Settings }
     )
   }
 
@@ -28,23 +34,15 @@ export function SidebarPageLayout(props: RequestInfo & { children: React.ReactNo
   const items = getSidebarItems(props.ctx)
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-64 border-r bg-sidebar text-sidebar-foreground">
-        <nav className="p-4 space-y-1">
-          {items.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className="block rounded px-3 py-2 text-sm hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
-            >
-              {item.title}
-            </a>
-          ))}
-        </nav>
-      </aside>
-      <main className="flex-1">
-        <div className="container max-w-5xl mx-auto p-4">{props.children}</div>
-      </main>
-    </div>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <SidebarHeader />
+        <main>
+          <SidebarTrigger />
+          {props.children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
   )
 }
