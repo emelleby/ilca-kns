@@ -1,9 +1,9 @@
-import { SidebarPageLayout } from '@/app/layouts/SidebarPageLayout'
+import { SidebarLayout } from '@/app/layouts/SidebarLayout'
 import { RequestInfo } from 'rwsdk/worker'
 import { db } from 'src/db'
 
-async function Testing({ ctx }: RequestInfo) {
-  const user = await db.user.findUnique({ where: { id: ctx.user?.id } })
+function Testing({ ctx }: RequestInfo) {
+  const user = db.user.findUnique({ where: { id: ctx.user?.id } })
   console.log(user)
   return (
     <div className="p-4">
@@ -16,12 +16,14 @@ async function Testing({ ctx }: RequestInfo) {
 }
 
 export async function Test(props: RequestInfo) {
-  const content = await Testing(props)
+  const content = Testing(props)
 
   return (
-    <SidebarPageLayout {...props}>
-      <h1>Testing</h1>
-      {content}
-    </SidebarPageLayout>
+    <SidebarLayout {...props}>
+      <div className="w-full px-6 mx-auto py-8">
+        <h1>Testing</h1>
+        {content}
+      </div>
+    </SidebarLayout>
   )
 }

@@ -1,16 +1,17 @@
-//'use client'
-
-import { SidebarProvider, SidebarTrigger } from '@/app/components/ui/sidebar'
-import { AppSidebar } from '@/app/layouts/components/app-sidebar'
+import { SidebarProvider, SidebarInset } from '@/app/components/ui/sidebar'
+import { AppSidebar } from '@/app/components/app-sidebar'
+import SidebarHeader from '@/app/layouts/components/SidebarHeader'
 
 export function SidebarLayout({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider>
       <AppSidebar />
-      <main>
-        <SidebarTrigger />
-        {children}
-      </main>
+      <SidebarInset>
+        <main>
+          <SidebarHeader />
+          {children}
+        </main>
+      </SidebarInset>
     </SidebarProvider>
   )
 }
