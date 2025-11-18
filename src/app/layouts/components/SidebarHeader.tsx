@@ -1,6 +1,6 @@
-'use client'
+"use client"
 
-import { SidebarTrigger } from '@/app/components/ui/sidebar'
+import { SidebarTrigger } from "@/app/components/ui/sidebar"
 
 export default function SidebarHeader() {
   return (

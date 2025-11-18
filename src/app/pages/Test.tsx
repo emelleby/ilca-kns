@@ -1,9 +1,9 @@
-import { SidebarLayout } from '@/app/layouts/SidebarLayout'
-import { RequestInfo } from 'rwsdk/worker'
-import { db } from 'src/db'
+import { SidebarLayout } from "@/app/layouts/SidebarLayout"
+import { RequestInfo } from "rwsdk/worker"
+import { db } from "src/db"
 
-function Testing({ ctx }: RequestInfo) {
-  const user = db.user.findUnique({ where: { id: ctx.user?.id } })
+async function Testing({ ctx }: RequestInfo) {
+  const user = await db.user.findUnique({ where: { id: ctx.user?.id } })
   console.log(user)
   return (
     <div className="p-4">
@@ -16,7 +16,7 @@ function Testing({ ctx }: RequestInfo) {
 }
 
 export async function Test(props: RequestInfo) {
-  const content = Testing(props)
+  const content = await Testing(props)
 
   return (
     <SidebarLayout {...props}>
