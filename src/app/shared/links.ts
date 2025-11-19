@@ -5,6 +5,7 @@ export const link = defineLinks([
   "/home",
   "/tasks",
   "/test",
+  "/test2",
   "/user/login",
   "/user/signup",
   "/user/logout",

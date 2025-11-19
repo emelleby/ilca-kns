@@ -1,5 +1,6 @@
 ---
 type: "agent_requested"
+description: "When dealing withrequest and reponse"
 ---
 
 # RedwoodSDK: Request handling and responses

@@ -34,6 +34,31 @@ export default defineApp([
 
 ## Common Middleware Patterns
 
+### Basic Middleware Structure
+
+```tsx
+export default defineApp([
+  setCommonHeaders(),
+  async ({ ctx, request, response }) => {
+    await setupDb(env);
+    setupSessionStore(env);
+    try {
+      // Grab the session's data.
+      ctx.session = await sessions.load(request);
+    } catch (error) {
+      if (error instanceof ErrorResponse && error.code === 401) {
+        await sessions.remove(request, response.headers);
+        response.headers.set("Location", "/user/login");
+
+        return new Response(null, {
+          status: 302,
+          headers: response.headers,
+        });
+      }
+
+      throw error;
+    }
+
 ### Security Headers Middleware
 
 ```typescript
@@ -201,3 +226,4 @@ To debug middleware issues:
 2. Use the RedwoodSDK dev tools to inspect requests and middleware execution
 3. Check the server logs for any errors or unexpected behavior
 4. Use browser network tools to inspect request/response headers and status codes
+

@@ -2,6 +2,7 @@ import { SidebarLayout } from "@/app/layouts/SidebarLayout"
 import { TasksTableClient } from "@/app/components/TasksTableClient"
 import tasksJson from "/tasks/tasks.json?raw"
 import type { RequestInfo } from "rwsdk/worker"
+import { TestingContent } from "./TestingContent"
 
 interface Task {
   id: number
@@ -29,7 +30,7 @@ export function TasksPage(props: RequestInfo) {
   const tasks = getTasksData()
 
   return (
-    <SidebarLayout {...props}>
+    <SidebarLayout>
       <div className="w-full px-6 mx-auto py-8">
         <h1 className="page-title">Tasks</h1>
         <TasksTableClient tasks={tasks} />

@@ -3,30 +3,35 @@ import { IS_DEV } from "rwsdk/constants";
 
 export const setCommonHeaders =
   (): RouteMiddleware =>
-  ({ headers, rw: { nonce } }) => {
+  ({ response, rw: { nonce }, isAction }) => {
+    // Skip setting headers for RSC actions - they don't need security headers
+    if (isAction) {
+      return;
+    }
+
     if (!IS_DEV) {
       // Forces browsers to always use HTTPS for a specified time period (2 years)
-      headers.set(
+      response.headers.set(
         "Strict-Transport-Security",
         "max-age=63072000; includeSubDomains; preload",
       );
     }
 
     // Forces browser to use the declared content-type instead of trying to guess/sniff it
-    headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("X-Content-Type-Options", "nosniff");
 
     // Stops browsers from sending the referring webpage URL in HTTP headers
-    headers.set("Referrer-Policy", "no-referrer");
+    response.headers.set("Referrer-Policy", "no-referrer");
 
     // Explicitly disables access to specific browser features/APIs
-    headers.set(
+    response.headers.set(
       "Permissions-Policy",
       "geolocation=(), microphone=(), camera=()",
     );
 
 
     // Defines trusted sources for content loading and script execution:
-    headers.set(
+    response.headers.set(
       "Content-Security-Policy",
       `default-src 'self'; script-src 'self' 'unsafe-eval' 'nonce-${nonce}' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https://images.unsplash.com https://picsum.photos data:; frame-src https://challenges.cloudflare.com; object-src 'none';`
     );
