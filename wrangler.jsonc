@@ -1,44 +1,48 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ilcakns",
-  "main": "src/worker.tsx",
-  "compatibility_date": "2025-09-21",
-  "compatibility_flags": ["nodejs_compat"],
-  "assets": {
-    "binding": "ASSETS"
-  },
-  "observability": {
-    "enabled": false
-  },
-  "durable_objects": {
-    "bindings": [
-      {
-        "name": "SESSION_DURABLE_OBJECT",
-        "class_name": "SessionDurableObject"
-      }
-    ]
-  },
-  "vars": {
-    "WEBAUTHN_APP_NAME": "ilcakns",
-    "EMAIL_FROM": "onboarding@resend.dev"
-  },
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["SessionDurableObject"]
-    }
-  ],
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "ilca2",
-      "database_id": "e8b88e37-b09d-4ab9-a46a-7ca1db170bb0"
-    }
-  ],
-  "r2_buckets": [
-    {
-      "binding": "STORAGE",
-      "bucket_name": "ilca2"
-    }
-  ]
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "ilcakns",
+	"main": "src/worker.tsx",
+	"compatibility_date": "2025-09-21",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"assets": {
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": false
+	},
+	"durable_objects": {
+		"bindings": [
+			{
+				"name": "SESSION_DURABLE_OBJECT",
+				"class_name": "SessionDurableObject"
+			}
+		]
+	},
+	"vars": {
+		"WEBAUTHN_APP_NAME": "ilcakns",
+		"EMAIL_FROM": "onboarding@resend.dev"
+	},
+	"migrations": [
+		{
+			"tag": "v1",
+			"new_sqlite_classes": [
+				"SessionDurableObject"
+			]
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "ilca2",
+			"database_id": "e8b88e37-b09d-4ab9-a46a-7ca1db170bb0"
+		}
+	],
+	"r2_buckets": [
+		{
+			"binding": "STORAGE",
+			"bucket_name": "ilca2"
+		}
+	]
 }

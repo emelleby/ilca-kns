@@ -1,10 +1,13 @@
 import { defineApp, ErrorResponse } from "rwsdk/worker"
-import { route, render, prefix } from "rwsdk/router"
+import { layout, route, render, prefix } from "rwsdk/router"
+import { SidebarLayout } from "@/app/layouts/SidebarLayout"
+import { HomeLayout } from "./app/layouts/HomeLayout"
 import { Document } from "@/app/Document"
 import { Home } from "@/app/pages/Home"
 import { FrontPage } from "@/app/pages/FrontPage"
 import { Test } from "@/app/pages/Test"
 import { Test2 } from "@/app/pages/Test2"
+import { Test3 } from "@/app/pages/Test3"
 import AuthSettings from "@/app/pages/user/settings/AuthSettings"
 import { TasksPage } from "@/app/pages/TasksPage"
 import { setCommonHeaders } from "@/app/headers"
@@ -69,13 +72,18 @@ export default defineApp([
     }
   },
   render(Document, [
+    layout(SidebarLayout, [
+      route("/test", [isAuthenticated, Test]),
+      route("/test2", [isAuthenticated, Test2]),
+      route("/test3", [isAuthenticated, Test3]),
+      route("/tasks", TasksPage)
+    ]),
     route("/", FrontPage),
-    route("/test", [isAuthenticated, Test]),
-    route("/test2", [isAuthenticated, Test2]),
+
     route("/pingo", function () {
       return <h1>Pongo!</h1>
     }),
-    route("/tasks", TasksPage),
+
     route("/home", [isAuthenticated, Home]),
 
     route("/protected", [

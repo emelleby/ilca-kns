@@ -1,8 +1,8 @@
-import { initClient } from 'rwsdk/client'
+// import { initClient } from 'rwsdk/client'
 
-initClient()
+// initClient()
 
-// import { initClient, initClientNavigation } from 'rwsdk/client'
+import { initClient, initClientNavigation } from "rwsdk/client"
 
-// const { handleResponse } = initClientNavigation()
-// initClient({ handleResponse })
+const { handleResponse } = initClientNavigation()
+initClient({ handleResponse })
