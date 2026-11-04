@@ -2,7 +2,7 @@
 
 | | |
 |---|---|
-| **Status** | Ikke utbedret. Funnet og verifisert 2026-11-04 |
+| **Status** | Utbedret i kode 2026-11-04 (gren `claude/focused-euler-6nlxqf`): repro-skriptet gir 13/13 `DENIED`. Driftssjekk (§6) gjenstår etter deploy |
 | **Alvorlighet** | Kritisk: kontoovertakelse uten innlogging, uautorisert endring av roller og data |
 | **Berørt kode** | `main` (rwsdk 1.7.5, commit `c64232e`) og gren `claude/phase1-posts`. Sannsynligvis også eldre versjoner (koden er uendret), men dette er ikke testet |
 | **Oppgave** | `tasks/tasks.json` oppgave 29. Skal gjøres før oppgave 28 og 6 |

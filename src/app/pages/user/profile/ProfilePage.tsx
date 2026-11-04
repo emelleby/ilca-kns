@@ -1,6 +1,6 @@
 import { HomeLayout } from "@/app/layouts/HomeLayout";
 import { RequestInfo } from "rwsdk/worker";
-import { getOrCreateUserProfile } from "./functions";
+import { applyProfilePrivacy, getOrCreateUserProfile } from "@/app/lib/profiles";
 
 import { db } from "@/db"; // Add db import
 
@@ -31,7 +31,6 @@ export default async function ProfilePage({ UserId, isOwnProfile = false, ...pro
 
   const profileUserName = user.username; // Now we have the ID
   const profileUserId = user.id; // Now we have the ID
-  const currentUserId = props.ctx.user?.id;
 
   // Auto-create profile if it doesn't exist
   const profile = await getOrCreateUserProfile(profileUserId);
@@ -50,19 +49,7 @@ export default async function ProfilePage({ UserId, isOwnProfile = false, ...pro
   }
 
   // Apply privacy settings for public view
-  const displayProfile = currentUserId === profileUserId ? profile : {
-    ...profile,
-    user: {
-      ...profile.user,
-      email: profile.privacySettings.showEmail ? profile.user.email : null,
-    },
-    location: profile.privacySettings.showLocation ? profile.location : null,
-    experienceLevel: profile.privacySettings.showExperience ? profile.experienceLevel : null,
-    sailingExperience: profile.privacySettings.showExperience ? (profile as any).sailingExperience : null,
-    certifications: profile.privacySettings.showExperience ? profile.certifications : [],
-    boatInformation: profile.privacySettings.showBoatInfo ? profile.boatInformation : {},
-    clubAffiliation: profile.privacySettings.showExperience ? (profile as any).clubAffiliation : null,
-  };
+  const displayProfile = applyProfilePrivacy(profile, props.ctx.user);
 
   const formatDate = (dateString: string | Date) => {
     const date = typeof dateString === 'string' ? new Date(dateString) : dateString;

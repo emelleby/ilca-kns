@@ -95,7 +95,7 @@ export default function ProfileSetup({ user }: ProfileSetupProps) {
 
     startTransition(async () => {
       try {
-        const success = await createUserProfile(user.id, formData);
+        const success = await createUserProfile(formData);
         if (success) {
           setResult("Profile created successfully!");
           // Redirect to profile view or home

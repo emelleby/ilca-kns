@@ -44,7 +44,7 @@ src/
   session/            # store.ts, durableObject.ts
   app/
     Document.tsx, headers.ts, interceptors.ts
-    auth/             # email.ts (Resend), password.ts
+    auth/             # email.ts (Resend), password.ts, guards.ts (autorisasjon i server functions)
     components/       # PostCard, PostList, PostFilter, ProfileEditForm, UserProfileSidebar, ui/ (shadcn)
     layouts/          # HomeLayout, AuthLayout, SidebarLayout
     pages/
@@ -100,7 +100,7 @@ Alle skjemaendringer skal være additive (nye tabeller / nullable kolonner), sli
 
 - **Server-først**: sider er serverkomponenter som henter data; `"use client"` kun for interaktivitet. Se `reference/memory-bank/redwoodSDKPatterns.md`.
 - **Server functions** (`"use server"`) for mutasjoner, plassert i `functions.ts` ved siden av siden.
-- **Autorisasjon** gjøres i serveren (middleware / interrupter eller i funksjonen). Aldri kun i UI.
+- **Autorisasjon** gjøres i serveren. Ruteinterceptors (`interceptors.ts`) beskytter bare sider. Hver eksportert funksjon i en `"use server"`-fil er et endepunkt som kan kalles direkte, og må starte med en guard fra `src/app/auth/guards.ts`: `requireUser`, `requireSuperUser`, `requireSelfOrSuperUser(userId)` eller `requireOrganizationRole(orgId, minsteRolle)` (SUPERUSER passerer alltid; rollehierarki fra `shared/constants.ts`). Guards kaster `Unauthorized`/`Forbidden`. «Meg» tas alltid fra `ctx.user`, aldri fra et argument. Offentlige funksjoner (innlogging, registrering, token-lenker) merkes `// PUBLIC:` og står på tillatt-listen i `auth/__tests__/serverFunctionGuards.test.ts`, som feiler hvis en ny eksportert funksjon mangler guard. Interne hjelpere ligger i vanlige moduler (`lib/profiles.ts`, `lib/organizations.ts`), ikke i `"use server"`-filer. Valider input med zod, og returner ikke mer enn UI trenger. Bakgrunn: `docs/security/server-function-authorization.md`.
 - **Cloudflare Workers-fallgruver**: hengende Promises (unngå unødvendig `async`, bruk Suspense rundt asynkrone serverkomponenter) og at bare «plain objects» kan sendes til klientkomponenter. Detaljer i `reference/memory-bank/techContext.md`.
 - **Ytelse/rettigheter**: bruk ett indeksert Prisma-oppslag mot `OrganizationMembership` per forespørsel. Vi bygger ikke egen rettighetscache eller denormalisert `permissionsJson` før det er målt et faktisk problem.
 
@@ -112,7 +112,7 @@ Alle skjemaendringer skal være additive (nye tabeller / nullable kolonner), sli
 
 ## 6. Test
 
-Vitest, jsdom, 108 tester i 8 filer (`pnpm test`):
+Vitest, jsdom, 142 tester i 11 filer (`pnpm test`):
 
 | Fil | Tester |
 |---|---|
@@ -124,6 +124,9 @@ Vitest, jsdom, 108 tester i 8 filer (`pnpm test`):
 | `pages/user/__tests__/passwordReset.test.ts` | 6 |
 | `lib/__tests__/postVisibility.test.ts` | 34 |
 | `lib/__tests__/posts.test.ts` | 4 |
+| `auth/__tests__/guards.test.ts` | 5 |
+| `auth/__tests__/serverFunctionAuthz.test.ts` | 23 |
+| `auth/__tests__/serverFunctionGuards.test.ts` | 6 |
 
 Mønster: mock `cloudflare:workers`, `rwsdk/worker`, `@/db` og sesjon i `src/test/setup.ts`; gjenbrukbare hjelpere i `src/test/utils/serverFunctionMockHelper.ts`. Nye server functions skal ha tester etter samme mønster. Playwright/E2E er ikke satt opp.
 

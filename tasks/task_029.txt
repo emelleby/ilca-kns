@@ -1,6 +1,6 @@
 # Task ID: 29
 # Title: Authorization in server functions (security fix)
-# Status: pending
+# Status: in-progress
 # Dependencies: 3, 5
 # Priority: high
 # Description: [Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md
@@ -22,6 +22,8 @@ Delmål:
 29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER
 29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner
 29.9 Oppdater architecture.md, progress.md og denne oppgaven
+
+Status 2026-11-04: 29.1–29.7 og 29.9 ferdig (gren claude/focused-euler-6nlxqf). Repro-skriptet gir 13/13 DENIED, exit 0. Gjenstår: 29.8 (drift i produksjon, må gjøres av eier) og manuell test av passkey med ekte autentikator.
 
 # Test Strategy:
 Ekte funksjoner med mocket db/requestInfo (som passwordReset.test.ts): uten bruker avvist, vanlig bruker på annens data avvist, riktig bruker/SUPERUSER ok. Sikkerhetsnett-test over alle 'use server'-filer. Akseptansetest: node docs/security/repro-server-function-authz.cjs mot lokal dev gir 13/13 DENIED og exit 0. Regresjon: eksisterende 108 tester, pnpm build, manuell røyktest av innlogging, profil, passkey, reset og superuser-dashboard.

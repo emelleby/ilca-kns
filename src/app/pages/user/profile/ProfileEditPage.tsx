@@ -2,7 +2,7 @@ import { db } from "@/db";
 import { RequestInfo } from "rwsdk/worker";
 import { HomeLayout } from "@/app/layouts/HomeLayout";
 import { SimpleProfileEditForm } from "@/app/components/ProfileEditForm";
-import { getOrCreateUserProfile } from "./functions";
+import { getOrCreateUserProfile } from "@/app/lib/profiles";
 
 interface ProfileEditPageProps extends RequestInfo {
   UserId: string;

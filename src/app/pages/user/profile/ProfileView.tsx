@@ -24,7 +24,7 @@ export default function ProfileView({ profileUserId, isOwnProfile = false, curre
     const loadProfile = async () => {
       try {
         setLoading(true);
-        const profileData = await getPublicProfile(profileUserId, currentUserId);
+        const profileData = await getPublicProfile(profileUserId);
 
         if (!profileData) {
           setError("Profile not found");

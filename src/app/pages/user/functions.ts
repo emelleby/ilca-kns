@@ -16,7 +16,9 @@ import { env } from "cloudflare:workers";
 import { hashPassword, verifyPassword } from "@/app/auth/password";
 import { randomBytes } from "crypto";
 import { sendEmail, generatePasswordResetEmail } from "@/app/auth/email";
-import { autoCreateUserProfile } from "./profile/functions";
+import { autoCreateUserProfile } from "@/app/lib/profiles";
+import { requireUser } from "@/app/auth/guards";
+import { z } from "zod";
 
 function getWebAuthnConfig(request: Request) {
   const rpID = env.WEBAUTHN_RP_ID ?? new URL(request.url).hostname;
@@ -27,6 +29,7 @@ function getWebAuthnConfig(request: Request) {
   };
 }
 
+// PUBLIC: starts sign-up / adding a passkey; only stores a challenge in the session
 export async function startPasskeyRegistration(username: string) {
   const { rpName, rpID } = getWebAuthnConfig(requestInfo.request);
   const headers = requestInfo.response.headers;
@@ -48,6 +51,7 @@ export async function startPasskeyRegistration(username: string) {
   return options;
 }
 
+// PUBLIC: sign-in
 export async function startPasskeyLogin() {
   const { rpID } = getWebAuthnConfig(requestInfo.request);
   const headers = requestInfo.response.headers;
@@ -63,6 +67,7 @@ export async function startPasskeyLogin() {
   return options;
 }
 
+// PUBLIC: sign-up
 export async function finishPasskeyRegistration(
   username: string,
   registration: RegistrationResponseJSON,
@@ -136,6 +141,7 @@ export async function finishPasskeyRegistration(
   return true;
 }
 
+// PUBLIC: sign-in
 export async function finishPasskeyLogin(login: AuthenticationResponseJSON) {
   const { request } = requestInfo;
   const headers = requestInfo.response.headers;
@@ -203,6 +209,7 @@ export async function finishPasskeyLogin(login: AuthenticationResponseJSON) {
 }
 
 // Add email/password registration
+// PUBLIC: sign-up
 export async function registerWithPassword(username: string, email: string, password: string) {
   // Hash password
   const hashedPassword = await hashPassword(password);
@@ -235,6 +242,7 @@ export async function registerWithPassword(username: string, email: string, pass
 }
 
 // Add email/password login
+// PUBLIC: sign-in
 export async function loginWithPassword(email: string, password: string) {
   // Find user
   const user = await db.user.findUnique({
@@ -256,8 +264,9 @@ export async function loginWithPassword(email: string, password: string) {
   return true;
 }
 
-// Add function to link passkey to existing account
-export async function addPasskeyToExistingAccount(userId: string, registration: RegistrationResponseJSON) {
+// SELF: add a passkey to the signed-in user's own account.
+export async function addPasskeyToExistingAccount(registration: RegistrationResponseJSON) {
+  const userId = requireUser().id;
   const { request } = requestInfo;
   const headers = requestInfo.response.headers;
   const { origin } = new URL(request.url);
@@ -315,13 +324,30 @@ export async function addPasskeyToExistingAccount(userId: string, registration: 
   return true;
 }
 
-// Add function to link email/password to passkey account
-export async function addPasswordToPasskeyAccount(userId: string, email: string, password: string) {
-  const hashedPassword = await hashPassword(password);
+// SELF: add email/password to the signed-in user's own passkey account.
+// Only for accounts without a password; changing an existing password needs re-authentication
+// (not built yet).
+export async function addPasswordToPasskeyAccount(email: string, password: string) {
+  const user = requireUser();
+  const parsed = z
+    .object({ email: z.string().trim().email().max(254), password: z.string().min(8).max(200) })
+    .safeParse({ email, password });
+  if (!parsed.success) return false;
+  email = parsed.data.email;
 
-  // Update existing user
+  const current = await db.user.findUnique({
+    where: { id: user.id },
+    select: { password: true },
+  });
+  if (!current || current.password) return false;
+
+  const emailOwner = await db.user.findUnique({ where: { email }, select: { id: true } });
+  if (emailOwner && emailOwner.id !== user.id) return false;
+
+  const hashedPassword = await hashPassword(parsed.data.password);
+
   await db.user.update({
-    where: { id: userId },
+    where: { id: user.id },
     data: {
       email,
       password: hashedPassword,
@@ -332,20 +358,14 @@ export async function addPasswordToPasskeyAccount(userId: string, email: string,
 }
 
 export async function removePasskey(credentialId: string) {
-  "use server";
-  const { ctx } = requestInfo;
-
-  if (!ctx.user) {
-    // Ensure user is authenticated
-    throw new Error("Unauthorized");
-  }
+  const user = requireUser();
 
   try {
     // Delete the credential, ensuring it belongs to the authenticated user
     await db.credential.delete({
       where: {
         credentialId: credentialId,
-        userId: ctx.user.id,
+        userId: user.id,
       },
     });
     return { success: true };
@@ -356,6 +376,7 @@ export async function removePasskey(credentialId: string) {
 }
 
 // Add password reset functions
+// PUBLIC: forgot password; same response whether or not the email exists
 export async function requestPasswordReset(email: string) {
   // Find user
   const user = await db.user.findUnique({
@@ -412,18 +433,20 @@ export async function requestPasswordReset(email: string) {
   return true;
 }
 
+// PUBLIC (TOKEN). Returns only what the reset page shows, never the user row.
 export async function verifyResetToken(token: string) {
   const reset = await db.passwordReset.findFirst({
     where: {
       token,
       expires: { gt: new Date() }
     },
-    include: { user: true }
+    include: { user: { select: { username: true } } }
   });
 
-  return reset ? reset.user : null;
+  return reset ? { username: reset.user.username } : null;
 }
 
+// PUBLIC: TOKEN: knowing the reset token is the authorization
 export async function resetPassword(token: string, newPassword: string) {
   const reset = await db.passwordReset.findFirst({
     where: {

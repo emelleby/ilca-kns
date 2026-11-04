@@ -9,7 +9,8 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Åpne punkter
 
-- **SIKKERHET (høyeste prioritet, oppgave 29; full dokumentasjon i `docs/security/server-function-authorization.md`, reproduksjon i `docs/security/repro-server-function-authz.cjs`):** server functions mangler autorisasjon. Verifisert i nettleser mot dev: en uinnlogget besøkende kan opprette organisasjoner, og en vanlig bruker kan gjøre seg selv til ADMIN i en klubb. I tillegg kan profiler endres/slettes av andre, `getPublicProfile` kan omgå personvern (klienten sender `viewerId`), og `addPasswordToPasskeyAccount`/`addPasskeyToExistingAccount` tar `userId` fra klienten (mulig kontoovertakelse hvis bruker-ID er kjent). Gjelder `superuser/functions.ts`, `user/functions.ts` og `user/profile/functions.ts`. Hvis dette kjører i produksjon bør det utbedres før mer bygges, og databasen sjekkes for uventede organisasjoner, medlemskap og roller.
+- **SIKKERHET (oppgave 29):** autorisasjon i server functions er utbedret på grenen `claude/focused-euler-6nlxqf` (venter på gjennomgang og merge). Gjenstår for eier etter deploy: sjekk produksjonsdatabasen for uventede organisasjoner, medlemskap, passkeys og kontoer (spørringer i `docs/security/server-function-authorization.md` §6), slå på logging, og vurder å ugyldiggjøre sesjoner. Passkey (legge til på eksisterende konto) er ikke testet med ekte autentikator.
+- Oppfølging fra sikkerhetsgjennomgangen (ikke blokkerende): rate limiting på innlogging/registrering/reset, endring av eksisterende passord krever re-autentisering (ikke bygget; `addPasswordToPasskeyAccount` avviser kontoer som har passord), sesjonsrotasjon etter endring av innloggingsmetode. `superuser/routes.tsx` har fortsatt en egen kopi av `isSuperUser`.
 
 - `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.
 - Før merge til produksjon: test passkey-innlogging og e-post (reset) manuelt; `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
@@ -21,6 +22,15 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`) er utdaterte og kan slettes.
 
 ## Logg
+
+### 2026-11-04 – Autorisasjon i server functions (oppgave 29)
+- Nye guards i `src/app/auth/guards.ts` (`requireUser`, `requireSuperUser`, `requireSelfOrSuperUser`, `requireOrganizationRole`). `interceptors.ts` bruker samme rolleoppslag.
+- `superuser/functions.ts`: alt krever SUPERUSER, unntatt invitasjoner (token/innlogget). `createInvitation` tar `createdBy` fra sesjonen, `acceptInvitation` bruker innlogget bruker og krever at e-posten matcher. `getInvitationByToken` returnerer bare navn/e-post/rolle/utløp. Roller valideres med zod.
+- `user/functions.ts`: `addPasskeyToExistingAccount` og `addPasswordToPasskeyAccount` tar ikke lenger `userId`; den siste avviser kontoer som allerede har passord og e-post som tilhører en annen. `verifyResetToken` returnerer bare brukernavn (før: hele raden med passordhash).
+- Profiler: interne hjelpere flyttet til `src/app/lib/profiles.ts` (ikke lenger endepunkter). `getPublicProfile(userId)` bruker innlogget bruker for personvern; `createUserProfile` oppretter bare for innlogget bruker; `updateUserProfile`/`deleteUserProfile` krever eier eller SUPERUSER. Ubrukt `updateProfilePicture` fjernet. `ProfilePage` bruker samme `applyProfilePrivacy`.
+- Tester: 34 nye (guards, ekte funksjoner med mocket db, og en sikkerhetsnett-test som feiler hvis en eksportert `"use server"`-funksjon mangler guard og ikke står på tillatt-listen). 142 tester, `tsc` uendret (30), bygg OK.
+- Akseptansetest: `repro-server-function-authz.cjs` gir 13/13 DENIED, exit 0. Lovlige kall sjekket i nettleser: SUPERUSER oppretter/sletter organisasjon og ser dashboard, alice leser egne organisasjoner, redigerer egen profil og ser bobs profil uten skjulte felt.
+- Lærdom: en kastet feil i en server function kommer til klienten som «Connection closed» i dev. UI-kallere som kan treffe en guard bør håndtere kastede feil.
 
 ### 2026-11-04 – Gjennomgang av oppgave 5 og 6
 - Oppgave 5 (RBAC) er ikke ferdig. Ferdig: datamodell, roller, rute-interceptors, rolletildeling via superbruker-UI, synlighetsregler for innlegg. Mangler: håndheving i server functions (ny oppgave 29, kritisk), org-admin-funksjoner (placeholder), UI etter rettigheter, coach–seiler (fase 5), moderering (fase 6).

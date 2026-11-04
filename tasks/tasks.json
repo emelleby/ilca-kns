@@ -431,49 +431,49 @@
       "id": 29,
       "title": "Authorization in server functions (security fix)",
       "description": "[Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md",
-      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven",
+      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven\n\nStatus 2026-11-04: 29.1–29.7 og 29.9 ferdig (gren claude/focused-euler-6nlxqf). Repro-skriptet gir 13/13 DENIED, exit 0. Gjenstår: 29.8 (drift i produksjon, må gjøres av eier) og manuell test av passkey med ekte autentikator.",
       "testStrategy": "Ekte funksjoner med mocket db/requestInfo (som passwordReset.test.ts): uten bruker avvist, vanlig bruker på annens data avvist, riktig bruker/SUPERUSER ok. Sikkerhetsnett-test over alle 'use server'-filer. Akseptansetest: node docs/security/repro-server-function-authz.cjs mot lokal dev gir 13/13 DENIED og exit 0. Regresjon: eksisterende 108 tester, pnpm build, manuell røyktest av innlogging, profil, passkey, reset og superuser-dashboard.",
       "priority": "high",
       "dependencies": [
         3,
         5
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": [
         {
           "id": "29.1",
           "title": "Guards (src/app/auth/guards.ts) + enhetstester",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.2",
           "title": "superuser/functions.ts: autorisasjon",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.3",
           "title": "user/functions.ts: addPasskey/addPassword/verifyResetToken",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.4",
           "title": "user/profile/functions.ts: eier/SU og getPublicProfile",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.5",
           "title": "Oppdater UI-kallere som sender userId",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.6",
           "title": "Sikkerhetsnett-test for 'use server'-filer",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.7",
           "title": "Akseptansetest: repro-skript 13/13 DENIED + røyktest",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.8",
@@ -483,7 +483,7 @@
         {
           "id": "29.9",
           "title": "Dokumentasjon oppdatert",
-          "status": "pending"
+          "status": "done"
         }
       ],
       "phase": "Fase 0"
