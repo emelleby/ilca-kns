@@ -9,19 +9,26 @@ export default defineScript(async ({ env }) => {
   // The worker middleware does not run for scripts, so set up the database here
   await setupDb(env);
 
-  // Clean up existing data
-  await db.$executeRawUnsafe(`\
-    DELETE FROM Comment;
-    DELETE FROM Post;
-    DELETE FROM PasswordReset;
-    DELETE FROM Credential;
-    DELETE FROM Profile;
-    DELETE FROM OrganizationInvitation;
-    DELETE FROM OrganizationMembership;
-    DELETE FROM Organization;
-    DELETE FROM User;
-    DELETE FROM sqlite_sequence;
-  `);
+  // Remove only the rows this script owns (fixed ids), so it can be re-run
+  // without touching real accounts, profiles or passkeys.
+  const seedUserIds = ["superuser-1", "user-1", "user-2", "user-3"];
+  const seedOrgIds = ["org-1", "org-2", "org-3"];
+
+  await db.comment.deleteMany({
+    where: { OR: [{ userId: { in: seedUserIds } }, { post: { userId: { in: seedUserIds } } }] },
+  });
+  await db.post.deleteMany({
+    where: { OR: [{ userId: { in: seedUserIds } }, { organizationId: { in: seedOrgIds } }] },
+  });
+  await db.passwordReset.deleteMany({ where: { userId: { in: seedUserIds } } });
+  await db.credential.deleteMany({ where: { userId: { in: seedUserIds } } });
+  await db.profile.deleteMany({ where: { userId: { in: seedUserIds } } });
+  await db.organizationInvitation.deleteMany({ where: { organizationId: { in: seedOrgIds } } });
+  await db.organizationMembership.deleteMany({
+    where: { OR: [{ organizationId: { in: seedOrgIds } }, { userId: { in: seedUserIds } }] },
+  });
+  await db.organization.deleteMany({ where: { id: { in: seedOrgIds } } });
+  await db.user.deleteMany({ where: { id: { in: seedUserIds } } });
 
   // Create test users
   const password = await hashPassword(SEED_PASSWORD);

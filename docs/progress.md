@@ -25,7 +25,7 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - Migrasjon `0007`: `Post.organizationId`, `visibility`, `imageUrl` + indekser (eksisterende data bevares).
 - `PostList` er en async serverkomponent mot databasen; forsiden (uinnlogget) viser bare offentlige innlegg. Ubrukt `HomeContentClient` slettet.
 - Rollesjekk for server functions bygges sammen med innleggs-CRUD i stedet for som egen oppgave (28). Aktiv klubb-velger utsatt.
-- Seed: fikset (`setupDb(env)` mangler i skript under rwsdk 1.x; rydder nå også profiler/credentials), 7 innlegg på alle nivåer, og felles lokalt passord `password123` for seed-brukerne.
+- Seed: fikset (`setupDb(env)` mangler i skript under rwsdk 1.x), 7 innlegg på alle nivåer, og felles lokalt passord `password123` for seed-brukerne. Seed sletter og gjenskaper bare sine egne rader (faste ID-er: `superuser-1`, `user-1..3`, `org-1..3`) og kan kjøres flere ganger uten å røre egne kontoer, profiler eller passkeys.
 - Verifisert i nettleser: uinnlogget 2 innlegg, alice 6, bob 6, charlie 5, superbruker 2; utkast vises aldri. 108 tester, `tsc` uendret (30 eksisterende), bygg OK.
 
 ### 2026-11-04 – Passord-reset (e-post)

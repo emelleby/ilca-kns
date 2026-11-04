@@ -19,7 +19,7 @@ See `ai-guidelines.md` for how we work. Read `docs/progress.md`, `docs/roadmap.m
 - `pnpm migrate:dev` - Apply migrations locally (generates Prisma client)
 - `pnpm migrate:prd` - Apply migrations to production
 - `pnpm migrate:new` - Create new migration
-- `pnpm seed` - Seed database with test data
+- `pnpm seed` - Seed test data (users alice/bob/charlie/superuser@example.com, password `password123`, orgs, posts). Only touches its own rows; safe to re-run
 - `pnpm generate` - Generate Prisma client and Wrangler types
 
 **Deployment:**
