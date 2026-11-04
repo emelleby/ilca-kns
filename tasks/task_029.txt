@@ -1,0 +1,24 @@
+# Task ID: 29
+# Title: Authorization in server functions (security fix)
+# Status: pending
+# Dependencies: 3, 5
+# Priority: high
+# Description: [Fase 0 – gjør først] Server functions kan kalles direkte fra nettleseren av hvem som helst. Flere har ingen sjekk av innlogget bruker eller rolle. Verifisert i nettleser 2026-11-04: en uinnlogget besøkende kan opprette organisasjoner, og en vanlig bruker kan endre sin egen rolle til ADMIN i en klubb.
+# Details:
+Funn (verifisert i kode; første punkt også i nettleser mot dev):
+A. src/app/pages/superuser/functions.ts – INGEN autorisasjon i noen funksjon: createOrganization, updateOrganization, deleteOrganization, getOrganization, getAllOrganizations, addMemberToOrganization, updateMemberRole, removeMemberFromOrganization, createInvitation, getInvitationByToken, acceptInvitation(token, userId – tas fra klienten), rejectInvitation, getUserOrganizations(userId). Beskyttelsen ligger bare i rutene, som ikke stopper direkte kall.
+B. src/app/pages/user/functions.ts – addPasswordToPasskeyAccount(userId, email, password) og addPasskeyToExistingAccount(userId, …) har ingen sjekk: kan brukes til å ta over en annen konto hvis man kjenner bruker-ID. (removePasskey sjekker riktig og er mønsteret å følge.)
+C. src/app/pages/user/profile/functions.ts – updateUserProfile, createUserProfile, updateProfilePicture, deleteUserProfile, getUserProfile tar userId fra klienten uten sjekk. getPublicProfile(userId, viewerId) tar viewerId fra klienten, så personverninnstillinger kan omgås ved å sende viewerId = userId.
+
+Løsning:
+1. Felles guards (src/app/auth/guards.ts): requireUser() (kaster hvis ikke innlogget, henter bruker fra requestInfo.ctx), requireSuperUser(), requireOrganizationRole(orgId, roles) (gjenbruk logikk fra interceptors.ts).
+2. Aldri ta userId/viewerId fra klienten for «meg»: bruk ctx.user.id. Funksjoner som trenger en annen bruker krever SUPERUSER eller eierskap.
+3. superuser/functions.ts: alle krever SUPERUSER, unntatt: getInvitationByToken/rejectInvitation (token er hemmeligheten), acceptInvitation (krever innlogget bruker; bruker ctx.user.id, sjekker at invitasjonen gjelder brukerens e-post og ikke er utløpt/brukt), getUserOrganizations (kun egen eller SUPERUSER).
+4. user/functions.ts: addPasskey…/addPassword… kun for innlogget bruker på egen konto; addPassword bør kreve eksisterende innlogging og ikke overskrive eksisterende passord uten bekreftelse.
+5. profile/functions.ts: eier eller SUPERUSER for skriving/sletting; getPublicProfile bruker innlogget bruker som viewer.
+6. Tester som kaller hver funksjon uten bruker, som feil bruker og som riktig bruker (ekte funksjoner, kun db og requestInfo mockes – se passwordReset.test.ts).
+7. Utvid: en test som feiler hvis en eksportert funksjon i en 'use server'-fil ikke kaller en guard (eller står på en eksplisitt tillatt-liste).
+8. Hvis produksjon kjører denne koden: vurder å rotere sesjoner og sjekke databasen for uventede organisasjoner/medlemskap/roller etter utbedring.
+
+# Test Strategy:
+Hver server function: uten bruker → avvist; vanlig bruker på annens data → avvist; riktig bruker/SUPERUSER → ok. Regresjon: eksisterende innlogging, profilredigering og superuser-dashboard fungerer. Manuell røyktest i nettleser som anonym, MEMBER og SUPERUSER.

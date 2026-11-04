@@ -9,6 +9,8 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Åpne punkter
 
+- **SIKKERHET (høyeste prioritet, oppgave 29):** server functions mangler autorisasjon. Verifisert i nettleser mot dev: en uinnlogget besøkende kan opprette organisasjoner, og en vanlig bruker kan gjøre seg selv til ADMIN i en klubb. I tillegg kan profiler endres/slettes av andre, `getPublicProfile` kan omgå personvern (klienten sender `viewerId`), og `addPasswordToPasskeyAccount`/`addPasskeyToExistingAccount` tar `userId` fra klienten (mulig kontoovertakelse hvis bruker-ID er kjent). Gjelder `superuser/functions.ts`, `user/functions.ts` og `user/profile/functions.ts`. Hvis dette kjører i produksjon bør det utbedres før mer bygges, og databasen sjekkes for uventede organisasjoner, medlemskap og roller.
+
 - `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.
 - Før merge til produksjon: test passkey-innlogging og e-post (reset) manuelt; `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
 - Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
@@ -19,6 +21,11 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`) er utdaterte og kan slettes.
 
 ## Logg
+
+### 2026-11-04 – Gjennomgang av oppgave 5 og 6
+- Oppgave 5 (RBAC) er ikke ferdig. Ferdig: datamodell, roller, rute-interceptors, rolletildeling via superbruker-UI, synlighetsregler for innlegg. Mangler: håndheving i server functions (ny oppgave 29, kritisk), org-admin-funksjoner (placeholder), UI etter rettigheter, coach–seiler (fase 5), moderering (fase 6).
+- Oppgave 6 var for generisk til å starte på. Omfanget for fase 1 er avgrenset, med foreslåtte beslutninger og delmål 6.1–6.6 i `tasks.json`; resten er flyttet til senere oppgaver.
+- Lærdom: rutebeskyttelse er ikke autorisasjon. `"use server"`-funksjoner er direkte kallbare og må sjekke bruker og rolle selv.
 
 ### 2026-11-04 – Fase 1: innlegg fra database med synlighet
 - Beslutning: tre synlighetsnivå per innlegg: `PUBLIC` (alle), `ORGANIZATION` (klubben), `COACH` (forfatter + coacher/admins i klubben). Regler samlet i `src/app/lib/postVisibility.ts`; `canViewPost` og `visiblePostsWhere` holdes i synk av en test. Superbruker har ikke egen tilgang til private innlegg.
