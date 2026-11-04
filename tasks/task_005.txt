@@ -1,9 +1,9 @@
 # Task ID: 5
 # Title: Role-Based Access Control System
 # Status: in-progress
-# Dependencies: 2, 3
+# Dependencies: 2, 3, 28
 # Priority: high
-# Description: [Fase 0] Role-based access control (RBAC). Datamodell, roller og rute-interceptors finnes; selve håndhevingen i server functions mangler og er en sikkerhetsfeil (se oppgave 29). Coach–seiler og moderering hører til senere faser.
+# Description: [Fase 0] Role-based access control (RBAC). Datamodell, roller og rute-interceptors finnes; håndheving i server functions er gjort i oppgave 29. Coach–seiler og moderering hører til senere faser.
 # Details:
 Status per delpunkt (verifisert mot koden 2026-11-04):
 1. ✅/⏳ Rollesett: org-roller ADMIN/COACH/MEMBER med hierarki (src/app/shared/constants.ts roleHierarchy) og User.role USER/SUPERUSER. Ikke samlet til navngitte rettigheter (permissions) – ikke nødvendig ennå.
@@ -11,9 +11,9 @@ Status per delpunkt (verifisert mot koden 2026-11-04):
 3. ✅/⏳ Rettighetssjekk: rute-interceptors finnes i src/app/interceptors.ts (isSuperUser, requireOrganizationAdmin/Coach/Member) men brukes nesten ikke (superuser/routes.tsx har egen kopi). Synlighetsregler for innlegg er ferdig (postVisibility.ts). ⏳ UI som skjules etter rettighet.
 4. ⏳ Coach–seiler-relasjon: flyttet til fase 5 (oppgave 8).
 5. ⏳ Admin-rettigheter: brukeradministrasjon finnes delvis i superuser-dashboard; moderering flyttet til fase 6 (oppgave 22).
-6. ❌ Validering i alle server functions: MANGLER. Se oppgave 29 (kritisk).
+6. ✅ Autorisasjon i alle server functions: gjort i oppgave 29 (guards i src/app/auth/guards.ts).
 
-Gjenstår for å lukke oppgaven: 29 (autorisasjon i server functions), 28 (skriverettigheter for innlegg), samt opprydding av interceptors (én felles isSuperUser) og admin-ruter.
+Gjenstår for å lukke oppgaven: 28 (skriverettigheter for innlegg) og admin-ruter (src/app/pages/admin/). Opprydding av interceptors (én felles isSuperUser) er flyttet til oppgave 35.
 
 # Test Strategy:
 Test permission enforcement for each role. Verify role assignment and modification. Test access to protected routes and resources. Verify coach access to student data. Test admin-specific functionality. Verify UI elements are correctly shown/hidden based on permissions.

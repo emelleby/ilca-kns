@@ -1,9 +1,9 @@
 # Task ID: 30
 # Title: Production check after the server function security flaw
 # Status: pending
-# Dependencies: 29
+# Dependencies: 29, 31
 # Priority: high
-# Description: [Fase 0 – rett etter deploy av oppgave 29] HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.
+# Description: [Fase 0 – rett etter deploy av oppgave 29] Avhengigheter: 29 merget og deployet, og 31 (manuell test) bestått før deploy. HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.
 # Details:
 Bakgrunn: før oppgave 29 kunne hvem som helst kalle server functions direkte: opprette organisasjoner, gi seg selv ADMIN-rolle, endre andres profiler og sette passord på andres kontoer (kontoovertakelse). Detaljer: docs/security/server-function-authorization.md §1 og §6.
 

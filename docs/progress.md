@@ -24,6 +24,12 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Logg
 
+### 2026-11-04 – Avhengigheter mellom oppgaver
+- Regel i `ai-guidelines.md`: før en oppgave startes skal alle `dependencies` være `done`, og nye oppgaver skal legges inn som avhengighet der de trengs, med «HVEM» i beskrivelsen.
+- Gjennomgått og rettet: 25 (lansering) venter nå på 27, 30, 31, 32, 34; 30 venter på 31; 31 på 26 og 29; 33 på 34; 11 på 29 og 34; 12 på 27; 17 på 29, 32, 34. Fjernet sykluser og feil: 28 ↔ 5 (28 avhenger bare av 29), 29 → 5 (29 er en del av 5), 6 → 5 (6 trenger 28 og 29).
+- Oppgave 6 er **ikke** avhengig av 30–35. Den venter på 28 (pågår) og 29 (ferdig).
+- `/tasks` viser «Venter på: …» for uferdige avhengigheter. Ny test `lib/__tests__/tasks.test.ts` sjekker avhengighetsgrafen og at txt-filene er i synk.
+
 ### 2026-11-04 – Autorisasjon i server functions (oppgave 29)
 - Nye guards i `src/app/auth/guards.ts` (`requireUser`, `requireSuperUser`, `requireSelfOrSuperUser`, `requireOrganizationRole`). `interceptors.ts` bruker samme rolleoppslag.
 - `superuser/functions.ts`: alt krever SUPERUSER, unntatt invitasjoner (token/innlogget). `createInvitation` tar `createdBy` fra sesjonen, `acceptInvitation` bruker innlogget bruker og krever at e-posten matcher. `getInvitationByToken` returnerer bare navn/e-post/rolle/utløp. Roller valideres med zod.

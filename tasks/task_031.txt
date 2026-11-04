@@ -1,9 +1,9 @@
 # Task ID: 31
 # Title: Manual browser test of passkey and password flows
 # Status: pending
-# Dependencies: 29
+# Dependencies: 26, 29
 # Priority: high
-# Description: [Fase 0 – før merge til produksjon] HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.
+# Description: [Fase 0 – før merge til produksjon] Avhengigheter: 26 og 29 (begge på main). HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.
 # Details:
 Kjør lokalt (pnpm dev, http://localhost:5173) eller på en forhåndsvisning. Seed-brukere: alice/bob/charlie/superuser@example.com, passord password123.
 

@@ -29,13 +29,16 @@ Når noe i dokumentene ikke stemmer med koden, er koden riktig. Rett dokumentet.
 
 `tasks/tasks.json` er den løpende listen over det som skal gjøres. `roadmap.md` er det store bildet og `tasks.json` er detaljene. Hver oppgave har feltet `phase` som peker på roadmap-fasen. Gyldige statuser er `pending`, `in-progress` og `done` (siden `/tasks` forstår bare disse). `tasks/task_NNN.txt` er genererte kopier av `tasks.json`; endre `tasks.json` og hold txt-filene i synk.
 
+**Avhengigheter og ansvar.** `dependencies` lister oppgaver som må være `done` før oppgaven kan startes (harde avhengigheter, ikke «nyttig å ha»). Når en ny oppgave opprettes: legg den inn i `dependencies` på senere oppgaver som trenger den, og skriv avhengighetene og hvorfor i beskrivelsen. Skriv også **hvem** som skal gjøre oppgaven (f.eks. «HVEM: Eivind» når det krever tilgang til Cloudflare eller en ekte enhet, «utvikler/AI» ellers). Testen `src/app/lib/__tests__/tasks.test.ts` feiler ved ukjente avhengigheter, sykluser, `done`-oppgaver med uferdige avhengigheter og txt-filer som ikke er i synk.
+
 ## Arbeidsflyt
 
 1. **Plan først.** Les relevante filer, foreslå tilnærming og få aksept før større endringer. Gå inkrementelt («easy does it») og unngå endringer som er vanskelige å feilsøke.
-2. **Sett oppgaven til `in-progress`** i `tasks/tasks.json`.
-3. **Bygg med tester.** Nye server functions og kritiske komponenter får Vitest-tester etter mønsteret i `docs/architecture.md` §6. Kjør `pnpm test` og `pnpm types` før commit.
-4. **Skjemaendringer** er additive og går via `pnpm migrate:new`, deretter `pnpm generate`.
-5. **Oppdater dokumentasjon** før du avslutter: sett oppgaven til `done`, legg inn en linje i `docs/progress.md`, og juster `architecture.md` hvis noe der ikke lenger stemmer.
+2. **Sjekk avhengighetene før start.** Alle oppgaver i `dependencies` må ha status `done`. `/tasks` viser «Venter på: …» for dem som ikke er ferdige. Hvis noen ikke er ferdige: ikke start, si fra hvilke det gjelder og hvem som eier dem (står i oppgavebeskrivelsen).
+3. **Sett oppgaven til `in-progress`** i `tasks/tasks.json`.
+4. **Bygg med tester.** Nye server functions og kritiske komponenter får Vitest-tester etter mønsteret i `docs/architecture.md` §6. Kjør `pnpm test` og `pnpm types` før commit.
+5. **Skjemaendringer** er additive og går via `pnpm migrate:new`, deretter `pnpm generate`.
+6. **Oppdater dokumentasjon** før du avslutter: sett oppgaven til `done`, legg inn en linje i `docs/progress.md`, og juster `architecture.md` hvis noe der ikke lenger stemmer.
 
 ## Skriveregler for `docs/progress.md`
 

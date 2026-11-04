@@ -1,7 +1,7 @@
 # Task ID: 28
 # Title: Organization role access helper
 # Status: in-progress
-# Dependencies: 5, 29
+# Dependencies: 29
 # Priority: high
 # Description: [Fase 1] Rollesjekk i server functions. Gjøres sammen med innleggs-CRUD i stedet for som egen oppgave. Synlighetsregler for lesing er ferdig (src/app/lib/postVisibility.ts); gjenstår skriverettigheter (forfatter eller organisasjonsadmin). Aktiv klubb-velger er utsatt.
 # Details:

@@ -1,7 +1,7 @@
 # Task ID: 29
 # Title: Authorization in server functions (security fix)
 # Status: done
-# Dependencies: 3, 5
+# Dependencies: 3
 # Priority: high
 # Description: [Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md
 # Details:

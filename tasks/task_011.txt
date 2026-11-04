@@ -1,9 +1,9 @@
 # Task ID: 11
 # Title: Admin Dashboard Implementation
 # Status: in-progress
-# Dependencies: 2, 3, 5
+# Dependencies: 2, 3, 5, 29, 34
 # Priority: low
-# Description: [Fase 6] Create a comprehensive admin dashboard for system administrators to manage users, content, and application settings. Status: superuser-dashboard med organisasjonsadministrasjon finnes.
+# Description: [Fase 6] Create a comprehensive admin dashboard for system administrators to manage users, content, and application settings. Status: superuser-dashboard med organisasjonsadministrasjon finnes. Avhengigheter: 29 (guards) for alle admin-funksjoner, 34 (sesjonsrotasjon) før deaktivering av kontoer og rolleendringer kan virke umiddelbart.
 # Details:
 1. Create admin dashboard layout
    - Navigation sidebar

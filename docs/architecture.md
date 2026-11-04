@@ -112,7 +112,7 @@ Alle skjemaendringer skal være additive (nye tabeller / nullable kolonner), sli
 
 ## 6. Test
 
-Vitest, jsdom, 142 tester i 11 filer (`pnpm test`):
+Vitest, jsdom, 147 tester i 12 filer (`pnpm test`):
 
 | Fil | Tester |
 |---|---|
@@ -127,6 +127,7 @@ Vitest, jsdom, 142 tester i 11 filer (`pnpm test`):
 | `auth/__tests__/guards.test.ts` | 5 |
 | `auth/__tests__/serverFunctionAuthz.test.ts` | 23 |
 | `auth/__tests__/serverFunctionGuards.test.ts` | 6 |
+| `lib/__tests__/tasks.test.ts` (avhengigheter i `tasks.json`) | 5 |
 
 Mønster: mock `cloudflare:workers`, `rwsdk/worker`, `@/db` og sesjon i `src/test/setup.ts`; gjenbrukbare hjelpere i `src/test/utils/serverFunctionMockHelper.ts`. Nye server functions skal ha tester etter samme mønster. Playwright/E2E er ikke satt opp.
 
