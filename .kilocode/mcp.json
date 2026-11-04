@@ -24,10 +24,15 @@
         "https://observability.mcp.cloudflare.com/sse"
       ]
     },
-    "playwright": {
+    "chrome-devtools-mcp": {
       "command": "npx",
       "args": [
-        "@playwright/mcp@latest"
+        "@chrome-devtools-mcp@latest",
+        "--browserUrl=http://127.0.0.1:9222",
+        "--isolated=true"
+      ],
+      "alwaysAllow": [
+        "list_tools"
       ]
     },
     "serena": {

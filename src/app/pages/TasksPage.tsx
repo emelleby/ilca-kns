@@ -2,7 +2,7 @@
 
 import { HomeLayout } from '@/app/layouts/HomeLayout'
 import { TasksTableClient } from '@/app/components/TasksTableClient'
-import tasksJson from '/tasks/tasks.json?raw'
+import tasksJson from 'tasks/tasks.json'
 import { RequestInfo } from 'rwsdk/worker'
 
 interface Task {
