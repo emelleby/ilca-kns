@@ -1,0 +1,20 @@
+# Task ID: 36
+# Title: Deploy setup (CI/CD) and first deploy of main
+# Status: pending
+# Dependencies: 29
+# Priority: high
+# Description: [Fase 0 – nå] HVEM: Eivind for alt i Cloudflare Dashboard og GitHub-innstillinger (tilgang, secrets, valg av løsning). Utvikler/AI kan skrive workflow-filen og dokumentasjonen. Repoet har ingen CI/CD (ingen .github/workflows). Deploy skjer i dag bare manuelt med pnpm release, med mindre Cloudflare Workers Builds er koblet til i dashboardet (sjekk). Avhengigheter: 29 (merget via PR #10).
+# Details:
+1. Eivind: sjekk Cloudflare Dashboard → Workers & Pages → ilcakns → Settings → Build. Er GitHub-repoet koblet til (Workers Builds)? Se også Deployments: når og fra hvilken commit ble det sist deployet?
+2. Velg løsning (anbefalt: A + B):
+   A. CI i GitHub Actions på hver PR: pnpm install --frozen-lockfile, pnpm test, pnpm build. (pnpm types ikke ennå: 30 eksisterende feil.) Krever ingen secrets. Utvikler/AI lager .github/workflows/ci.yml.
+   B. Deploy med Cloudflare Workers Builds fra main: koble repoet i dashboardet, produksjonsgren main, build command «pnpm install --frozen-lockfile && npx prisma generate && RWSDK_DEPLOY=1 pnpm build», deploy command «npx wrangler d1 migrations apply DB --remote && npx wrangler deploy». Andre grener kan få forhåndsvisning (wrangler versions upload). Sjekk at build-tokenet har tilgang til D1 (migrasjoner).
+   Alternativ C: deploy også fra GitHub Actions med CLOUDFLARE_API_TOKEN og CLOUDFLARE_ACCOUNT_ID som GitHub-secrets (mer kontroll: deploy bare hvis testene består).
+3. Eivind, før første deploy: sjekk at secrets finnes i produksjon (npx wrangler secret list): AUTH_SECRET_KEY, RESEND_API_KEY, og WEBAUTHN_RP_ID hvis domenet ikke er workers.dev-navnet. Ta backup av databasen: npx wrangler d1 export ilca2 --remote --output backup.sql
+4. Eivind: sjekk hvilke migrasjoner produksjonen har: npx wrangler d1 migrations list DB --remote. main krever 0007 (innlegg med synlighet). Migrasjonen må kjøres før eller sammen med deploy, ellers feiler forsiden.
+5. Merg PR #10 og deploy (automatisk med B/C, ellers pnpm migrate:prd og deretter pnpm release).
+6. Røyktest i produksjon: forsiden, innlogging med passord og passkey, /home, profil, superuser-dashboard. Merk: compatibility_date er endret (oppgave 26), så dette er første produksjonstest av ny runtime.
+7. Gå videre til oppgave 30 (produksjonssjekk). Oppdater docs/progress.md og docs/architecture.md (deploy-avsnitt).
+
+# Test Strategy:
+CI kjører og blir grønn på en PR. Deploy fra main fungerer, migrasjoner er kjørt (migrations list viser 0007), og røyktesten i produksjon består.

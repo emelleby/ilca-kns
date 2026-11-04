@@ -23,7 +23,7 @@ Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og teste
 | 0.3 | Egen e-postavsender (Resend-domene) og `observability.enabled = true` | **Utsatt** (ikke noe domene ennå). Dev bruker `DEV_EMAIL_TO`. Kreves før produksjon |
 | 0.4 | Rollesjekk i server functions | Flyttet inn i fase 1 (bygges sammen med første bruker, innlegg). Ruteinterceptors finnes allerede i `src/app/interceptors.ts` |
 | 0.5 | **Autorisasjon i alle server functions** (oppgave 29) | Ferdig i kode, venter på merge. Se `docs/security/server-function-authorization.md` |
-| 0.6 | Produksjonssjekk etter sikkerhetsfeilen (oppgave 30) og manuell passkey-test (oppgave 31) | **Eivind.** Rett etter merge/deploy av 0.5 |
+| 0.6 | Deploy-oppsett og første deploy av main (oppgave 36), deretter produksjonssjekk (oppgave 30) | **Eivind.** Manuell test (31) er gjort |
 
 **Om oppgraderingen (0.1):** utført fra `main`, ikke fra `eivind/november`, som er ett år gammel og har uferdig sidebar-arbeid. Detaljer og brytende endringer: `architecture.md` §1. Grenene `upgrade-to-0.85`, `kiro` og `eivind/flat` er på 0.0.85 og kan slettes.
 

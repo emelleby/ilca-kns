@@ -10,7 +10,7 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 ## Åpne punkter
 
 - **SIKKERHET:** oppgave 29 er ferdig i kode på `claude/focused-euler-6nlxqf` (venter på merge). Det som gjenstår er egne oppgaver i `tasks.json`:
-  - **Eivind:** 30 (sjekk produksjonsdatabasen etter deploy, eventuelt bytt `AUTH_SECRET_KEY` for å logge ut alle) (31, manuell test av passkey og passord, er gjort og virker).
+  - **Eivind:** 36 (sett opp deploy/CI og deploy main; ingen CI/CD i repoet i dag), deretter 30 (sjekk produksjonsdatabasen etter deploy, eventuelt bytt `AUTH_SECRET_KEY` for å logge ut alle) (31, manuell test av passkey og passord, er gjort og virker).
   - **Utvikler/AI:** 32 (rate limiting; Eivind setter opp nøkler i Cloudflare), 33 (endre passord med re-autentisering), 34 (sesjonsrotasjon, ikke fjerne siste innloggingsmetode), 35 (små oppfølginger).
 
 - `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.

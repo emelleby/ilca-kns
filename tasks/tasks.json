@@ -378,7 +378,7 @@
     {
       "id": 25,
       "title": "Deployment and Launch Preparation",
-      "description": "[Før lansering] Prepare for application deployment and launch, including staging deployment, final testing, and production deployment. Avhengigheter: 27 (e-post/logging), 30 (produksjonssjekk), 31 (manuell test), 32 (rate limiting), 34 (sesjoner) må være done før lansering.",
+      "description": "[Før lansering] Prepare for application deployment and launch, including staging deployment, final testing, and production deployment. Avhengigheter: 36 (deploy-oppsett), 27 (e-post/logging), 30 (produksjonssjekk), 31 (manuell test), 32 (rate limiting), 34 (sesjoner) må være done før lansering.",
       "details": "1. Create deployment pipeline\n   - Automated build process\n   - Deployment scripts\n   - Environment configuration\n2. Implement staging deployment\n   - Environment setup\n   - Data migration\n   - Configuration verification\n3. Conduct final testing\n   - Smoke testing\n   - Acceptance testing\n   - Performance verification\n4. Create rollback plan\n   - Backup procedures\n   - Rollback scripts\n   - Recovery testing\n5. Implement production deployment\n   - Database setup\n   - Application deployment\n   - DNS configuration\n6. Create monitoring and alerting\n   - Performance monitoring\n   - Error tracking\n   - Usage analytics\n7. Implement post-launch support plan\n   - Support channels\n   - Issue triage\n   - Hotfix process",
       "testStrategy": "Test deployment pipeline with various scenarios. Verify staging environment matches production configuration. Conduct final testing in staging environment. Test rollback procedures. Verify production deployment completes successfully. Test monitoring and alerting systems. Verify support channels are operational.",
       "priority": "high",
@@ -388,7 +388,8 @@
         30,
         31,
         32,
-        34
+        34,
+        36
       ],
       "status": "pending",
       "subtasks": [],
@@ -397,12 +398,13 @@
     {
       "id": 26,
       "title": "Upgrade rwsdk to latest",
-      "description": "[Fase 0] Oppgrader RedwoodSDK fra 0.3.9 (main) til siste versjon (1.7.5 på npm). Start fra eivind/november (1.0.0-beta.29, 9 commits foran main).",
-      "details": "1. ✅ Les endringer 0.3 → 1.x og list brytende endringer (headers → response.headers; compatibility_date)\n2. ✅ Ny gren claude/upgrade-rwsdk fra main (ikke eivind/november)\n3. ✅ Oppgrader rwsdk 1.7.5, React 19.3.1, wrangler, vite 8, vitest 5, tailwind 4.3, workers-types 5\n4. ✅ pnpm types (30, uendret), pnpm test (64/64), vite build\n5. ✅ Røyktest i dev: registrering, /home, profil, /tasks. ⏳ Passkey og e-post testes manuelt av eier\n6. ✅ Oppdater docs/architecture.md\n7. ⏳ Gjennomgå og merge til main, deploy, test i produksjon\n8. ⏳ Slett eller arkiver grenene upgrade-to-0.85, kiro, eivind/flat, eivind/november",
+      "description": "[Fase 0] Oppgrader RedwoodSDK fra 0.3.9 (main) til siste versjon (1.7.5 på npm). Start fra eivind/november (1.0.0-beta.29, 9 commits foran main). Avhengighet: 36 (deploy). Lukkes når oppgraderingen kjører i produksjon.",
+      "details": "1. ✅ Les endringer 0.3 → 1.x og list brytende endringer (headers → response.headers; compatibility_date)\n2. ✅ Ny gren claude/upgrade-rwsdk fra main (ikke eivind/november)\n3. ✅ Oppgrader rwsdk 1.7.5, React 19.3.1, wrangler, vite 8, vitest 5, tailwind 4.3, workers-types 5\n4. ✅ pnpm types (30, uendret), pnpm test (64/64), vite build\n5. ✅ Røyktest i dev: registrering, /home, profil, /tasks. ✅ Passkey og passord testet manuelt av eier (oppgave 31). ⏳ E-post i produksjon: oppgave 27\n6. ✅ Oppdater docs/architecture.md\n7. ✅ Merget til main. ⏳ Deploy og test i produksjon: oppgave 36\n8. ⏳ Slett eller arkiver grenene upgrade-to-0.85, kiro, eivind/flat, eivind/november",
       "testStrategy": "Alle 64 tester består. Manuell røyktest av innlogging, profil og superuser-dashboard. pnpm build og pnpm preview fungerer.",
       "priority": "high",
       "dependencies": [
-        1
+        1,
+        36
       ],
       "status": "in-progress",
       "subtasks": [],
@@ -499,13 +501,14 @@
     {
       "id": 30,
       "title": "Production check after the server function security flaw",
-      "description": "[Fase 0 – rett etter deploy av oppgave 29] Avhengigheter: 29 merget og deployet, og 31 (manuell test) bestått før deploy. HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.",
+      "description": "[Fase 0 – rett etter deploy av oppgave 29] Avhengigheter: 29 og 31 (ferdig), og 36 (deploy til produksjon). HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.",
       "details": "Bakgrunn: før oppgave 29 kunne hvem som helst kalle server functions direkte: opprette organisasjoner, gi seg selv ADMIN-rolle, endre andres profiler og sette passord på andres kontoer (kontoovertakelse). Detaljer: docs/security/server-function-authorization.md §1 og §6.\n\nForutsetning: oppgave 29 er merget til main og deployet (pnpm release). Gjør sjekken etter deploy, slik at ingen nye endringer kan skje mens du ser på dataene.\n\n1. Finn ut om sårbar kode har kjørt i produksjon: når ble appen sist deployet før oppgave 29, og hvilken commit? (Cloudflare Dashboard → Workers → ilcakns → Deployments.) Har den aldri vært i bruk av andre enn deg, kan du hoppe til punkt 5.\n2. Kjør spørringene mot produksjonsdatabasen (D1 «ilca2»). Eksempel:\n   npx wrangler d1 execute ilca2 --remote --command \"SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC\"\n   - Organisasjoner: SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC;\n   - Medlemskap og roller: SELECT * FROM OrganizationMembership ORDER BY joinedAt DESC LIMIT 50;\n   - Passkeys: SELECT userId, deviceName, createdAt FROM Credential ORDER BY createdAt DESC LIMIT 50;\n   - Kontoer med nylig endret e-post/passord: SELECT id, username, email, updatedAt FROM User ORDER BY updatedAt DESC LIMIT 50;\n   - Superbrukere: SELECT id, username, email FROM User WHERE role = 'SUPERUSER';\n   - Invitasjoner: SELECT * FROM OrganizationInvitation ORDER BY createdAt DESC LIMIT 50;\n3. Se etter: organisasjoner du ikke kjenner, ADMIN-roller du ikke har gitt, passkeys med enhetsnavn/dato som ikke stemmer med brukerens egne enheter, kontoer der e-post er endret uten at brukeren har gjort det.\n4. Hvis noe er mistenkelig: slett ukjente organisasjoner og medlemskap (superbruker-dashboardet eller SQL), fjern ukjente passkeys, nullstill passord for berørte kontoer (be brukeren bruke «glemt passord») og gi beskjed til de berørte.\n5. Ugyldiggjør alle innloggingsøkter hvis du er i tvil: bytt AUTH_SECRET_KEY (npx wrangler secret put AUTH_SECRET_KEY med en ny tilfeldig verdi, f.eks. fra `openssl rand -hex 32`). Da blir alle sesjonscookies ugyldige og alle må logge inn på nytt.\n6. Skriv resultatet (hva du fant, hva du gjorde) som én linje i docs/progress.md, eller be en AI-assistent gjøre det, og sett oppgaven til done.\n\nLogging (observability) for fremtiden er oppgave 27 punkt 3.",
       "testStrategy": "Spørringene er kjørt og resultatet er notert i docs/progress.md. Eventuelle funn er ryddet opp, og berørte brukere har fått beskjed.",
       "priority": "high",
       "dependencies": [
         29,
-        31
+        31,
+        36
       ],
       "status": "pending",
       "subtasks": [],
@@ -514,12 +517,11 @@
     {
       "id": 31,
       "title": "Manual browser test of passkey and password flows",
-      "description": "[Fase 0 – før merge til produksjon] Avhengigheter: 26 og 29 (begge på main). HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.",
+      "description": "[Fase 0 – før merge til produksjon] Avhengighet: 29. (rwsdk-oppgraderingen fra 26 er allerede på main.) HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.",
       "details": "Kjør lokalt (pnpm dev, http://localhost:5173) eller på en forhåndsvisning. Seed-brukere: alice/bob/charlie/superuser@example.com, passord password123.\n\n1. Registrer en ny konto med passkey (/user/signup). Forventet: du havner på /home.\n2. Logg ut og logg inn igjen med passkey (/user/login).\n3. Gå til innstillinger (/user/<brukernavn>/settings) på passkey-kontoen og legg til e-post og passord. Logg ut og logg inn med e-post/passord.\n4. Prøv å legge til e-post/passord en gang til på samme konto. Forventet: avvist («Failed to add email and password»), fordi kontoen allerede har passord.\n5. Logg inn som alice (passord) og legg til en passkey under innstillinger. Logg ut og logg inn med passkeyen.\n6. Fjern passkeyen under innstillinger.\n7. Glemt passord: be om reset for alice. I dev logges lenken i terminalen. Åpne lenken: siden skal vise «Hello alice», og nytt passord skal virke.\n8. Profil: rediger egen profil og lagre. Åpne en annen brukers profil og sjekk at skjulte felt (e-post, sted osv.) ikke vises.\n9. Superbruker: logg inn som superuser@example.com, opprett og slett en organisasjon på /superuser/dashboard.\n\nHvis noe feiler: noter steg, nettleser og feilmelding (nettleserkonsoll og terminal) og lag en ny oppgave eller gi det til en AI-assistent.\n\nStatus 2026-11-04: Eivind har testet passkey og passord i nettleser, og det virker. Ikke deployet ennå.",
       "testStrategy": "Alle 9 stegene fungerer som forventet. Resultatet er notert i docs/progress.md.",
       "priority": "high",
       "dependencies": [
-        26,
         29
       ],
       "status": "done",
@@ -582,6 +584,20 @@
       "status": "pending",
       "subtasks": [],
       "phase": "Løpende"
+    },
+    {
+      "id": 36,
+      "title": "Deploy setup (CI/CD) and first deploy of main",
+      "description": "[Fase 0 – nå] HVEM: Eivind for alt i Cloudflare Dashboard og GitHub-innstillinger (tilgang, secrets, valg av løsning). Utvikler/AI kan skrive workflow-filen og dokumentasjonen. Repoet har ingen CI/CD (ingen .github/workflows). Deploy skjer i dag bare manuelt med pnpm release, med mindre Cloudflare Workers Builds er koblet til i dashboardet (sjekk). Avhengigheter: 29 (merget via PR #10).",
+      "details": "1. Eivind: sjekk Cloudflare Dashboard → Workers & Pages → ilcakns → Settings → Build. Er GitHub-repoet koblet til (Workers Builds)? Se også Deployments: når og fra hvilken commit ble det sist deployet?\n2. Velg løsning (anbefalt: A + B):\n   A. CI i GitHub Actions på hver PR: pnpm install --frozen-lockfile, pnpm test, pnpm build. (pnpm types ikke ennå: 30 eksisterende feil.) Krever ingen secrets. Utvikler/AI lager .github/workflows/ci.yml.\n   B. Deploy med Cloudflare Workers Builds fra main: koble repoet i dashboardet, produksjonsgren main, build command «pnpm install --frozen-lockfile && npx prisma generate && RWSDK_DEPLOY=1 pnpm build», deploy command «npx wrangler d1 migrations apply DB --remote && npx wrangler deploy». Andre grener kan få forhåndsvisning (wrangler versions upload). Sjekk at build-tokenet har tilgang til D1 (migrasjoner).\n   Alternativ C: deploy også fra GitHub Actions med CLOUDFLARE_API_TOKEN og CLOUDFLARE_ACCOUNT_ID som GitHub-secrets (mer kontroll: deploy bare hvis testene består).\n3. Eivind, før første deploy: sjekk at secrets finnes i produksjon (npx wrangler secret list): AUTH_SECRET_KEY, RESEND_API_KEY, og WEBAUTHN_RP_ID hvis domenet ikke er workers.dev-navnet. Ta backup av databasen: npx wrangler d1 export ilca2 --remote --output backup.sql\n4. Eivind: sjekk hvilke migrasjoner produksjonen har: npx wrangler d1 migrations list DB --remote. main krever 0007 (innlegg med synlighet). Migrasjonen må kjøres før eller sammen med deploy, ellers feiler forsiden.\n5. Merg PR #10 og deploy (automatisk med B/C, ellers pnpm migrate:prd og deretter pnpm release).\n6. Røyktest i produksjon: forsiden, innlogging med passord og passkey, /home, profil, superuser-dashboard. Merk: compatibility_date er endret (oppgave 26), så dette er første produksjonstest av ny runtime.\n7. Gå videre til oppgave 30 (produksjonssjekk). Oppdater docs/progress.md og docs/architecture.md (deploy-avsnitt).",
+      "testStrategy": "CI kjører og blir grønn på en PR. Deploy fra main fungerer, migrasjoner er kjørt (migrations list viser 0007), og røyktesten i produksjon består.",
+      "priority": "high",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Fase 0"
     }
   ]
 }
