@@ -20,6 +20,14 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Logg
 
+### 2026-11-04 – Passord-reset (e-post)
+- Fjernet hardkodet mottaker i `requestPasswordReset`; e-post går nå til brukerens egen adresse.
+- Dev: `DEV_EMAIL_TO` i `.dev.vars` omdirigerer all reset-e-post (Resends testavsender leverer bare til kontoeieren). Reset-lenken logges i serverkonsollen i dev, så flyten kan testes uten e-post.
+- Funksjonen returnerer alltid `true` (ingen kontoavsløring), og feil fra Resend logges.
+- `IS_DEV` hentes fra `rwsdk/constants` også i `user/functions.ts`.
+- Nye tester som kjører den ekte funksjonen (`passwordReset.test.ts`, 6 stk) og en `cloudflare:workers`-stubb i Vitest. Merk: de gamle `serverFunctions.test.tsx` mocker selve funksjonene og tester derfor lite av den ekte koden.
+- Gjenstår før produksjon: verifisert avsenderdomene i Resend (oppgave 27). Uten det kan e-post bare sendes til kontoeieren.
+
 ### 2026-11-04 – Fikset `/tasks`
 - `TasksPage` kjørte `JSON.parse` på en JSON-import som allerede er et objekt (importen ble endret fra `?raw` i `fa49409`). Bruker nå objektet direkte.
 - Lærdom: etter å ha hentet `main` med nye pakker må `pnpm install` kjøres, ellers får man misvisende Worker-/Vite-feil.

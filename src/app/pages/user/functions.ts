@@ -10,14 +10,13 @@ import {
 
 import { sessions } from "@/session/store";
 import { requestInfo } from "rwsdk/worker";
+import { IS_DEV } from "rwsdk/constants";
 import { db } from "@/db";
 import { env } from "cloudflare:workers";
 import { hashPassword, verifyPassword } from "@/app/auth/password";
 import { randomBytes } from "crypto";
 import { sendEmail, generatePasswordResetEmail } from "@/app/auth/email";
 import { autoCreateUserProfile } from "./profile/functions";
-
-const IS_DEV = process.env.NODE_ENV === "development";
 
 function getWebAuthnConfig(request: Request) {
   const rpID = env.WEBAUTHN_RP_ID ?? new URL(request.url).hostname;
@@ -363,7 +362,8 @@ export async function requestPasswordReset(email: string) {
     where: { email },
   });
 
-  if (!user) return false; // Don't reveal if email exists
+  // Don't reveal whether the email exists: behave the same either way
+  if (!user) return true;
 
   // Generate token (random string)
   const token = randomBytes(32).toString('hex');
@@ -396,10 +396,18 @@ export async function requestPasswordReset(email: string) {
   const baseUrl = new URL(request.url).origin;
   const resetLink = `${baseUrl}/user/reset-password?token=${token}`;
 
-  // Send email
+  // Send email. Resend's test sender (onboarding@resend.dev) only delivers to the
+  // account owner, so in development DEV_EMAIL_TO can redirect the message.
+  const recipient = IS_DEV && env.DEV_EMAIL_TO ? env.DEV_EMAIL_TO : email;
+  if (IS_DEV) {
+    console.log(`[dev] Password reset link for ${email}: ${resetLink}`);
+  }
+
   const emailContent = generatePasswordResetEmail(user.username, resetLink);
-  // await sendEmail(email, "Password Reset Request", emailContent);
-  await sendEmail("eivind.melleby@gmail.com", "Password Reset Request", emailContent);
+  const sent = await sendEmail(recipient, "Password Reset Request", emailContent);
+  if (!sent) {
+    console.error(`Password reset email to ${recipient} could not be sent`);
+  }
 
   return true;
 }

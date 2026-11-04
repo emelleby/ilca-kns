@@ -35,6 +35,7 @@ export default defineConfig({
       '@/app': path.resolve(__dirname, './src/app'),
       '@/session': path.resolve(__dirname, './src/session'),
       '@/db': path.resolve(__dirname, './src/db'),
+      'cloudflare:workers': path.resolve(__dirname, './src/test/stubs/cloudflare-workers.ts'),
     },
   },
   define: {

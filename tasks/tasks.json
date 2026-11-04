@@ -370,7 +370,7 @@
       "id": 27,
       "title": "Production email sender and observability",
       "description": "[Fase 0] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.",
-      "details": "1. Verifiser domene i Resend og sett EMAIL_FROM\n2. Sett observability.enabled = true i wrangler.jsonc\n3. Test passord-reset-e-post i produksjon\n4. Dokumenter i docs/architecture.md",
+      "details": "1. ✅ Fjernet hardkodet reset-mottaker; DEV_EMAIL_TO for utvikling; lenke logges i dev\n2. ⏳ Verifiser domene i Resend og sett EMAIL_FROM (CONSTANTS.FROM_EMAIL i src/app/shared/constants.ts bruker fortsatt onboarding@resend.dev)\n3. ⏳ Sett observability.enabled = true i wrangler.jsonc\n4. ⏳ Sett RESEND_API_KEY som secret i produksjon og test reset-e-post\n5. ✅ Dokumentert i docs/progress.md",
       "testStrategy": "Reset-e-post kommer frem fra eget domene. Feil vises i Workers Logs.",
       "priority": "high",
       "dependencies": [
