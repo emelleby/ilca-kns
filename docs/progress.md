@@ -10,11 +10,11 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 ## Åpne punkter
 
 - **SIKKERHET:** oppgave 29 er ferdig i kode på `claude/focused-euler-6nlxqf` (venter på merge). Det som gjenstår er egne oppgaver i `tasks.json`:
-  - **Eivind:** 30 (sjekk produksjonsdatabasen etter deploy, eventuelt bytt `AUTH_SECRET_KEY` for å logge ut alle) og 31 (manuell test av passkey- og passordflyt med ekte autentikator, før produksjon).
+  - **Eivind:** 30 (sjekk produksjonsdatabasen etter deploy, eventuelt bytt `AUTH_SECRET_KEY` for å logge ut alle) (31, manuell test av passkey og passord, er gjort og virker).
   - **Utvikler/AI:** 32 (rate limiting; Eivind setter opp nøkler i Cloudflare), 33 (endre passord med re-autentisering), 34 (sesjonsrotasjon, ikke fjerne siste innloggingsmetode), 35 (små oppfølginger).
 
 - `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.
-- Før merge til produksjon: manuell test av passkey og passord er oppgave 31 (Eivind); `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
+- Før produksjon: `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
 - Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
 - Innlegg kan ikke opprettes fra UI ennå (kun seed).
 - R2-binding finnes, men er ikke i bruk.

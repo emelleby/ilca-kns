@@ -1,6 +1,6 @@
 # Task ID: 31
 # Title: Manual browser test of passkey and password flows
-# Status: pending
+# Status: done
 # Dependencies: 26, 29
 # Priority: high
 # Description: [Fase 0 – før merge til produksjon] Avhengigheter: 26 og 29 (begge på main). HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.
@@ -18,6 +18,8 @@ Kjør lokalt (pnpm dev, http://localhost:5173) eller på en forhåndsvisning. Se
 9. Superbruker: logg inn som superuser@example.com, opprett og slett en organisasjon på /superuser/dashboard.
 
 Hvis noe feiler: noter steg, nettleser og feilmelding (nettleserkonsoll og terminal) og lag en ny oppgave eller gi det til en AI-assistent.
+
+Status 2026-11-04: Eivind har testet passkey og passord i nettleser, og det virker. Ikke deployet ennå.
 
 # Test Strategy:
 Alle 9 stegene fungerer som forventet. Resultatet er notert i docs/progress.md.
