@@ -59,13 +59,14 @@
     {
       "id": 5,
       "title": "Role-Based Access Control System",
-      "description": "[Fase 0] Role-based access control (RBAC). Datamodell, roller og rute-interceptors finnes; selve håndhevingen i server functions mangler og er en sikkerhetsfeil (se oppgave 29). Coach–seiler og moderering hører til senere faser.",
-      "details": "Status per delpunkt (verifisert mot koden 2026-11-04):\n1. ✅/⏳ Rollesett: org-roller ADMIN/COACH/MEMBER med hierarki (src/app/shared/constants.ts roleHierarchy) og User.role USER/SUPERUSER. Ikke samlet til navngitte rettigheter (permissions) – ikke nødvendig ennå.\n2. ✅ Rolletildeling: standardrolle USER ved registrering; superbruker kan legge til medlem, endre rolle og fjerne (superuser/functions.ts) – men uten autorisasjon, se 29. ⏳ Org-admin-funksjoner (src/app/pages/admin/) er bare en placeholder; admin/routes.tsx peker på filer som ikke finnes.\n3. ✅/⏳ Rettighetssjekk: rute-interceptors finnes i src/app/interceptors.ts (isSuperUser, requireOrganizationAdmin/Coach/Member) men brukes nesten ikke (superuser/routes.tsx har egen kopi). Synlighetsregler for innlegg er ferdig (postVisibility.ts). ⏳ UI som skjules etter rettighet.\n4. ⏳ Coach–seiler-relasjon: flyttet til fase 5 (oppgave 8).\n5. ⏳ Admin-rettigheter: brukeradministrasjon finnes delvis i superuser-dashboard; moderering flyttet til fase 6 (oppgave 22).\n6. ❌ Validering i alle server functions: MANGLER. Se oppgave 29 (kritisk).\n\nGjenstår for å lukke oppgaven: 29 (autorisasjon i server functions), 28 (skriverettigheter for innlegg), samt opprydding av interceptors (én felles isSuperUser) og admin-ruter.",
+      "description": "[Fase 0] Role-based access control (RBAC). Datamodell, roller og rute-interceptors finnes; håndheving i server functions er gjort i oppgave 29. Coach–seiler og moderering hører til senere faser.",
+      "details": "Status per delpunkt (verifisert mot koden 2026-11-04):\n1. ✅/⏳ Rollesett: org-roller ADMIN/COACH/MEMBER med hierarki (src/app/shared/constants.ts roleHierarchy) og User.role USER/SUPERUSER. Ikke samlet til navngitte rettigheter (permissions) – ikke nødvendig ennå.\n2. ✅ Rolletildeling: standardrolle USER ved registrering; superbruker kan legge til medlem, endre rolle og fjerne (superuser/functions.ts) – men uten autorisasjon, se 29. ⏳ Org-admin-funksjoner (src/app/pages/admin/) er bare en placeholder; admin/routes.tsx peker på filer som ikke finnes.\n3. ✅/⏳ Rettighetssjekk: rute-interceptors finnes i src/app/interceptors.ts (isSuperUser, requireOrganizationAdmin/Coach/Member) men brukes nesten ikke (superuser/routes.tsx har egen kopi). Synlighetsregler for innlegg er ferdig (postVisibility.ts). ⏳ UI som skjules etter rettighet.\n4. ⏳ Coach–seiler-relasjon: flyttet til fase 5 (oppgave 8).\n5. ⏳ Admin-rettigheter: brukeradministrasjon finnes delvis i superuser-dashboard; moderering flyttet til fase 6 (oppgave 22).\n6. ✅ Autorisasjon i alle server functions: gjort i oppgave 29 (guards i src/app/auth/guards.ts).\n\nGjenstår for å lukke oppgaven: 28 (skriverettigheter for innlegg) og admin-ruter (src/app/pages/admin/). Opprydding av interceptors (én felles isSuperUser) er flyttet til oppgave 35.",
       "testStrategy": "Test permission enforcement for each role. Verify role assignment and modification. Test access to protected routes and resources. Verify coach access to student data. Test admin-specific functionality. Verify UI elements are correctly shown/hidden based on permissions.",
       "priority": "high",
       "dependencies": [
         2,
-        3
+        3,
+        28
       ],
       "status": "in-progress",
       "subtasks": [],
@@ -74,14 +75,13 @@
     {
       "id": 6,
       "title": "Community Blog/News Feature",
-      "description": "[Fase 1] Community-innlegg: feed fra database (ferdig) og opprette/redigere/arkivere innlegg med synlighetsvalg. Rik tekst, media, kommentarer, likes, flagging, varsler og søk er ikke del av fase 1 (se oppgave 10, 12, 13, 15, 22 og roadmap fase 4).",
+      "description": "[Fase 1] Community-innlegg: feed fra database (ferdig) og opprette/redigere/arkivere innlegg med synlighetsvalg. Rik tekst, media, kommentarer, likes, flagging, varsler og søk er ikke del av fase 1 (se oppgave 10, 12, 13, 15, 22 og roadmap fase 4). Avhengigheter: 28 og 29 må være done før CRUD startes. Ikke avhengig av 30–35 (drift og sikkerhetsoppfølging); nye server functions følger guard-mønsteret i docs/architecture.md §4.",
       "details": "Omfang fase 1 – nåværende status:\n✅ Datamodell: Post.organizationId, visibility (PUBLIC | ORGANIZATION | COACH), imageUrl (migrasjon 0007)\n✅ Synlighetsregler (src/app/lib/postVisibility.ts) og datalag (src/app/lib/posts.ts)\n✅ Feed fra database; forsiden viser kun offentlige innlegg; seed-data på alle nivåer\n⏳ Opprett / rediger / arkiver innlegg (under)\n\nForutsetning: oppgave 29 (guards) og 28 (skriverettigheter) må være på plass først, ellers blir CRUD åpent for alle.\n\nForeslåtte beslutninger (bekreft før start):\n1. Hvem kan opprette: innloggede brukere med minst ett organisasjonsmedlemskap. Hvert innlegg hører til én organisasjon som velges i skjemaet (forhåndsvalgt hvis bare én). Ingen innlegg uten organisasjon i MVP.\n2. Standard synlighet: ORGANIZATION. Valg: «Alle», «Kun klubben», «Kun meg og coacher».\n3. Felt: tittel (3–120 tegn), innhold (1–10000, ren tekst), kategori (News | Training | Event | Other), synlighet, organisasjon, valgfri bilde-URL (opplasting kommer i fase 4).\n4. Publisering: lagres som PUBLISHED med publishedAt = nå. Utkast kommer senere.\n5. Redigere: forfatter eller ADMIN i innleggets organisasjon. Endring av synlighet er tillatt; endring av organisasjon er ikke tillatt.\n6. «Slette» = status ARCHIVED (mykt, kan gjenopprettes og passer moderering). Forfatter eller ADMIN i organisasjonen.\n7. Ruter etter PRD: /posts/create og /posts/:id/edit. Ingen egen detaljside (feeden viser hele innholdet).\n8. Validering med zod på serversiden; UI-validering er bare hjelp.\n9. Knapper (rediger/arkiver) vises kun for de som har rett, men håndheves alltid på server.\n\nDelmål:\n6.1 Server functions createPost / updatePost / archivePost med guards og zod\n6.2 Skjema-komponent (shadcn: Input, Textarea, Select, RadioGroup for synlighet)\n6.3 Sider /posts/create og /posts/:id/edit; AddContentButton lenker til /posts/create\n6.4 Rediger/arkiver-meny på PostCard for forfatter/admin\n6.5 Tester: ekte server functions (rolle × handling), synlighet etter redigering, validering\n6.6 Nettleserverifisering som alice (ADMIN), bob (MEMBER), charlie (COACH), anonym\n\nUtenfor fase 1 (flyttet): rik tekst-editor (15), media/R2 (10), kommentarer og likes (fase 4), flagging og moderering (22), varsler (12), søk og pinned/featured (13), planlagt publisering.",
       "testStrategy": "Server functions med ekte kode (kun db/requestInfo mockes): tillatt/avvist per rolle (forfatter, annen MEMBER, COACH, ADMIN, utenfor organisasjonen, uinnlogget), validering (tom/for lang tittel, ugyldig kategori/synlighet), at organisasjon ikke kan flyttes, og at arkivert innlegg forsvinner fra feeden. Etter endring av synlighet ser riktige brukere riktig feed (bruk visiblePostsWhere). Nettleser: opprett, rediger og arkiver som alice, og kontroller at bob og charlie ser det synlighetsnivået tilsier.",
       "priority": "high",
       "dependencies": [
         2,
         3,
-        5,
         28,
         29
       ],
@@ -184,14 +184,16 @@
     {
       "id": 11,
       "title": "Admin Dashboard Implementation",
-      "description": "[Fase 6] Create a comprehensive admin dashboard for system administrators to manage users, content, and application settings. Status: superuser-dashboard med organisasjonsadministrasjon finnes.",
+      "description": "[Fase 6] Create a comprehensive admin dashboard for system administrators to manage users, content, and application settings. Status: superuser-dashboard med organisasjonsadministrasjon finnes. Avhengigheter: 29 (guards) for alle admin-funksjoner, 34 (sesjonsrotasjon) før deaktivering av kontoer og rolleendringer kan virke umiddelbart.",
       "details": "1. Create admin dashboard layout\n   - Navigation sidebar\n   - Overview statistics\n   - Quick action buttons\n2. Implement user management section\n   - User listing with filtering and search\n   - User detail view\n   - Role assignment\n   - Account status control\n   - Bulk actions\n3. Create content moderation tools\n   - Content approval workflows\n   - Flagged content review\n   - Comment moderation\n   - Content removal\n   - User warning system\n4. Implement system configuration\n   - Site settings\n   - Feature toggles\n   - Notification settings\n   - Integration management\n5. Create usage analytics and reports\n   - User activity metrics\n   - Content engagement statistics\n   - System performance data\n   - Custom report generation\n6. Implement backup and restore options",
       "testStrategy": "Test admin dashboard access control. Verify user management functionality. Test content moderation tools with various content types. Verify system configuration changes take effect. Test analytics and report generation. Verify backup and restore functionality. Test bulk actions for users and content.",
       "priority": "low",
       "dependencies": [
         2,
         3,
-        5
+        5,
+        29,
+        34
       ],
       "status": "in-progress",
       "subtasks": [],
@@ -200,13 +202,14 @@
     {
       "id": 12,
       "title": "Notification System Implementation",
-      "description": "[Senere] Implement a comprehensive notification system for user interactions, events, and system notifications using Cloudflare Queues.",
+      "description": "[Senere] Implement a comprehensive notification system for user interactions, events, and system notifications using Cloudflare Queues. Avhengighet: 27 (eget e-postdomene) før e-postvarsler.",
       "details": "1. Design notification types and templates\n   - Interaction notifications (comments, likes)\n   - Event notifications (reminders, updates)\n   - System notifications (account changes, announcements)\n2. Implement notification generation\n   - Event-based triggers\n   - Scheduled notifications\n   - Bulk notifications\n3. Create notification storage and retrieval\n   - Database schema for notifications\n   - Marking as read/unread\n   - Deletion and cleanup\n4. Implement notification delivery\n   - In-app notifications\n   - Email notifications\n   - Push notifications (future consideration)\n5. Create notification preferences\n   - Type-based preferences\n   - Frequency controls\n   - Channel selection\n6. Implement notification queue using Cloudflare Queues\n   - Queue management\n   - Retry mechanisms\n   - Failure handling",
       "testStrategy": "Test notification generation for various triggers. Verify notification storage and retrieval. Test marking notifications as read/unread. Verify notification delivery through different channels. Test notification preferences affect delivery. Verify queue processing and retry mechanisms. Test performance under high notification volume.",
       "priority": "low",
       "dependencies": [
         6,
-        9
+        9,
+        27
       ],
       "status": "pending",
       "subtasks": [],
@@ -267,12 +270,15 @@
     {
       "id": 17,
       "title": "Security Implementation",
-      "description": "[Løpende] Implement comprehensive security measures to protect user data, prevent common vulnerabilities, and ensure secure authentication and authorization.",
+      "description": "[Løpende] Implement comprehensive security measures to protect user data, prevent common vulnerabilities, and ensure secure authentication and authorization. Delvis dekket av egne oppgaver: 29 (autorisasjon), 32 (rate limiting), 34 (sesjoner).",
       "details": "1. Implement secure authentication practices\n   - Password hashing with bcrypt\n   - CSRF protection\n   - Rate limiting for login attempts\n   - Session security\n2. Create input validation and sanitization\n   - Form validation\n   - API input validation\n   - Content sanitization\n3. Implement protection against common vulnerabilities\n   - SQL injection prevention\n   - XSS protection\n   - CSRF protection\n   - Clickjacking protection\n4. Create secure data handling\n   - Data encryption at rest\n   - Secure data transmission (HTTPS)\n   - Sensitive data masking\n5. Implement secure file upload handling\n   - File type validation\n   - Malware scanning\n   - Storage security\n6. Create security headers configuration\n   - Content Security Policy\n   - X-Content-Type-Options\n   - X-Frame-Options\n   - Referrer-Policy\n7. Implement security logging and monitoring",
       "testStrategy": "Conduct security testing for authentication flows. Test input validation with malicious inputs. Verify protection against OWASP Top 10 vulnerabilities. Test file upload security. Verify secure data handling practices. Conduct penetration testing. Test security headers configuration. Verify security logging captures relevant events.",
       "priority": "medium",
       "dependencies": [
-        3
+        3,
+        29,
+        32,
+        34
       ],
       "status": "pending",
       "subtasks": [],
@@ -372,13 +378,17 @@
     {
       "id": 25,
       "title": "Deployment and Launch Preparation",
-      "description": "[Før lansering] Prepare for application deployment and launch, including staging deployment, final testing, and production deployment.",
+      "description": "[Før lansering] Prepare for application deployment and launch, including staging deployment, final testing, and production deployment. Avhengigheter: 27 (e-post/logging), 30 (produksjonssjekk), 31 (manuell test), 32 (rate limiting), 34 (sesjoner) må være done før lansering.",
       "details": "1. Create deployment pipeline\n   - Automated build process\n   - Deployment scripts\n   - Environment configuration\n2. Implement staging deployment\n   - Environment setup\n   - Data migration\n   - Configuration verification\n3. Conduct final testing\n   - Smoke testing\n   - Acceptance testing\n   - Performance verification\n4. Create rollback plan\n   - Backup procedures\n   - Rollback scripts\n   - Recovery testing\n5. Implement production deployment\n   - Database setup\n   - Application deployment\n   - DNS configuration\n6. Create monitoring and alerting\n   - Performance monitoring\n   - Error tracking\n   - Usage analytics\n7. Implement post-launch support plan\n   - Support channels\n   - Issue triage\n   - Hotfix process",
       "testStrategy": "Test deployment pipeline with various scenarios. Verify staging environment matches production configuration. Conduct final testing in staging environment. Test rollback procedures. Verify production deployment completes successfully. Test monitoring and alerting systems. Verify support channels are operational.",
       "priority": "high",
       "dependencies": [
         23,
-        27
+        27,
+        30,
+        31,
+        32,
+        34
       ],
       "status": "pending",
       "subtasks": [],
@@ -420,7 +430,6 @@
       "testStrategy": "Tester for hver rolle, ikke-medlem, og superbruker. Eksisterende auth-tester består.",
       "priority": "high",
       "dependencies": [
-        5,
         29
       ],
       "status": "in-progress",
@@ -431,62 +440,148 @@
       "id": 29,
       "title": "Authorization in server functions (security fix)",
       "description": "[Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md",
-      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven",
+      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven\n\nStatus 2026-11-04: ferdig i kode (gren claude/focused-euler-6nlxqf). Repro-skriptet gir 13/13 DENIED, exit 0. Det som gjenstår er egne oppgaver: 30 (produksjonssjekk, Eivind), 31 (manuell passkey-test, Eivind), 32 (rate limiting), 33 (endre passord), 34 (sesjonsrotasjon), 35 (små oppfølginger).",
       "testStrategy": "Ekte funksjoner med mocket db/requestInfo (som passwordReset.test.ts): uten bruker avvist, vanlig bruker på annens data avvist, riktig bruker/SUPERUSER ok. Sikkerhetsnett-test over alle 'use server'-filer. Akseptansetest: node docs/security/repro-server-function-authz.cjs mot lokal dev gir 13/13 DENIED og exit 0. Regresjon: eksisterende 108 tester, pnpm build, manuell røyktest av innlogging, profil, passkey, reset og superuser-dashboard.",
       "priority": "high",
       "dependencies": [
-        3,
-        5
+        3
       ],
-      "status": "pending",
+      "status": "done",
       "subtasks": [
         {
           "id": "29.1",
           "title": "Guards (src/app/auth/guards.ts) + enhetstester",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.2",
           "title": "superuser/functions.ts: autorisasjon",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.3",
           "title": "user/functions.ts: addPasskey/addPassword/verifyResetToken",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.4",
           "title": "user/profile/functions.ts: eier/SU og getPublicProfile",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.5",
           "title": "Oppdater UI-kallere som sender userId",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.6",
           "title": "Sikkerhetsnett-test for 'use server'-filer",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.7",
           "title": "Akseptansetest: repro-skript 13/13 DENIED + røyktest",
-          "status": "pending"
+          "status": "done"
         },
         {
           "id": "29.8",
-          "title": "Drift: sjekk produksjon, logging, sesjoner",
-          "status": "pending"
+          "title": "Drift: flyttet til egen oppgave 30 (Eivind)",
+          "status": "done"
         },
         {
           "id": "29.9",
           "title": "Dokumentasjon oppdatert",
-          "status": "pending"
+          "status": "done"
         }
       ],
       "phase": "Fase 0"
+    },
+    {
+      "id": 30,
+      "title": "Production check after the server function security flaw",
+      "description": "[Fase 0 – rett etter deploy av oppgave 29] Avhengigheter: 29 merget og deployet, og 31 (manuell test) bestått før deploy. HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.",
+      "details": "Bakgrunn: før oppgave 29 kunne hvem som helst kalle server functions direkte: opprette organisasjoner, gi seg selv ADMIN-rolle, endre andres profiler og sette passord på andres kontoer (kontoovertakelse). Detaljer: docs/security/server-function-authorization.md §1 og §6.\n\nForutsetning: oppgave 29 er merget til main og deployet (pnpm release). Gjør sjekken etter deploy, slik at ingen nye endringer kan skje mens du ser på dataene.\n\n1. Finn ut om sårbar kode har kjørt i produksjon: når ble appen sist deployet før oppgave 29, og hvilken commit? (Cloudflare Dashboard → Workers → ilcakns → Deployments.) Har den aldri vært i bruk av andre enn deg, kan du hoppe til punkt 5.\n2. Kjør spørringene mot produksjonsdatabasen (D1 «ilca2»). Eksempel:\n   npx wrangler d1 execute ilca2 --remote --command \"SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC\"\n   - Organisasjoner: SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC;\n   - Medlemskap og roller: SELECT * FROM OrganizationMembership ORDER BY joinedAt DESC LIMIT 50;\n   - Passkeys: SELECT userId, deviceName, createdAt FROM Credential ORDER BY createdAt DESC LIMIT 50;\n   - Kontoer med nylig endret e-post/passord: SELECT id, username, email, updatedAt FROM User ORDER BY updatedAt DESC LIMIT 50;\n   - Superbrukere: SELECT id, username, email FROM User WHERE role = 'SUPERUSER';\n   - Invitasjoner: SELECT * FROM OrganizationInvitation ORDER BY createdAt DESC LIMIT 50;\n3. Se etter: organisasjoner du ikke kjenner, ADMIN-roller du ikke har gitt, passkeys med enhetsnavn/dato som ikke stemmer med brukerens egne enheter, kontoer der e-post er endret uten at brukeren har gjort det.\n4. Hvis noe er mistenkelig: slett ukjente organisasjoner og medlemskap (superbruker-dashboardet eller SQL), fjern ukjente passkeys, nullstill passord for berørte kontoer (be brukeren bruke «glemt passord») og gi beskjed til de berørte.\n5. Ugyldiggjør alle innloggingsøkter hvis du er i tvil: bytt AUTH_SECRET_KEY (npx wrangler secret put AUTH_SECRET_KEY med en ny tilfeldig verdi, f.eks. fra `openssl rand -hex 32`). Da blir alle sesjonscookies ugyldige og alle må logge inn på nytt.\n6. Skriv resultatet (hva du fant, hva du gjorde) som én linje i docs/progress.md, eller be en AI-assistent gjøre det, og sett oppgaven til done.\n\nLogging (observability) for fremtiden er oppgave 27 punkt 3.",
+      "testStrategy": "Spørringene er kjørt og resultatet er notert i docs/progress.md. Eventuelle funn er ryddet opp, og berørte brukere har fått beskjed.",
+      "priority": "high",
+      "dependencies": [
+        29,
+        31
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Fase 0"
+    },
+    {
+      "id": 31,
+      "title": "Manual browser test of passkey and password flows",
+      "description": "[Fase 0 – før merge til produksjon] Avhengigheter: 26 og 29 (begge på main). HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.",
+      "details": "Kjør lokalt (pnpm dev, http://localhost:5173) eller på en forhåndsvisning. Seed-brukere: alice/bob/charlie/superuser@example.com, passord password123.\n\n1. Registrer en ny konto med passkey (/user/signup). Forventet: du havner på /home.\n2. Logg ut og logg inn igjen med passkey (/user/login).\n3. Gå til innstillinger (/user/<brukernavn>/settings) på passkey-kontoen og legg til e-post og passord. Logg ut og logg inn med e-post/passord.\n4. Prøv å legge til e-post/passord en gang til på samme konto. Forventet: avvist («Failed to add email and password»), fordi kontoen allerede har passord.\n5. Logg inn som alice (passord) og legg til en passkey under innstillinger. Logg ut og logg inn med passkeyen.\n6. Fjern passkeyen under innstillinger.\n7. Glemt passord: be om reset for alice. I dev logges lenken i terminalen. Åpne lenken: siden skal vise «Hello alice», og nytt passord skal virke.\n8. Profil: rediger egen profil og lagre. Åpne en annen brukers profil og sjekk at skjulte felt (e-post, sted osv.) ikke vises.\n9. Superbruker: logg inn som superuser@example.com, opprett og slett en organisasjon på /superuser/dashboard.\n\nHvis noe feiler: noter steg, nettleser og feilmelding (nettleserkonsoll og terminal) og lag en ny oppgave eller gi det til en AI-assistent.",
+      "testStrategy": "Alle 9 stegene fungerer som forventet. Resultatet er notert i docs/progress.md.",
+      "priority": "high",
+      "dependencies": [
+        26,
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Fase 0"
+    },
+    {
+      "id": 32,
+      "title": "Rate limiting on sign-in, sign-up and password reset",
+      "description": "[Før lansering] HVEM: utvikler (AI-assistent kan skrive koden) + Eivind for oppsett i Cloudflare (opprette Turnstile-nøkler / rate limit-binding og legge inn secrets). Uten begrensning kan noen gjette passord ubegrenset og spamme reset-e-poster til hvem som helst.",
+      "details": "Berørte funksjoner (src/app/pages/user/functions.ts): loginWithPassword, registerWithPassword, requestPasswordReset, finishPasskeyLogin.\n\nForslag (velg sammen før start):\n- Cloudflare Workers Rate Limiting-binding (ratelimit i wrangler.jsonc), nøkkel = IP + e-post. F.eks. 10 innloggingsforsøk per minutt per IP, 3 reset-forespørsler per time per e-post.\n- Eventuelt Cloudflare Turnstile på registrering og glemt passord (CSP i src/app/headers.ts tillater allerede challenges.cloudflare.com).\n\nEivind: opprett Turnstile-widget i Cloudflare Dashboard (hvis valgt) og legg inn TURNSTILE_SECRET_KEY med npx wrangler secret put. Utvikler: binding i wrangler.jsonc, sjekk i funksjonene, felles hjelpefunksjon, feilmelding i UI, oppdater docs/architecture.md.\n\nAvvist forespørsel skal gi samme svar for eksisterende og ikke-eksisterende e-post (ingen kontoavsløring).",
+      "testStrategy": "Enhetstester med mocket rate limiter: under grensen ok, over grensen avvist; samme svar for kjent og ukjent e-post. Manuell test i dev.",
+      "priority": "medium",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Før lansering"
+    },
+    {
+      "id": 33,
+      "title": "Change password with re-authentication",
+      "description": "[Senere] Avhengighet: 34 (sesjonsrotasjon) må være done først, fordi endret passord skal logge ut andre økter. HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). I dag kan en innlogget bruker ikke endre et eksisterende passord: addPasswordToPasskeyAccount avviser kontoer som allerede har passord (sikkerhetsvalg i oppgave 29), og eneste vei er «glemt passord».",
+      "details": "1. Ny server function changePassword(currentPassword, newPassword) i src/app/pages/user/functions.ts. Første linje requireUser(). Verifiser currentPassword mot lagret hash før endring. Nytt passord: zod, minst 8 tegn.\n2. Endre e-post på samme måte: krever gjeldende passord (eller ny passkey-verifisering for kontoer uten passord), og e-posten må ikke tilhøre en annen konto.\n3. UI i src/app/pages/user/settings/AuthSettings.tsx: skjema for å endre passord.\n4. Etter endring: roter sesjon (se oppgave 34).\n5. Oppdater docs/architecture.md §5 og docs/progress.md.",
+      "testStrategy": "Ekte funksjon med mocket db (som src/app/auth/__tests__/serverFunctionAuthz.test.ts): uinnlogget avvist, feil nåværende passord avvist, riktig passord ok, e-post som tilhører en annen avvist. Sikkerhetsnett-testen består.",
+      "priority": "medium",
+      "dependencies": [
+        29,
+        34
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Senere"
+    },
+    {
+      "id": 34,
+      "title": "Session rotation and protecting the last sign-in method",
+      "description": "[Før lansering] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). Når en bruker endrer innloggingsmetode bør gamle økter på andre enheter avsluttes, og brukeren bør ikke kunne låse seg ute ved å fjerne siste passkey på en konto uten passord.",
+      "details": "1. removePasskey (src/app/pages/user/functions.ts): avvis hvis dette er brukerens siste passkey og kontoen ikke har passord. Vis forklarende melding i AuthSettings.\n2. Sesjonsrotasjon: etter passord-reset, endret passord, lagt til e-post/passord og lagt til/fjernet passkey skal andre økter for brukeren bli ugyldige. Sesjonene ligger i Durable Object (src/session/store.ts, rwsdk/auth defineDurableSession). Undersøk om rwsdk har støtte for å slette alle økter for en bruker; hvis ikke, legg til et sessionVersion-felt på User (additiv migrasjon via pnpm migrate:new) som lagres i sesjonen og sjekkes i middleware i src/worker.tsx.\n3. Etter passord-reset (resetPassword) logges brukeren ikke automatisk inn.\n4. Oppdater docs/architecture.md §5.",
+      "testStrategy": "Enhetstester: siste innloggingsmetode kan ikke fjernes; sesjon med gammel versjon avvises av middleware. Manuell test med to nettlesere: endre passord i den ene, den andre blir logget ut.",
+      "priority": "medium",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Før lansering"
+    },
+    {
+      "id": 35,
+      "title": "Small follow-ups from the security review",
+      "description": "[Løpende, liten] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). Opprydding etter oppgave 29 som ikke er sikkerhetskritisk.",
+      "details": "1. src/app/pages/superuser/routes.tsx har en egen kopi av isSuperUser. Bytt til isSuperUser fra src/app/interceptors.ts (merk: den svarer 403 i stedet for å sende til /home; bestem hvilken oppførsel som er ønsket).\n2. Brukeroppregning: sjekk om registerWithPassword og passkey-registrering avslører at et brukernavn eller en e-post allerede finnes (f.eks. ulik feilmelding eller unntak fra Prisma). Gi en nøytral melding og logg detaljen på serveren.\n3. Feil fra guards kommer til klienten som «Connection closed». Gå gjennom klientkomponenter som kaller server functions (AuthSettings, ProfileView, ProfileEditForm, ProfileSetup, superuser-dialogene) og vis en forståelig melding («Du har ikke tilgang» / «Logg inn på nytt»).\n4. ProfileView: currentUserId-propen brukes ikke lenger til datahenting; fjern den fra useEffect-avhengighetene eller fjern propen.\n5. De gamle testene i src/app/pages/user/__tests__/serverFunctions.test.tsx mocker selve funksjonene og tester lite ekte kode. Vurder å erstatte dem med tester som kjører de ekte funksjonene.",
+      "testStrategy": "pnpm test, pnpm types (ikke flere feil enn før), pnpm build. Manuell sjekk av feilmeldinger i UI.",
+      "priority": "low",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Løpende"
     }
   ]
 }

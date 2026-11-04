@@ -1,5 +1,6 @@
 import { AppContext } from "@/worker";
 import { db } from "@/db";
+import { hasOrganizationRole } from "@/app/auth/guards";
 
 // Authentication interceptor
 export const isAuthenticated = ({ ctx }: { ctx: AppContext }) => {
@@ -27,21 +28,14 @@ export const isSuperUser = ({ ctx }: { ctx: AppContext }) => {
   }
 };
 
-// Organization role checking function
-async function checkOrganizationRole(
-  userId: string, 
-  organizationId: string, 
-  requiredRoles: string[]
+// Organization role checking: same lookup as the server function guards
+// (src/app/auth/guards.ts), so there is one implementation.
+function checkOrganizationRole(
+  userId: string,
+  organizationId: string,
+  minimumRole: "ADMIN" | "COACH" | "MEMBER"
 ): Promise<boolean> {
-  const membership = await db.organizationMembership.findFirst({
-    where: {
-      userId,
-      organizationId,
-      role: { in: requiredRoles }
-    }
-  });
-  
-  return !!membership;
+  return hasOrganizationRole(userId, organizationId, minimumRole);
 }
 
 // Organization Admin interceptor
@@ -61,8 +55,8 @@ export function requireOrganizationAdmin(organizationIdParam: string = "organiza
 
     const hasAccess = await checkOrganizationRole(
       ctx.user.id, 
-      organizationId, 
-      ["ADMIN"]
+      organizationId,
+      "ADMIN"
     );
 
     if (!hasAccess) {
@@ -90,8 +84,8 @@ export function requireOrganizationCoach(organizationIdParam: string = "organiza
 
     const hasAccess = await checkOrganizationRole(
       ctx.user.id, 
-      organizationId, 
-      ["ADMIN", "COACH"]
+      organizationId,
+      "COACH"
     );
 
     if (!hasAccess) {
@@ -119,8 +113,8 @@ export function requireOrganizationMember(organizationIdParam: string = "organiz
 
     const hasAccess = await checkOrganizationRole(
       ctx.user.id, 
-      organizationId, 
-      ["ADMIN", "COACH", "MEMBER"]
+      organizationId,
+      "MEMBER"
     );
 
     if (!hasAccess) {

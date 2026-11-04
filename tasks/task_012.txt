@@ -1,9 +1,9 @@
 # Task ID: 12
 # Title: Notification System Implementation
 # Status: pending
-# Dependencies: 6, 9
+# Dependencies: 6, 9, 27
 # Priority: low
-# Description: [Senere] Implement a comprehensive notification system for user interactions, events, and system notifications using Cloudflare Queues.
+# Description: [Senere] Implement a comprehensive notification system for user interactions, events, and system notifications using Cloudflare Queues. Avhengighet: 27 (eget e-postdomene) før e-postvarsler.
 # Details:
 1. Design notification types and templates
    - Interaction notifications (comments, likes)

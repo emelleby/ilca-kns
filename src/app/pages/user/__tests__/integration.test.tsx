@@ -140,7 +140,7 @@ describe('Integration Tests: Critical User Journeys', () => {
       
       // Verify profile data loads and sailing fields are displayed
       await waitFor(() => {
-        expect(mockGetPublicProfile).toHaveBeenCalledWith('user-123', 'user-123')
+        expect(mockGetPublicProfile).toHaveBeenCalledWith('user-123')
       })
       
       // Wait for profile data to load and verify sailing-specific fields

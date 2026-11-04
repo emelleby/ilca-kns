@@ -43,7 +43,7 @@ export default function AuthSettings({ user }: { user: any }) {
       const registration = await startRegistration({ optionsJSON: options });
 
       // 3. Send the registration response to the server to verify and save
-      const success = await addPasskeyToExistingAccount(user.id, registration);
+      const success = await addPasskeyToExistingAccount(registration);
 
       if (success) {
         setResult("Passkey added successfully");
@@ -68,11 +68,7 @@ export default function AuthSettings({ user }: { user: any }) {
 
     startTransition(async () => {
       try {
-        const success = await addPasswordToPasskeyAccount(
-          user.id,
-          email,
-          password
-        );
+        const success = await addPasswordToPasskeyAccount(email, password);
         if (success) {
           setResult("Email and password added successfully");
           // Refresh the page to update the UI

@@ -1,9 +1,9 @@
 # Task ID: 17
 # Title: Security Implementation
 # Status: pending
-# Dependencies: 3
+# Dependencies: 3, 29, 32, 34
 # Priority: medium
-# Description: [Løpende] Implement comprehensive security measures to protect user data, prevent common vulnerabilities, and ensure secure authentication and authorization.
+# Description: [Løpende] Implement comprehensive security measures to protect user data, prevent common vulnerabilities, and ensure secure authentication and authorization. Delvis dekket av egne oppgaver: 29 (autorisasjon), 32 (rate limiting), 34 (sesjoner).
 # Details:
 1. Implement secure authentication practices
    - Password hashing with bcrypt

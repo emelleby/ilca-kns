@@ -2,17 +2,31 @@
 
 import { db } from "@/db";
 import { randomBytes } from "crypto";
+import { z } from "zod";
+import { requireSelfOrSuperUser, requireSuperUser, requireUser } from "@/app/auth/guards";
+import {
+  ORGANIZATION_ROLES,
+  addMembership,
+  findValidInvitation,
+} from "@/app/lib/organizations";
+
+// Every export here is a browser-callable endpoint. Each one starts with a guard.
+// Policies: docs/security/server-function-authorization.md §4.1
+
+const idSchema = z.string().min(1).max(100);
+const roleSchema = z.enum(ORGANIZATION_ROLES);
+const organizationSchema = z.object({
+  name: z.string().trim().min(1).max(100),
+  description: z.string().trim().max(1000).optional(),
+});
 
 // Organization Management Functions
 
 export async function createOrganization(name: string, description?: string) {
+  requireSuperUser();
+  const data = organizationSchema.parse({ name, description });
   try {
-    const organization = await db.organization.create({
-      data: {
-        name,
-        description,
-      },
-    });
+    const organization = await db.organization.create({ data });
     return organization;
   } catch (error) {
     console.error("Error creating organization:", error);
@@ -24,10 +38,13 @@ export async function updateOrganization(
   organizationId: string,
   data: { name?: string; description?: string }
 ) {
+  requireSuperUser();
+  idSchema.parse(organizationId);
+  const update = organizationSchema.partial().parse(data);
   try {
     const organization = await db.organization.update({
       where: { id: organizationId },
-      data,
+      data: update,
     });
     return organization;
   } catch (error) {
@@ -37,6 +54,8 @@ export async function updateOrganization(
 }
 
 export async function deleteOrganization(organizationId: string) {
+  requireSuperUser();
+  idSchema.parse(organizationId);
   try {
     // First, get the organization to check if it exists and get member count
     const organization = await db.organization.findUnique({
@@ -83,6 +102,7 @@ export async function deleteOrganization(organizationId: string) {
 }
 
 export async function getOrganization(organizationId: string) {
+  requireSuperUser();
   try {
     const organization = await db.organization.findUnique({
       where: { id: organizationId },
@@ -113,9 +133,8 @@ export async function getOrganization(organizationId: string) {
   }
 }
 
-export async function getAllOrganizations() {
-  try {
-    const organizations = await db.organization.findMany({
+function loadAllOrganizations() {
+  return db.organization.findMany({
       include: {
         members: {
           include: {
@@ -139,7 +158,12 @@ export async function getAllOrganizations() {
         createdAt: 'desc'
       }
     });
-    return organizations;
+}
+
+export async function getAllOrganizations() {
+  requireSuperUser();
+  try {
+    return await loadAllOrganizations();
   } catch (error) {
     console.error("Error fetching organizations:", error);
     return [];
@@ -148,8 +172,9 @@ export async function getAllOrganizations() {
 
 // Helper function to format organizations for display
 export async function getOrganizationsForDisplay() {
+  requireSuperUser();
   try {
-    const organizations = await getAllOrganizations();
+    const organizations = await loadAllOrganizations();
 
     // Transform the data for the dashboard display
     return organizations.map(org => {
@@ -179,27 +204,12 @@ export async function addMemberToOrganization(
   userId: string,
   role: string = "MEMBER"
 ) {
+  requireSuperUser();
+  idSchema.parse(organizationId);
+  idSchema.parse(userId);
+  const validRole = roleSchema.parse(role);
   try {
-    // Check if membership already exists
-    const existingMembership = await db.organizationMembership.findFirst({
-      where: {
-        userId,
-        organizationId
-      }
-    });
-
-    if (existingMembership) {
-      return null; // Already a member
-    }
-
-    const membership = await db.organizationMembership.create({
-      data: {
-        userId,
-        organizationId,
-        role,
-      },
-    });
-    return membership;
+    return await addMembership(organizationId, userId, validRole);
   } catch (error) {
     console.error("Error adding member to organization:", error);
     return null;
@@ -211,6 +221,10 @@ export async function updateMemberRole(
   userId: string,
   newRole: string
 ) {
+  requireSuperUser();
+  idSchema.parse(organizationId);
+  idSchema.parse(userId);
+  const role = roleSchema.parse(newRole);
   try {
     const membership = await db.organizationMembership.updateMany({
       where: {
@@ -218,7 +232,7 @@ export async function updateMemberRole(
         organizationId
       },
       data: {
-        role: newRole
+        role
       }
     });
     return membership.count > 0;
@@ -232,6 +246,9 @@ export async function removeMemberFromOrganization(
   organizationId: string,
   userId: string
 ) {
+  requireSuperUser();
+  idSchema.parse(organizationId);
+  idSchema.parse(userId);
   try {
     await db.organizationMembership.deleteMany({
       where: {
@@ -251,9 +268,12 @@ export async function removeMemberFromOrganization(
 export async function createInvitation(
   organizationId: string,
   email: string,
-  role: string,
-  createdBy: string
+  role: string
 ) {
+  const creator = requireSuperUser();
+  idSchema.parse(organizationId);
+  email = z.string().trim().email().parse(email);
+  role = roleSchema.parse(role);
   try {
     // Check if user already exists and is a member
     const existingUser = await db.user.findUnique({
@@ -295,7 +315,7 @@ export async function createInvitation(
         role,
         token,
         expiresAt,
-        createdBy,
+        createdBy: creator.id,
       },
     });
 
@@ -306,45 +326,41 @@ export async function createInvitation(
   }
 }
 
+// PUBLIC (TOKEN): knowing the secret token is the authorization.
+// Returns only what an invitation page needs.
 export async function getInvitationByToken(token: string) {
   try {
-    const invitation = await db.organizationInvitation.findUnique({
-      where: { token },
-      include: {
-        organization: true
-      }
-    });
-
-    // Check if invitation is valid
-    if (!invitation ||
-        invitation.status !== "PENDING" ||
-        invitation.expiresAt < new Date()) {
-      return null;
-    }
-
-    return invitation;
+    const invitation = await findValidInvitation(z.string().min(1).max(200).parse(token));
+    if (!invitation) return null;
+    return {
+      organizationName: invitation.organization.name,
+      email: invitation.email,
+      role: invitation.role,
+      expiresAt: invitation.expiresAt,
+    };
   } catch (error) {
     console.error("Error fetching invitation:", error);
     return null;
   }
 }
 
-export async function acceptInvitation(token: string, userId: string) {
+// SESSION: the signed-in user accepts an invitation addressed to their own email.
+export async function acceptInvitation(token: string) {
+  const user = requireUser();
   try {
-    const invitation = await getInvitationByToken(token);
-    if (!invitation) {
+    const invitation = await findValidInvitation(z.string().min(1).max(200).parse(token));
+    if (!invitation) return false;
+    if (!user.email || user.email.toLowerCase() !== invitation.email.toLowerCase()) {
       return false;
     }
 
-    // Add user to organization
-    const membership = await addMemberToOrganization(
+    const membership = await addMembership(
       invitation.organizationId,
-      userId,
-      invitation.role
+      user.id,
+      roleSchema.parse(invitation.role)
     );
 
     if (membership) {
-      // Mark invitation as accepted
       await db.organizationInvitation.update({
         where: { id: invitation.id },
         data: {
@@ -362,9 +378,10 @@ export async function acceptInvitation(token: string, userId: string) {
   }
 }
 
+// PUBLIC (TOKEN): knowing the secret token is the authorization.
 export async function rejectInvitation(token: string) {
   try {
-    const invitation = await getInvitationByToken(token);
+    const invitation = await findValidInvitation(z.string().min(1).max(200).parse(token));
     if (!invitation) {
       return false;
     }
@@ -386,6 +403,7 @@ export async function rejectInvitation(token: string) {
 // User's Organizations Functions
 
 export async function getUserOrganizations(userId: string) {
+  requireSelfOrSuperUser(userId);
   try {
     const memberships = await db.organizationMembership.findMany({
       where: { userId },

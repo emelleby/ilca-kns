@@ -73,6 +73,10 @@ const formatDependencies = (dependencies: number[]): string => {
   return dependencies.join(', ') || 'None';
 };
 
+// Dependencies that are not done yet. A task should not be started while this is non-empty.
+const openDependencies = (task: Task, tasks: Task[]): number[] =>
+  task.dependencies.filter((id) => tasks.find((t) => t.id === id)?.status !== 'done');
+
 // Helper function to get dependencies badge styling
 const getDependenciesBadgeStyle = (): string => {
   return "bg-gray-100 text-gray-800 border-gray-200";
@@ -130,6 +134,11 @@ export function TasksTableClient({ tasks }: TasksTableClientProps) {
                   <Badge variant="outline" className={getDependenciesBadgeStyle()}>
                     {formatDependencies(task.dependencies)}
                   </Badge>
+                  {task.status !== 'done' && openDependencies(task, tasks).length > 0 && (
+                    <div className="mt-1 text-xs text-amber-700">
+                      Venter på: {openDependencies(task, tasks).join(', ')}
+                    </div>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <Button variant="outline" size="sm" onClick={() => handleViewDetails(task)}>
@@ -176,6 +185,11 @@ export function TasksTableClient({ tasks }: TasksTableClientProps) {
                <div>
                 <h3 className="font-semibold">Dependencies:</h3>
                 <p>{formatDependencies(selectedTask.dependencies)}</p>
+                {selectedTask.status !== 'done' && openDependencies(selectedTask, tasks).length > 0 && (
+                  <p className="text-sm text-amber-700">
+                    Ikke ferdig ennå: {openDependencies(selectedTask, tasks).join(', ')}. Sjekk disse før oppgaven startes.
+                  </p>
+                )}
               </div>
               {selectedTask.subtasks.length > 0 && (
                  <div>

@@ -1,0 +1,14 @@
+# Task ID: 34
+# Title: Session rotation and protecting the last sign-in method
+# Status: pending
+# Dependencies: 29
+# Priority: medium
+# Description: [Før lansering] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). Når en bruker endrer innloggingsmetode bør gamle økter på andre enheter avsluttes, og brukeren bør ikke kunne låse seg ute ved å fjerne siste passkey på en konto uten passord.
+# Details:
+1. removePasskey (src/app/pages/user/functions.ts): avvis hvis dette er brukerens siste passkey og kontoen ikke har passord. Vis forklarende melding i AuthSettings.
+2. Sesjonsrotasjon: etter passord-reset, endret passord, lagt til e-post/passord og lagt til/fjernet passkey skal andre økter for brukeren bli ugyldige. Sesjonene ligger i Durable Object (src/session/store.ts, rwsdk/auth defineDurableSession). Undersøk om rwsdk har støtte for å slette alle økter for en bruker; hvis ikke, legg til et sessionVersion-felt på User (additiv migrasjon via pnpm migrate:new) som lagres i sesjonen og sjekkes i middleware i src/worker.tsx.
+3. Etter passord-reset (resetPassword) logges brukeren ikke automatisk inn.
+4. Oppdater docs/architecture.md §5.
+
+# Test Strategy:
+Enhetstester: siste innloggingsmetode kan ikke fjernes; sesjon med gammel versjon avvises av middleware. Manuell test med to nettlesere: endre passord i den ene, den andre blir logget ut.

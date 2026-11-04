@@ -1,0 +1,29 @@
+# Task ID: 30
+# Title: Production check after the server function security flaw
+# Status: pending
+# Dependencies: 29, 31
+# Priority: high
+# Description: [Fase 0 – rett etter deploy av oppgave 29] Avhengigheter: 29 merget og deployet, og 31 (manuell test) bestått før deploy. HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.
+# Details:
+Bakgrunn: før oppgave 29 kunne hvem som helst kalle server functions direkte: opprette organisasjoner, gi seg selv ADMIN-rolle, endre andres profiler og sette passord på andres kontoer (kontoovertakelse). Detaljer: docs/security/server-function-authorization.md §1 og §6.
+
+Forutsetning: oppgave 29 er merget til main og deployet (pnpm release). Gjør sjekken etter deploy, slik at ingen nye endringer kan skje mens du ser på dataene.
+
+1. Finn ut om sårbar kode har kjørt i produksjon: når ble appen sist deployet før oppgave 29, og hvilken commit? (Cloudflare Dashboard → Workers → ilcakns → Deployments.) Har den aldri vært i bruk av andre enn deg, kan du hoppe til punkt 5.
+2. Kjør spørringene mot produksjonsdatabasen (D1 «ilca2»). Eksempel:
+   npx wrangler d1 execute ilca2 --remote --command "SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC"
+   - Organisasjoner: SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC;
+   - Medlemskap og roller: SELECT * FROM OrganizationMembership ORDER BY joinedAt DESC LIMIT 50;
+   - Passkeys: SELECT userId, deviceName, createdAt FROM Credential ORDER BY createdAt DESC LIMIT 50;
+   - Kontoer med nylig endret e-post/passord: SELECT id, username, email, updatedAt FROM User ORDER BY updatedAt DESC LIMIT 50;
+   - Superbrukere: SELECT id, username, email FROM User WHERE role = 'SUPERUSER';
+   - Invitasjoner: SELECT * FROM OrganizationInvitation ORDER BY createdAt DESC LIMIT 50;
+3. Se etter: organisasjoner du ikke kjenner, ADMIN-roller du ikke har gitt, passkeys med enhetsnavn/dato som ikke stemmer med brukerens egne enheter, kontoer der e-post er endret uten at brukeren har gjort det.
+4. Hvis noe er mistenkelig: slett ukjente organisasjoner og medlemskap (superbruker-dashboardet eller SQL), fjern ukjente passkeys, nullstill passord for berørte kontoer (be brukeren bruke «glemt passord») og gi beskjed til de berørte.
+5. Ugyldiggjør alle innloggingsøkter hvis du er i tvil: bytt AUTH_SECRET_KEY (npx wrangler secret put AUTH_SECRET_KEY med en ny tilfeldig verdi, f.eks. fra `openssl rand -hex 32`). Da blir alle sesjonscookies ugyldige og alle må logge inn på nytt.
+6. Skriv resultatet (hva du fant, hva du gjorde) som én linje i docs/progress.md, eller be en AI-assistent gjøre det, og sett oppgaven til done.
+
+Logging (observability) for fremtiden er oppgave 27 punkt 3.
+
+# Test Strategy:
+Spørringene er kjørt og resultatet er notert i docs/progress.md. Eventuelle funn er ryddet opp, og berørte brukere har fått beskjed.
