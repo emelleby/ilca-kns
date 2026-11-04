@@ -1,35 +1,38 @@
 # Task ID: 6
 # Title: Community Blog/News Feature
-# Status: pending
-# Dependencies: 2, 3, 5, 28
+# Status: in-progress
+# Dependencies: 2, 3, 5, 28, 29
 # Priority: high
-# Description: [Fase 1] Implement the community blog/news functionality including post creation, editing, viewing, and interaction features.
+# Description: [Fase 1] Community-innlegg: feed fra database (ferdig) og opprette/redigere/arkivere innlegg med synlighetsvalg. Rik tekst, media, kommentarer, likes, flagging, varsler og søk er ikke del av fase 1 (se oppgave 10, 12, 13, 15, 22 og roadmap fase 4).
 # Details:
-1. Create rich text editor component
-   - Text formatting options
-   - List creation
-   - Table insertion
-   - Link embedding
-   - Media insertion
-2. Implement post creation functionality
-   - Post form with rich text editor
-   - Media upload capability
-   - YouTube video embedding
-   - Category selection
-   - Draft saving
-   - Scheduled publishing
-3. Create post listing and viewing
-   - Chronological feed
-   - Featured/pinned posts
-   - Category filtering
-   - Post detail view
-4. Implement post interaction features
-   - Commenting system
-   - Like/reaction functionality
-   - Sharing options
-   - Content flagging
-5. Create notification system for post interactions
-6. Implement post search and discovery features
+Omfang fase 1 – nåværende status:
+✅ Datamodell: Post.organizationId, visibility (PUBLIC | ORGANIZATION | COACH), imageUrl (migrasjon 0007)
+✅ Synlighetsregler (src/app/lib/postVisibility.ts) og datalag (src/app/lib/posts.ts)
+✅ Feed fra database; forsiden viser kun offentlige innlegg; seed-data på alle nivåer
+⏳ Opprett / rediger / arkiver innlegg (under)
+
+Forutsetning: oppgave 29 (guards) og 28 (skriverettigheter) må være på plass først, ellers blir CRUD åpent for alle.
+
+Foreslåtte beslutninger (bekreft før start):
+1. Hvem kan opprette: innloggede brukere med minst ett organisasjonsmedlemskap. Hvert innlegg hører til én organisasjon som velges i skjemaet (forhåndsvalgt hvis bare én). Ingen innlegg uten organisasjon i MVP.
+2. Standard synlighet: ORGANIZATION. Valg: «Alle», «Kun klubben», «Kun meg og coacher».
+3. Felt: tittel (3–120 tegn), innhold (1–10000, ren tekst), kategori (News | Training | Event | Other), synlighet, organisasjon, valgfri bilde-URL (opplasting kommer i fase 4).
+4. Publisering: lagres som PUBLISHED med publishedAt = nå. Utkast kommer senere.
+5. Redigere: forfatter eller ADMIN i innleggets organisasjon. Endring av synlighet er tillatt; endring av organisasjon er ikke tillatt.
+6. «Slette» = status ARCHIVED (mykt, kan gjenopprettes og passer moderering). Forfatter eller ADMIN i organisasjonen.
+7. Ruter etter PRD: /posts/create og /posts/:id/edit. Ingen egen detaljside (feeden viser hele innholdet).
+8. Validering med zod på serversiden; UI-validering er bare hjelp.
+9. Knapper (rediger/arkiver) vises kun for de som har rett, men håndheves alltid på server.
+
+Delmål:
+6.1 Server functions createPost / updatePost / archivePost med guards og zod
+6.2 Skjema-komponent (shadcn: Input, Textarea, Select, RadioGroup for synlighet)
+6.3 Sider /posts/create og /posts/:id/edit; AddContentButton lenker til /posts/create
+6.4 Rediger/arkiver-meny på PostCard for forfatter/admin
+6.5 Tester: ekte server functions (rolle × handling), synlighet etter redigering, validering
+6.6 Nettleserverifisering som alice (ADMIN), bob (MEMBER), charlie (COACH), anonym
+
+Utenfor fase 1 (flyttet): rik tekst-editor (15), media/R2 (10), kommentarer og likes (fase 4), flagging og moderering (22), varsler (12), søk og pinned/featured (13), planlagt publisering.
 
 # Test Strategy:
-Test rich text editor functionality. Verify post creation with various content types. Test media upload and embedding. Verify draft saving and scheduled publishing. Test post listing with different filters. Verify comment, like, and sharing functionality. Test notification delivery for interactions. Verify search functionality returns relevant results.
+Server functions med ekte kode (kun db/requestInfo mockes): tillatt/avvist per rolle (forfatter, annen MEMBER, COACH, ADMIN, utenfor organisasjonen, uinnlogget), validering (tom/for lang tittel, ugyldig kategori/synlighet), at organisasjon ikke kan flyttes, og at arkivert innlegg forsvinner fra feeden. Etter endring av synlighet ser riktige brukere riktig feed (bruk visiblePostsWhere). Nettleser: opprett, rediger og arkiver som alice, og kontroller at bob og charlie ser det synlighetsnivået tilsier.

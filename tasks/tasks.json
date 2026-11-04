@@ -59,8 +59,8 @@
     {
       "id": 5,
       "title": "Role-Based Access Control System",
-      "description": "[Fase 0] Implement role-based access control (RBAC) system to manage permissions for regular users, coaches, and administrators. Status: Organization/Membership/Invitation og superuser-UI er ferdig; gjenstår rollebasert tilgangskontroll (se oppgave 28).",
-      "details": "1. Define permission sets for each role:\n   - Regular User permissions\n   - Coach permissions (includes Regular User permissions)\n   - Administrator permissions (includes Coach permissions)\n2. Implement role assignment functionality\n   - Default role assignment during registration\n   - Role modification by administrators\n3. Create permission checking middleware\n   - Route protection based on role\n   - UI element visibility based on permissions\n4. Implement coach-student relationship management\n   - Coach assignment to students\n   - Access control for student data\n5. Create admin-specific permissions\n   - User management permissions\n   - Content moderation permissions\n   - System configuration permissions\n6. Implement permission validation in all relevant API endpoints",
+      "description": "[Fase 0] Role-based access control (RBAC). Datamodell, roller og rute-interceptors finnes; selve håndhevingen i server functions mangler og er en sikkerhetsfeil (se oppgave 29). Coach–seiler og moderering hører til senere faser.",
+      "details": "Status per delpunkt (verifisert mot koden 2026-11-04):\n1. ✅/⏳ Rollesett: org-roller ADMIN/COACH/MEMBER med hierarki (src/app/shared/constants.ts roleHierarchy) og User.role USER/SUPERUSER. Ikke samlet til navngitte rettigheter (permissions) – ikke nødvendig ennå.\n2. ✅ Rolletildeling: standardrolle USER ved registrering; superbruker kan legge til medlem, endre rolle og fjerne (superuser/functions.ts) – men uten autorisasjon, se 29. ⏳ Org-admin-funksjoner (src/app/pages/admin/) er bare en placeholder; admin/routes.tsx peker på filer som ikke finnes.\n3. ✅/⏳ Rettighetssjekk: rute-interceptors finnes i src/app/interceptors.ts (isSuperUser, requireOrganizationAdmin/Coach/Member) men brukes nesten ikke (superuser/routes.tsx har egen kopi). Synlighetsregler for innlegg er ferdig (postVisibility.ts). ⏳ UI som skjules etter rettighet.\n4. ⏳ Coach–seiler-relasjon: flyttet til fase 5 (oppgave 8).\n5. ⏳ Admin-rettigheter: brukeradministrasjon finnes delvis i superuser-dashboard; moderering flyttet til fase 6 (oppgave 22).\n6. ❌ Validering i alle server functions: MANGLER. Se oppgave 29 (kritisk).\n\nGjenstår for å lukke oppgaven: 29 (autorisasjon i server functions), 28 (skriverettigheter for innlegg), samt opprydding av interceptors (én felles isSuperUser) og admin-ruter.",
       "testStrategy": "Test permission enforcement for each role. Verify role assignment and modification. Test access to protected routes and resources. Verify coach access to student data. Test admin-specific functionality. Verify UI elements are correctly shown/hidden based on permissions.",
       "priority": "high",
       "dependencies": [
@@ -74,18 +74,50 @@
     {
       "id": 6,
       "title": "Community Blog/News Feature",
-      "description": "[Fase 1] Implement the community blog/news functionality including post creation, editing, viewing, and interaction features.",
-      "details": "1. Create rich text editor component\n   - Text formatting options\n   - List creation\n   - Table insertion\n   - Link embedding\n   - Media insertion\n2. Implement post creation functionality\n   - Post form with rich text editor\n   - Media upload capability\n   - YouTube video embedding\n   - Category selection\n   - Draft saving\n   - Scheduled publishing\n3. Create post listing and viewing\n   - Chronological feed\n   - Featured/pinned posts\n   - Category filtering\n   - Post detail view\n4. Implement post interaction features\n   - Commenting system\n   - Like/reaction functionality\n   - Sharing options\n   - Content flagging\n5. Create notification system for post interactions\n6. Implement post search and discovery features",
-      "testStrategy": "Test rich text editor functionality. Verify post creation with various content types. Test media upload and embedding. Verify draft saving and scheduled publishing. Test post listing with different filters. Verify comment, like, and sharing functionality. Test notification delivery for interactions. Verify search functionality returns relevant results.",
+      "description": "[Fase 1] Community-innlegg: feed fra database (ferdig) og opprette/redigere/arkivere innlegg med synlighetsvalg. Rik tekst, media, kommentarer, likes, flagging, varsler og søk er ikke del av fase 1 (se oppgave 10, 12, 13, 15, 22 og roadmap fase 4).",
+      "details": "Omfang fase 1 – nåværende status:\n✅ Datamodell: Post.organizationId, visibility (PUBLIC | ORGANIZATION | COACH), imageUrl (migrasjon 0007)\n✅ Synlighetsregler (src/app/lib/postVisibility.ts) og datalag (src/app/lib/posts.ts)\n✅ Feed fra database; forsiden viser kun offentlige innlegg; seed-data på alle nivåer\n⏳ Opprett / rediger / arkiver innlegg (under)\n\nForutsetning: oppgave 29 (guards) og 28 (skriverettigheter) må være på plass først, ellers blir CRUD åpent for alle.\n\nForeslåtte beslutninger (bekreft før start):\n1. Hvem kan opprette: innloggede brukere med minst ett organisasjonsmedlemskap. Hvert innlegg hører til én organisasjon som velges i skjemaet (forhåndsvalgt hvis bare én). Ingen innlegg uten organisasjon i MVP.\n2. Standard synlighet: ORGANIZATION. Valg: «Alle», «Kun klubben», «Kun meg og coacher».\n3. Felt: tittel (3–120 tegn), innhold (1–10000, ren tekst), kategori (News | Training | Event | Other), synlighet, organisasjon, valgfri bilde-URL (opplasting kommer i fase 4).\n4. Publisering: lagres som PUBLISHED med publishedAt = nå. Utkast kommer senere.\n5. Redigere: forfatter eller ADMIN i innleggets organisasjon. Endring av synlighet er tillatt; endring av organisasjon er ikke tillatt.\n6. «Slette» = status ARCHIVED (mykt, kan gjenopprettes og passer moderering). Forfatter eller ADMIN i organisasjonen.\n7. Ruter etter PRD: /posts/create og /posts/:id/edit. Ingen egen detaljside (feeden viser hele innholdet).\n8. Validering med zod på serversiden; UI-validering er bare hjelp.\n9. Knapper (rediger/arkiver) vises kun for de som har rett, men håndheves alltid på server.\n\nDelmål:\n6.1 Server functions createPost / updatePost / archivePost med guards og zod\n6.2 Skjema-komponent (shadcn: Input, Textarea, Select, RadioGroup for synlighet)\n6.3 Sider /posts/create og /posts/:id/edit; AddContentButton lenker til /posts/create\n6.4 Rediger/arkiver-meny på PostCard for forfatter/admin\n6.5 Tester: ekte server functions (rolle × handling), synlighet etter redigering, validering\n6.6 Nettleserverifisering som alice (ADMIN), bob (MEMBER), charlie (COACH), anonym\n\nUtenfor fase 1 (flyttet): rik tekst-editor (15), media/R2 (10), kommentarer og likes (fase 4), flagging og moderering (22), varsler (12), søk og pinned/featured (13), planlagt publisering.",
+      "testStrategy": "Server functions med ekte kode (kun db/requestInfo mockes): tillatt/avvist per rolle (forfatter, annen MEMBER, COACH, ADMIN, utenfor organisasjonen, uinnlogget), validering (tom/for lang tittel, ugyldig kategori/synlighet), at organisasjon ikke kan flyttes, og at arkivert innlegg forsvinner fra feeden. Etter endring av synlighet ser riktige brukere riktig feed (bruk visiblePostsWhere). Nettleser: opprett, rediger og arkiver som alice, og kontroller at bob og charlie ser det synlighetsnivået tilsier.",
       "priority": "high",
       "dependencies": [
         2,
         3,
         5,
-        28
+        28,
+        29
       ],
-      "status": "pending",
-      "subtasks": [],
+      "status": "in-progress",
+      "subtasks": [
+        {
+          "id": "6.1",
+          "title": "Server functions createPost/updatePost/archivePost (guards + zod)",
+          "status": "pending"
+        },
+        {
+          "id": "6.2",
+          "title": "PostForm-komponent (tittel, innhold, kategori, synlighet, organisasjon)",
+          "status": "pending"
+        },
+        {
+          "id": "6.3",
+          "title": "Sider /posts/create og /posts/:id/edit",
+          "status": "pending"
+        },
+        {
+          "id": "6.4",
+          "title": "Rediger/arkiver på PostCard for forfatter/admin",
+          "status": "pending"
+        },
+        {
+          "id": "6.5",
+          "title": "Tester (rolle × handling, validering, synlighet)",
+          "status": "pending"
+        },
+        {
+          "id": "6.6",
+          "title": "Nettleserverifisering som alice, bob, charlie og anonym",
+          "status": "pending"
+        }
+      ],
       "phase": "Fase 1"
     },
     {
@@ -369,7 +401,7 @@
     {
       "id": 27,
       "title": "Production email sender and observability",
-      "description": "[Fase 0] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.",
+      "description": "[Utsatt – ikke noe domene ennå] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.",
       "details": "1. ✅ Fjernet hardkodet reset-mottaker; DEV_EMAIL_TO for utvikling; lenke logges i dev\n2. ⏳ Verifiser domene i Resend og sett EMAIL_FROM (CONSTANTS.FROM_EMAIL i src/app/shared/constants.ts bruker fortsatt onboarding@resend.dev)\n3. ⏳ Sett observability.enabled = true i wrangler.jsonc\n4. ⏳ Sett RESEND_API_KEY som secret i produksjon og test reset-e-post\n5. ✅ Dokumentert i docs/progress.md",
       "testStrategy": "Reset-e-post kommer frem fra eget domene. Feil vises i Workers Logs.",
       "priority": "high",
@@ -378,20 +410,82 @@
       ],
       "status": "pending",
       "subtasks": [],
-      "phase": "Fase 0"
+      "phase": "Utsatt"
     },
     {
       "id": 28,
       "title": "Organization role access helper",
-      "description": "[Fase 0] Felles hjelper requireOrgRole(user, organizationId, roles) som alle server functions bruker for tilgangskontroll mot OrganizationMembership.",
-      "details": "1. Implementer hjelper i src/app/auth (ett indeksert oppslag)\n2. Definer rolleset (ADMIN, COACH, MEMBER) som konstanter\n3. Aktiv klubb: lagre valgt organisasjon (sesjon eller cookie) og vis velger i header\n4. Skriv tester\n5. Dokumenter i architecture.md",
+      "description": "[Fase 1] Rollesjekk i server functions. Gjøres sammen med innleggs-CRUD i stedet for som egen oppgave. Synlighetsregler for lesing er ferdig (src/app/lib/postVisibility.ts); gjenstår skriverettigheter (forfatter eller organisasjonsadmin). Aktiv klubb-velger er utsatt.",
+      "details": "1. ✅ Synlighetsregler for lesing (canViewPost / visiblePostsWhere) med tester\n2. ⏳ Skriverettigheter for innlegg: forfatter eller ADMIN i innleggets organisasjon (create/update/delete). Bygger på guards fra oppgave 29\n3. ⏳ Kun medlemmer kan opprette innlegg i en organisasjon\n4. ⏳ Tester for hver rolle, ikke-medlem og superbruker\n5. ⏸ Aktiv klubb-velger i header: utsatt til det trengs",
       "testStrategy": "Tester for hver rolle, ikke-medlem, og superbruker. Eksisterende auth-tester består.",
       "priority": "high",
       "dependencies": [
+        5,
+        29
+      ],
+      "status": "in-progress",
+      "subtasks": [],
+      "phase": "Fase 1"
+    },
+    {
+      "id": 29,
+      "title": "Authorization in server functions (security fix)",
+      "description": "[Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md",
+      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven",
+      "testStrategy": "Ekte funksjoner med mocket db/requestInfo (som passwordReset.test.ts): uten bruker avvist, vanlig bruker på annens data avvist, riktig bruker/SUPERUSER ok. Sikkerhetsnett-test over alle 'use server'-filer. Akseptansetest: node docs/security/repro-server-function-authz.cjs mot lokal dev gir 13/13 DENIED og exit 0. Regresjon: eksisterende 108 tester, pnpm build, manuell røyktest av innlogging, profil, passkey, reset og superuser-dashboard.",
+      "priority": "high",
+      "dependencies": [
+        3,
         5
       ],
       "status": "pending",
-      "subtasks": [],
+      "subtasks": [
+        {
+          "id": "29.1",
+          "title": "Guards (src/app/auth/guards.ts) + enhetstester",
+          "status": "pending"
+        },
+        {
+          "id": "29.2",
+          "title": "superuser/functions.ts: autorisasjon",
+          "status": "pending"
+        },
+        {
+          "id": "29.3",
+          "title": "user/functions.ts: addPasskey/addPassword/verifyResetToken",
+          "status": "pending"
+        },
+        {
+          "id": "29.4",
+          "title": "user/profile/functions.ts: eier/SU og getPublicProfile",
+          "status": "pending"
+        },
+        {
+          "id": "29.5",
+          "title": "Oppdater UI-kallere som sender userId",
+          "status": "pending"
+        },
+        {
+          "id": "29.6",
+          "title": "Sikkerhetsnett-test for 'use server'-filer",
+          "status": "pending"
+        },
+        {
+          "id": "29.7",
+          "title": "Akseptansetest: repro-skript 13/13 DENIED + røyktest",
+          "status": "pending"
+        },
+        {
+          "id": "29.8",
+          "title": "Drift: sjekk produksjon, logging, sesjoner",
+          "status": "pending"
+        },
+        {
+          "id": "29.9",
+          "title": "Dokumentasjon oppdatert",
+          "status": "pending"
+        }
+      ],
       "phase": "Fase 0"
     }
   ]

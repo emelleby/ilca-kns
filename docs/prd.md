@@ -29,7 +29,7 @@ En bruker kan ha flere roller, og kan være medlem av flere klubber (organisasjo
 Prioritet: **M** = må (MVP), **S** = bør, **K** = kan (senere).
 
 ### Innhold
-- **FR1 (M)** Fellesskapsfeeden viser innlegg fra databasen, med klubbtilhørighet og synlighet (offentlig / kun klubb).
+- **FR1 (M)** Fellesskapsfeeden viser innlegg fra databasen, med klubbtilhørighet og synlighet. Forfatteren velger per innlegg: **alle** (offentlig), **kun klubben**, eller **kun meg og coacher** i klubben. Uinnloggede ser bare offentlige innlegg.
 - **FR2 (M)** Innloggede brukere kan opprette, redigere og slette egne innlegg. Administratorer kan slette andres.
 - **FR3 (S)** Kommentarer og likes på innlegg.
 - **FR4 (S)** Rik tekst-editor og bilder i innlegg.

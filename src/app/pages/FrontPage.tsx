@@ -7,7 +7,7 @@ export function FrontPage(props: RequestInfo & { children?: ReactNode }) {
   return (
     <HomeLayout {...props}>
       {/* Latest Posts listing for not-logged-in viewers */}
-      <PostList />
+      <PostList userId={props.ctx?.user?.id} />
     </HomeLayout>
   );
 }

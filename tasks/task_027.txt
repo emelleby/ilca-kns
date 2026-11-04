@@ -3,7 +3,7 @@
 # Status: pending
 # Dependencies: 3
 # Priority: high
-# Description: [Fase 0] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.
+# Description: [Utsatt – ikke noe domene ennå] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.
 # Details:
 1. ✅ Fjernet hardkodet reset-mottaker; DEV_EMAIL_TO for utvikling; lenke logges i dev
 2. ⏳ Verifiser domene i Resend og sett EMAIL_FROM (CONSTANTS.FROM_EMAIL i src/app/shared/constants.ts bruker fortsatt onboarding@resend.dev)
