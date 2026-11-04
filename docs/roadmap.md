@@ -18,12 +18,12 @@ Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og teste
 
 | # | Oppgave | Merknad |
 |---|---|---|
-| 0.1 | Oppgrader rwsdk til siste versjon (npm: 1.7.5; nå 0.3.9 på `main`) | Se under. Egen branch, alle 64 tester + manuell røyktest |
+| 0.1 | Oppgrader rwsdk til siste versjon (1.7.5) | Gjort på `claude/upgrade-rwsdk`, venter på merge. Se `progress.md` |
 | 0.2 | Ryddede docs og enhetlig mappe-/filstruktur | Gjort i denne runden |
 | 0.3 | Egen e-postavsender (Resend-domene) og `observability.enabled = true` | Kreves før produksjon |
 | 0.4 | Felles hjelper `requireOrgRole(user, orgId, roles)` | Brukes av alle senere server functions |
 
-**Om oppgraderingen (0.1):** `eivind/november` ligger på `1.0.0-beta.29` og er 9 commits foran `main`. Anbefaling: bruk den som utgangspunkt, vurder hva de 9 commitene inneholder, og gå videre til `latest` derfra i stedet for å starte fra `main`. Les rwsdk sine endringslogger for 0.3 → 1.x først (brytende endringer i ruting, `defineApp`, Vite-plugin er sannsynlige). Branchene `upgrade-to-0.85`, `kiro` og `eivind/flat` er på 0.0.85 og er eldre enn `main`; de bør arkiveres eller slettes.
+**Om oppgraderingen (0.1):** utført fra `main`, ikke fra `eivind/november`, som er ett år gammel og har uferdig sidebar-arbeid. Detaljer og brytende endringer: `architecture.md` §1. Grenene `upgrade-to-0.85`, `kiro` og `eivind/flat` er på 0.0.85 og kan slettes.
 
 ## Fase 1 – Dynamisk fellesskap (FR1, FR2, FR13, FR14)
 

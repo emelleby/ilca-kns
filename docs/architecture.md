@@ -1,6 +1,6 @@
 # ILCA-KNS – Arkitektur
 
-Sist verifisert mot kode: 2026-11 (branch `main`, rwsdk 0.3.9). Når noe her ikke stemmer med koden, er koden riktig – oppdater dokumentet.
+Sist verifisert mot kode: 2026-11 (branch `claude/upgrade-rwsdk`, rwsdk 1.7.5). Når noe her ikke stemmer med koden, er koden riktig – oppdater dokumentet.
 
 Planlagt funksjonalitet står i [`roadmap.md`](roadmap.md). Produktmål står i [`prd.md`](prd.md).
 
@@ -8,27 +8,32 @@ Planlagt funksjonalitet står i [`roadmap.md`](roadmap.md). Produktmål står i 
 
 | Område | Teknologi | Versjon |
 |---|---|---|
-| Rammeverk | RedwoodSDK (`rwsdk`) | 0.3.9 – se «Oppgradering» under |
-| UI | React, Tailwind CSS 4, shadcn/ui (Radix) | React ^19.1.1 |
+| Rammeverk | RedwoodSDK (`rwsdk`) | 1.7.5 (`main` er fortsatt 0.3.9 til grenen er slått inn) |
+| UI | React, Tailwind CSS 4, shadcn/ui (Radix) | React 19.3.1, Tailwind 4.3.4 |
 | Runtime | Cloudflare Workers (`nodejs_compat`) | – |
 | Database | Cloudflare D1 + Prisma (adapter-d1) | ~6.8.2 |
 | Lagring | Cloudflare R2 (binding `STORAGE`, ennå ikke brukt i kode) | – |
 | Sesjon | Durable Object `SessionDurableObject` | – |
 | Auth | WebAuthn (SimpleWebAuthn) + e-post/passord | – |
 | E-post | Resend | ^4.5 |
-| Test | Vitest + Testing Library (jsdom) | ^3.2 |
+| Bygg | Vite | 8.3 |
+| Test | Vitest + Testing Library (jsdom) | 5.1 |
 | Pakkehåndtering | pnpm | – |
 
-### Oppgradering av rwsdk
+### rwsdk 0.3.9 → 1.7.5 (gjort på `claude/upgrade-rwsdk`)
 
-Dokumentasjon fra før høsten 2025 oppgir 0.0.85. Det er utdatert. Status per grener:
+Oppgradert sammen med pakkene rwsdk krever: React/react-dom 19.3.1, `react-server-dom-webpack` 19.3.1, wrangler 4.157, `@cloudflare/vite-plugin` 1.67, `@cloudflare/workers-types` 5.x, Vite 8, Vitest 5, Tailwind 4.3.4. Prisma er bevisst ikke oppgradert (6.8.x).
 
-- `main`: 0.3.9
-- `eivind/november`: 1.0.0-beta.29 (ligger 9 commits foran `main`)
-- Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`): 0.0.85 – ikke bruk
-- Siste utgitte versjon på npm: 1.7.5
+Brytende endringer vi måtte håndtere:
 
-Oppgradering til siste versjon er første punkt i roadmap (fase 0).
+- `headers` er flyttet til `response.headers`, både i middleware (`({ response }) => response.headers`) og i `requestInfo` (`requestInfo.response.headers`). Gammel destrukturering gir `undefined` i kjøring.
+- `compatibility_date` i `wrangler.jsonc` er satt til `2025-09-21`. React 19.3 bruker `WeakRef`, som mangler med den gamle datoen (`2024-09-23`) og ga 500 på alle sider.
+- Tester: `@testing-library/jest-dom/vitest` (ikke `@testing-library/jest-dom`), og test-mocks bruker `response: { headers }`.
+- `RESEND_API_KEY` må finnes i `.dev.vars` ved `wrangler types` for at typen skal genereres; den er lagt i `.env.example`.
+
+I dev-modus skriver React en advarsel om `eval()` fordi CSP ikke tillater `unsafe-eval`. Den gjelder bare utvikling.
+
+Gamle grener: `eivind/november` (1.0.0-beta.29 + uferdig sidebar), `upgrade-to-0.85`, `kiro` og `eivind/flat` er utdaterte.
 
 ## 2. Kodestruktur (faktisk)
 

@@ -4,12 +4,14 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Nå
 
-- **Fase 0 pågår.** Neste: oppgave 26 (oppgradere rwsdk), 27 (e-postavsender + logging), 28 (`requireOrgRole`).
-- Produksjon kjører på `main` med rwsdk 0.3.9. `eivind/november` har 1.0.0-beta.29 og 9 commits som ikke er i `main`.
+- **Fase 0 pågår.** rwsdk-oppgraderingen (oppgave 26) er gjort på grenen `claude/upgrade-rwsdk` og venter på gjennomgang og merge. Neste: 27 (e-postavsender + logging) og 28 (`requireOrgRole`).
+- `main` er fortsatt på rwsdk 0.3.9 til grenen er slått inn.
 
 ## Åpne punkter
 
-- Skal `eivind/november` slås inn i `main` før eller som del av oppgradering til siste rwsdk (1.7.5)? Avklares i oppgave 26.
+- `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.
+- Før merge til produksjon: test passkey-innlogging og e-post (reset) manuelt; `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
+- Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
 - `PostList` bruker statisk mock-data.
 - R2-binding finnes, men er ikke i bruk.
 - E-post sendes fra `onboarding@resend.dev` (kun utvikling).
@@ -18,6 +20,13 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Logg
 
+### 2026-11-04 – rwsdk 0.3.9 → 1.7.5 (oppgave 26)
+- Ny gren `claude/upgrade-rwsdk` fra dokumentasjonsgrenen. Ikke basert på `eivind/november` (ett år gammel, blandet med uferdig sidebar).
+- Pakker: rwsdk 1.7.5, React/react-dom 19.3.1, react-server-dom-webpack 19.3.1, wrangler 4.157, @cloudflare/vite-plugin 1.67, workers-types 5.x, Vite 8, Vitest 5, Tailwind 4.3.4.
+- Kodeendringer: `headers` → `response.headers` (worker.tsx, headers.ts, user/functions.ts), `compatibility_date` 2025-09-21 (WeakRef), jest-dom/vitest-import, test-mocks.
+- Verifisert: 64/64 tester, `tsc` uendret på 30 eksisterende feil, `vite build` OK, dev-server rendrer alle sider, registrering → `/home`, profil og `/tasks` fungerer i nettleser (Playwright).
+- Ikke verifisert: passkey (krever ekte autentikator), e-postsending, produksjonsdeploy.
+- Lærdom: sjekk peer-avhengigheter ved større oppgraderinger; rwsdk 1.x krevde Vite 8 via `@vitejs/plugin-react` 6, som igjen krevde nyere Tailwind-plugin og Vitest.
 ### 2026-11-04 – Dokumentasjon strammet inn
 - `prd.md` forkortet, `architecture.md` skrevet om til å matche koden, `roadmap.md` opprettet.
 - Slettet duplikater: to gamle arkitekturdokumenter, generisk TDD-guide, QA-trace, gamle `progress.md`/`activeContext.md`.

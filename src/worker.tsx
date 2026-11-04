@@ -32,7 +32,8 @@ const isAuthenticated = ({ ctx }: { ctx: AppContext }) => {
 
 export default defineApp([
   setCommonHeaders(),
-  async ({ ctx, request, headers }) => {
+  async ({ ctx, request, response }) => {
+    const headers = response.headers;
     await setupDb(env);
     setupSessionStore(env);
 
