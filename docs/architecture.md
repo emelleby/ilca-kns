@@ -1,6 +1,6 @@
 # ILCA-KNS – Arkitektur
 
-Sist verifisert mot kode: 2025-11 (branch `main`, rwsdk 0.3.9). Når noe her ikke stemmer med koden, er koden riktig – oppdater dokumentet.
+Sist verifisert mot kode: 2026-11 (branch `main`, rwsdk 0.3.9). Når noe her ikke stemmer med koden, er koden riktig – oppdater dokumentet.
 
 Planlagt funksjonalitet står i [`roadmap.md`](roadmap.md). Produktmål står i [`prd.md`](prd.md).
 

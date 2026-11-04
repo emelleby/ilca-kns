@@ -1,9 +1,9 @@
 # Task ID: 7
 # Title: Personal Sailing Diary Implementation
 # Status: pending
-# Dependencies: 2, 3, 5
-# Priority: medium
-# Description: Implement the personal sailing diary feature allowing users to create, edit, and view diary entries with training logs and boat setup records.
+# Dependencies: 4, 5, 28
+# Priority: high
+# Description: [Fase 3] Implement the personal sailing diary feature allowing users to create, edit, and view diary entries with training logs and boat setup records.
 # Details:
 1. Create diary entry form
    - Date and time selection

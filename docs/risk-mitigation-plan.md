@@ -1,6 +1,6 @@
 # ILCA-KNS Risk Mitigation Plan (Revised)
 
-## Status (2025-11)
+## Status (2026-11)
 
 - Fase 1 (testing): **ferdig** – 64 tester, se `architecture.md` §6.
 - Fase 2 (overvåking): **ikke gjort** – ligger som punkt 0.3 i `roadmap.md`.

@@ -1,9 +1,9 @@
 # Task ID: 3
 # Title: Authentication System Implementation
-# Status: pending
+# Status: done
 # Dependencies: 1, 2
 # Priority: high
-# Description: Implement user authentication system including registration, login, password reset, and session management using RedwoodSDK and Cloudflare Workers.
+# Description: [Ferdig] Implement user authentication system including registration, login, password reset, and session management using RedwoodSDK and Cloudflare Workers.
 # Details:
 1. Create user registration form with validation
    - Email validation

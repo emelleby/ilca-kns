@@ -1,9 +1,9 @@
 # Task ID: 10
 # Title: Media Management System
 # Status: pending
-# Dependencies: 1, 2
+# Dependencies: 6
 # Priority: medium
-# Description: Implement a comprehensive media management system for handling images, videos, and file attachments using Cloudflare R2 Storage.
+# Description: [Fase 4] Implement a comprehensive media management system for handling images, videos, and file attachments using Cloudflare R2 Storage.
 # Details:
 1. Create media upload component
    - File selection

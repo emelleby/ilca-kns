@@ -1,9 +1,9 @@
 # Task ID: 5
 # Title: Role-Based Access Control System
-# Status: pending
+# Status: in-progress
 # Dependencies: 2, 3
 # Priority: high
-# Description: Implement role-based access control (RBAC) system to manage permissions for regular users, coaches, and administrators.
+# Description: [Fase 0] Implement role-based access control (RBAC) system to manage permissions for regular users, coaches, and administrators. Status: Organization/Membership/Invitation og superuser-UI er ferdig; gjenstår rollebasert tilgangskontroll (se oppgave 28).
 # Details:
 1. Define permission sets for each role:
    - Regular User permissions

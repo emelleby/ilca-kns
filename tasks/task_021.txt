@@ -1,9 +1,9 @@
 # Task ID: 21
 # Title: Weather Integration for Sailing Conditions
 # Status: pending
-# Dependencies: 2, 7, 9
+# Dependencies: 7, 9
 # Priority: low
-# Description: Implement weather service integration to provide current and forecasted sailing conditions for diary entries and events.
+# Description: [Senere] Implement weather service integration to provide current and forecasted sailing conditions for diary entries and events.
 # Details:
 1. Research and select weather API provider
 2. Implement weather data fetching

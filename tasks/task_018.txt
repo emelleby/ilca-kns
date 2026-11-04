@@ -1,9 +1,9 @@
 # Task ID: 18
 # Title: Accessibility Implementation
 # Status: pending
-# Dependencies: 1, 14
-# Priority: medium
-# Description: Implement accessibility features to ensure WCAG 2.1 AA compliance and provide an inclusive experience for all users.
+# Dependencies: 
+# Priority: low
+# Description: [Senere] Implement accessibility features to ensure WCAG 2.1 AA compliance and provide an inclusive experience for all users.
 # Details:
 1. Implement semantic HTML structure
    - Proper heading hierarchy

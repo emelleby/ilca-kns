@@ -1,6 +1,6 @@
 # ILCA-KNS – Roadmap
 
-Én prioritert liste over alt som skal bygges. Erstatter `tasks/tasks.json` og PRD-historienummer (som var tre ulike nummereringer). Krav-ID-er (FRx) refererer til [`prd.md`](prd.md).
+Det store bildet: alt som skal bygges, i prioritert rekkefølge. Den løpende arbeidslisten er `tasks/tasks.json` (vises på `/tasks`); hver oppgave har feltet `phase` som peker hit. Fremdrift føres i [`progress.md`](progress.md). Krav-ID-er (FRx) refererer til [`prd.md`](prd.md).
 
 Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og testene er grønne. Detaljerte historier skrives i `docs/stories/` først når fasen starter.
 
@@ -82,6 +82,6 @@ Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og teste
 
 | System | Hva det var | Nå |
 |---|---|---|
-| `tasks/tasks.json` (Task 1–25) | Gammel Task Master-liste, ute av synk | Erstattet av denne filen. Kan slettes når dere er enige |
+| `tasks/tasks.json` (Task 1–28) | Arbeidsliste, vist på `/tasks` | Beholdt og synkronisert med fasene (felt `phase`). Task 26–28 tilsvarer fase 0.1, 0.3 og 0.4 |
 | PRD Story 1.1–1.6 | Feature-historier | Erstattet av fasene over |
 | `docs/stories/story-1.x` | Testhistorier (fullført) | Beholdes som historikk; regnes som «Fase T» |

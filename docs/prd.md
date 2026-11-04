@@ -5,7 +5,7 @@ Produktkrav for seilingsfellesskapet ILCA-KNS. Teknisk bakgrunn: [`architecture.
 | Versjon | Dato | Endring |
 |---|---|---|
 | 1.0 | 2025-01-10 | Første brownfield-PRD |
-| 2.0 | 2025-11 | Strammet inn: færre krav per fase, bygger på `Organization`, detaljer flyttet til roadmap |
+| 2.0 | 2026-11 | Strammet inn: færre krav per fase, bygger på `Organization`, detaljer flyttet til roadmap |
 
 ## 1. Hva vi bygger
 

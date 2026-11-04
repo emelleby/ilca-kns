@@ -1,9 +1,9 @@
 # Task ID: 22
 # Title: Content Moderation System
 # Status: pending
-# Dependencies: 2, 6, 11
-# Priority: medium
-# Description: Implement a comprehensive content moderation system to ensure community guidelines are followed and inappropriate content is handled appropriately.
+# Dependencies: 6
+# Priority: low
+# Description: [Fase 6] Implement a comprehensive content moderation system to ensure community guidelines are followed and inappropriate content is handled appropriately.
 # Details:
 1. Create community guidelines documentation
 2. Implement content flagging system

@@ -1,9 +1,9 @@
 # Task ID: 15
 # Title: Rich Text Editor Implementation
 # Status: pending
-# Dependencies: 1, 10
+# Dependencies: 6
 # Priority: medium
-# Description: Implement a comprehensive rich text editor for content creation across the application, supporting text formatting, media embedding, and other advanced features.
+# Description: [Fase 4] Implement a comprehensive rich text editor for content creation across the application, supporting text formatting, media embedding, and other advanced features.
 # Details:
 1. Select and integrate a rich text editor library
 2. Implement text formatting features

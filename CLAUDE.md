@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working Agreement
+
+See `ai-guidelines.md` for how we work. Read `docs/progress.md`, `docs/roadmap.md` and `docs/architecture.md` at the start of a session. Keep `tasks/tasks.json` (shown at `/tasks`) and `docs/progress.md` updated as work is started and finished.
+
 ## Development Commands
 
 **Build and Development:**

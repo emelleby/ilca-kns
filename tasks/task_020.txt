@@ -1,9 +1,9 @@
 # Task ID: 20
 # Title: Progress Visualization and Analytics
 # Status: pending
-# Dependencies: 2, 7, 8
-# Priority: medium
-# Description: Implement data visualization and analytics features for training progress, activity statistics, and system usage.
+# Dependencies: 7
+# Priority: low
+# Description: [Senere] Implement data visualization and analytics features for training progress, activity statistics, and system usage.
 # Details:
 1. Select and integrate data visualization library
 2. Implement training progress charts

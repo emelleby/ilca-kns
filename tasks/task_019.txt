@@ -1,9 +1,9 @@
 # Task ID: 19
 # Title: Offline Functionality Implementation
 # Status: pending
-# Dependencies: 1, 3, 6, 7
+# Dependencies: 
 # Priority: low
-# Description: Implement offline functionality for critical features to allow users to continue using the application when internet connection is unavailable.
+# Description: [Utenfor omfang] Implement offline functionality for critical features to allow users to continue using the application when internet connection is unavailable.
 # Details:
 1. Implement service worker
    - Installation and activation
