@@ -2,7 +2,7 @@
 
 import { HomeLayout } from '@/app/layouts/HomeLayout'
 import { TasksTableClient } from '@/app/components/TasksTableClient'
-import tasksJson from 'tasks/tasks.json'
+import tasksData from 'tasks/tasks.json'
 import { RequestInfo } from 'rwsdk/worker'
 
 interface Task {
@@ -17,14 +17,9 @@ interface Task {
   subtasks: any[] // Define a more specific type if subtasks are structured
 }
 
-// Function to get tasks data - provides error handling and fallback
+// tasks.json is imported as a parsed JSON object (not raw text), so no JSON.parse
 function getTasksData(): Task[] {
-  try {
-    return JSON.parse(tasksJson).tasks || []
-  } catch (error) {
-    console.error('Failed to load tasks data:', error)
-    return []
-  }
+  return ((tasksData as { tasks?: Task[] }).tasks ?? []) as Task[]
 }
 
 export function TasksPage(props: RequestInfo) {

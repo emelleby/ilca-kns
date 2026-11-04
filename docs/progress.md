@@ -20,6 +20,10 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Logg
 
+### 2026-11-04 – Fikset `/tasks`
+- `TasksPage` kjørte `JSON.parse` på en JSON-import som allerede er et objekt (importen ble endret fra `?raw` i `fa49409`). Bruker nå objektet direkte.
+- Lærdom: etter å ha hentet `main` med nye pakker må `pnpm install` kjøres, ellers får man misvisende Worker-/Vite-feil.
+
 ### 2026-11-04 – rwsdk 0.3.9 → 1.7.5 (oppgave 26)
 - Ny gren `claude/upgrade-rwsdk` fra dokumentasjonsgrenen. Ikke basert på `eivind/november` (ett år gammel, blandet med uferdig sidebar).
 - Pakker: rwsdk 1.7.5, React/react-dom 19.3.1, react-server-dom-webpack 19.3.1, wrangler 4.157, @cloudflare/vite-plugin 1.67, workers-types 5.x, Vite 8, Vitest 5, Tailwind 4.3.4.
