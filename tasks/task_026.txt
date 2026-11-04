@@ -1,0 +1,18 @@
+# Task ID: 26
+# Title: Upgrade rwsdk to latest
+# Status: in-progress
+# Dependencies: 1
+# Priority: high
+# Description: [Fase 0] Oppgrader RedwoodSDK fra 0.3.9 (main) til siste versjon (1.7.5 på npm). Start fra eivind/november (1.0.0-beta.29, 9 commits foran main).
+# Details:
+1. ✅ Les endringer 0.3 → 1.x og list brytende endringer (headers → response.headers; compatibility_date)
+2. ✅ Ny gren claude/upgrade-rwsdk fra main (ikke eivind/november)
+3. ✅ Oppgrader rwsdk 1.7.5, React 19.3.1, wrangler, vite 8, vitest 5, tailwind 4.3, workers-types 5
+4. ✅ pnpm types (30, uendret), pnpm test (64/64), vite build
+5. ✅ Røyktest i dev: registrering, /home, profil, /tasks. ⏳ Passkey og e-post testes manuelt av eier
+6. ✅ Oppdater docs/architecture.md
+7. ⏳ Gjennomgå og merge til main, deploy, test i produksjon
+8. ⏳ Slett eller arkiver grenene upgrade-to-0.85, kiro, eivind/flat, eivind/november
+
+# Test Strategy:
+Alle 64 tester består. Manuell røyktest av innlogging, profil og superuser-dashboard. pnpm build og pnpm preview fungerer.

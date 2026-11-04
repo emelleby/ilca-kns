@@ -1,9 +1,9 @@
 # Task ID: 23
 # Title: Integration Testing and Quality Assurance
-# Status: pending
-# Dependencies: 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22
-# Priority: high
-# Description: Conduct comprehensive integration testing and quality assurance to ensure all components work together correctly and meet requirements.
+# Status: in-progress
+# Dependencies: 
+# Priority: medium
+# Description: [Løpende] Conduct comprehensive integration testing and quality assurance to ensure all components work together correctly and meet requirements. Status: 64 Vitest-tester finnes (auth, profil, navigasjon, server functions). Mangler E2E (Playwright).
 # Details:
 1. Create test plan
    - Test scenarios

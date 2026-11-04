@@ -1,9 +1,9 @@
 # Task ID: 8
 # Title: Coach Functionality Implementation
 # Status: pending
-# Dependencies: 2, 3, 5, 7
+# Dependencies: 5, 7, 28
 # Priority: medium
-# Description: Implement coach-specific features including student management, progress tracking, and training content creation.
+# Description: [Fase 5] Implement coach-specific features including student management, progress tracking, and training content creation.
 # Details:
 1. Create student management interface
    - Student assignment

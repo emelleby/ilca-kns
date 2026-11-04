@@ -1,9 +1,9 @@
 # Task ID: 4
 # Title: User Profile Management
-# Status: pending
+# Status: done
 # Dependencies: 2, 3
 # Priority: medium
-# Description: Implement user profile creation, editing, and viewing functionality, including profile picture upload using R2 Storage.
+# Description: [Ferdig] Implement user profile creation, editing, and viewing functionality, including profile picture upload using R2 Storage.
 # Details:
 1. Create profile setup form for new users
    - Personal information fields

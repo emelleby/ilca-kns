@@ -1,9 +1,9 @@
 # Task ID: 25
 # Title: Deployment and Launch Preparation
 # Status: pending
-# Dependencies: 1, 2, 3, 16, 17, 23
+# Dependencies: 23, 27
 # Priority: high
-# Description: Prepare for application deployment and launch, including staging deployment, final testing, and production deployment.
+# Description: [Før lansering] Prepare for application deployment and launch, including staging deployment, final testing, and production deployment.
 # Details:
 1. Create deployment pipeline
    - Automated build process

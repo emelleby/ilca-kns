@@ -102,7 +102,7 @@ export function setupSessionMocks() {
 export function setupRequestInfoMocks() {
   return {
     request: new Request('https://localhost:3000'),
-    headers: new Headers(),
+    response: { headers: new Headers() },
     ctx: {},
   }
 }

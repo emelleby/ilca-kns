@@ -1,5 +1,11 @@
 # ILCA-KNS Risk Mitigation Plan (Revised)
 
+## Status (2026-11)
+
+- Fase 1 (testing): **ferdig** – 64 tester, se `architecture.md` §6.
+- Fase 2 (overvåking): **ikke gjort** – ligger som punkt 0.3 i `roadmap.md`.
+- Fase 3 (E2E/ytelse): flyttet til fase 6 i `roadmap.md`. Playwright er ikke installert.
+
 ## Overview
 
 Streamlined plan focusing on what actually matters now: testing existing functionality and basic monitoring. Leverage Cloudflare's built-in features instead of building everything from scratch.

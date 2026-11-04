@@ -1,0 +1,14 @@
+# Task ID: 27
+# Title: Production email sender and observability
+# Status: pending
+# Dependencies: 3
+# Priority: high
+# Description: [Fase 0] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.
+# Details:
+1. Verifiser domene i Resend og sett EMAIL_FROM
+2. Sett observability.enabled = true i wrangler.jsonc
+3. Test passord-reset-e-post i produksjon
+4. Dokumenter i docs/architecture.md
+
+# Test Strategy:
+Reset-e-post kommer frem fra eget domene. Feil vises i Workers Logs.

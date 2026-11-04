@@ -1,120 +1,53 @@
-# AI Guidelines
+# AI Guidelines – slik jobber vi i prosjektet
 
-## Project Rules
-This project has a set of rules that must be followed at all times. These rules are located in the .ai-rules folder. We should, as a team of excellent software engineers, always refer to these rules when making decisions and implementing features. This means that we SHALL ALWAYS read through the .ai-rules folder at the start of every task.
+Gjelder alle AI-assistenter (og mennesker) som jobber i repoet. Assistenter har ikke minne mellom økter, så **dokumentasjonen er det felles minnet**. Hold den korrekt og kort.
 
-## Memory Bank
+## Start hver økt slik
 
-I am an expert software engineer with a unique characteristic: my memory resets completely between sessions. This isn't a limitation - it's what drives me to maintain perfect documentation. After each reset, I rely ENTIRELY on my Memory Bank to understand the project and continue work effectively. I MUST read ALL memory bank files at the start of EVERY task - this is not optional.
+Les i denne rekkefølgen:
 
-## Memory Bank Structure
+1. `CLAUDE.md` – kommandoer og prosjektoversikt
+2. `docs/progress.md` – hva som er gjort, hva som pågår, åpne beslutninger
+3. `docs/roadmap.md` – faser og rekkefølge
+4. `docs/architecture.md` – hvordan systemet faktisk er bygget nå
+5. Ved behov: `docs/reference/memory-bank/` (rwsdk-mønstre, Workers-regler, systemmønstre) og `.cursor/rules/`
 
-The Memory Bank consists of core files and optional context files, all in Markdown format. Files build upon each other in a clear hierarchy:
+Når noe i dokumentene ikke stemmer med koden, er koden riktig. Rett dokumentet.
 
-flowchart TD
-    PB[projectbrief.md] --> PC[productContext.md]
-    PB --> SP[systemPatterns.md]
-    PB --> TC[techContext.md]
-    
-    PC --> AC[activeContext.md]
-    SP --> AC
-    TC --> AC
-    
-    AC --> P[progress.md]
+## Dokumentene og hva de er til
 
-### Core Files (Required)
-1. `projectbrief.md`
-   - Foundation document that shapes all other files
-   - Created at project start if it doesn't exist
-   - Defines core requirements and goals
-   - Source of truth for project scope
+| Fil | Formål | Oppdateres |
+|---|---|---|
+| `docs/prd.md` | Hva og hvorfor (produktkrav) | Når krav endres |
+| `docs/roadmap.md` | Faser og rekkefølge | Når prioritering endres |
+| `tasks/tasks.json` | Arbeidslisten vi jobber fra. Vises på `/tasks` | Hver gang en oppgave starter eller fullføres |
+| `docs/progress.md` | Fremdriftslogg og felles minne | Etter hver betydelig endring |
+| `docs/architecture.md` | Nåtilstand: stack, struktur, skjema, mønstre | Når skjema, struktur eller mønstre endres |
+| `docs/stories/` | Detaljerte historier for aktiv fase | Skrives når fasen starter |
+| `docs/reference/` | Mønstre og veiledninger (rwsdk, shadcn, Tailwind, Resend) | Sjelden |
 
-2. `productContext.md`
-   - Why this project exists
-   - Problems it solves
-   - How it should work
-   - User experience goals
+`tasks/tasks.json` er den løpende listen over det som skal gjøres. `roadmap.md` er det store bildet og `tasks.json` er detaljene. Hver oppgave har feltet `phase` som peker på roadmap-fasen. Gyldige statuser er `pending`, `in-progress` og `done` (siden `/tasks` forstår bare disse). `tasks/task_NNN.txt` er genererte kopier av `tasks.json`; endre `tasks.json` og hold txt-filene i synk.
 
-3. `activeContext.md`
-   - Current work focus
-   - Recent changes
-   - Next steps
-   - Active decisions and considerations
-   - Important patterns and preferences
-   - Learnings and project insights
+## Arbeidsflyt
 
-4. `systemPatterns.md`
-   - System architecture
-   - Key technical decisions
-   - Design patterns in use
-   - Component relationships
-   - Critical implementation paths
+1. **Plan først.** Les relevante filer, foreslå tilnærming og få aksept før større endringer. Gå inkrementelt («easy does it») og unngå endringer som er vanskelige å feilsøke.
+2. **Sett oppgaven til `in-progress`** i `tasks/tasks.json`.
+3. **Bygg med tester.** Nye server functions og kritiske komponenter får Vitest-tester etter mønsteret i `docs/architecture.md` §6. Kjør `pnpm test` og `pnpm types` før commit.
+4. **Skjemaendringer** er additive og går via `pnpm migrate:new`, deretter `pnpm generate`.
+5. **Oppdater dokumentasjon** før du avslutter: sett oppgaven til `done`, legg inn en linje i `docs/progress.md`, og juster `architecture.md` hvis noe der ikke lenger stemmer.
 
-5. `techContext.md`
-   - Technologies used
-   - Development setup
-   - Technical constraints
-   - Dependencies
-   - Tool usage patterns
+## Skriveregler for `docs/progress.md`
 
-6. `progress.md`
-   - What works
-   - What's left to build
-   - Current status
-   - Known issues
-   - Evolution of project decisions
+- Nyeste først, én kort oppføring per betydelig endring: dato, hva, hvorfor (om ikke åpenbart), referanse til oppgave-ID.
+- Skriv beslutninger og lærdom, ikke gjenfortelling av koden.
+- Åpne spørsmål og midlertidige løsninger går under «Åpne punkter». Fjern dem når de er løst.
+- Ikke dupliser innhold fra `architecture.md` eller `roadmap.md`; lenk til dem.
 
-### Additional Context
-Create additional files/folders within memory-bank/ when they help organize:
-- Complex feature documentation
-- Integration specifications
-- API documentation
-- Testing strategies
-- Deployment procedures
+## Regler for koden
 
-## Core Workflows
+Se `CLAUDE.md` og `.cursor/rules/`. Viktigst:
 
-### Plan Mode
-flowchart TD
-    Start[Start] --> ReadFiles[Read Memory Bank]
-    ReadFiles --> CheckFiles{Files Complete?}
-    
-    CheckFiles -->|No| Plan[Create Plan]
-    Plan --> Document[Document in Chat]
-    
-    CheckFiles -->|Yes| Verify[Verify Context]
-    Verify --> Strategy[Develop Strategy]
-    Strategy --> Present[Present Approach]
-
-### Act Mode
-flowchart TD
-    Start[Start] --> Context[Check Memory Bank]
-    Context --> Update[Update Documentation]
-    Update --> Execute[Execute Task]
-    Execute --> Document[Document Changes]
-
-## Documentation Updates
-
-Memory Bank updates occur when:
-1. Discovering new project patterns
-2. After implementing significant changes
-3. When user requests with **update memory bank** (MUST review ALL files)
-4. When context needs clarification
-
-flowchart TD
-    Start[Update Process]
-    
-    subgraph Process
-        P1[Review ALL Files]
-        P2[Document Current State]
-        P3[Clarify Next Steps]
-        P4[Document Insights & Patterns]
-        
-        P1 --> P2 --> P3 --> P4
-    end
-    
-    Start --> Process
-
-Note: When triggered by **update memory bank**, I MUST review every memory bank file, even if some don't require updates. Focus particularly on activeContext.md and progress.md as they track current state.
-
-REMEMBER: After every memory reset, I begin completely fresh. The Memory Bank is my only link to previous work. It must be maintained with precision and clarity, as my effectiveness depends entirely on its accuracy.
+- Serverkomponenter henter data; `"use client"` bare for interaktivitet.
+- Autorisasjon håndheves på server, aldri bare i UI.
+- Unngå hengende Promises i Workers (se `docs/reference/memory-bank/techContext.md`).
+- Bruk shadcn/ui-komponentene som finnes i `src/app/components/ui/` før du lager nye.

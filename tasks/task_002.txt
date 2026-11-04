@@ -1,9 +1,9 @@
 # Task ID: 2
 # Title: Database Schema Design and Implementation
-# Status: pending
+# Status: done
 # Dependencies: 1
 # Priority: high
-# Description: Extend the existing Prisma schema and D1 database setup to support the application's core features. Build on the current user, credential, and session models already provided by the RedwoodSDK starter. Add new tables and relationships for profiles, boats, blog posts, diary entries, training logs, boat setups, events, comments, and other required entities, ensuring integration with the existing authentication/session system.
+# Description: [Ferdig] Extend the existing Prisma schema and D1 database setup to support the application's core features. Build on the current user, credential, and session models already provided by the RedwoodSDK starter. Add new tables and relationships for profiles, boats, blog posts, diary entries, training logs, boat setups, events, comments, and other required entities, ensuring integration with the existing authentication/session system.
 # Details:
 1. Review the existing Prisma schema and models for users, credentials, and sessions.
 2. Design and extend the schema to include:

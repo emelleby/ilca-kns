@@ -30,7 +30,7 @@ function getWebAuthnConfig(request: Request) {
 
 export async function startPasskeyRegistration(username: string) {
   const { rpName, rpID } = getWebAuthnConfig(requestInfo.request);
-  const { headers } = requestInfo;
+  const headers = requestInfo.response.headers;
 
   const options = await generateRegistrationOptions({
     rpName,
@@ -51,7 +51,7 @@ export async function startPasskeyRegistration(username: string) {
 
 export async function startPasskeyLogin() {
   const { rpID } = getWebAuthnConfig(requestInfo.request);
-  const { headers } = requestInfo;
+  const headers = requestInfo.response.headers;
 
   const options = await generateAuthenticationOptions({
     rpID,
@@ -68,7 +68,8 @@ export async function finishPasskeyRegistration(
   username: string,
   registration: RegistrationResponseJSON,
 ) {
-  const { request, headers } = requestInfo;
+  const { request } = requestInfo;
+  const headers = requestInfo.response.headers;
   const { origin } = new URL(request.url);
 
   const session = await sessions.load(request);
@@ -137,7 +138,8 @@ export async function finishPasskeyRegistration(
 }
 
 export async function finishPasskeyLogin(login: AuthenticationResponseJSON) {
-  const { request, headers } = requestInfo;
+  const { request } = requestInfo;
+  const headers = requestInfo.response.headers;
   const { origin } = new URL(request.url);
 
   const session = await sessions.load(request);
@@ -225,7 +227,7 @@ export async function registerWithPassword(username: string, email: string, pass
   }
 
   // Set session
-  await sessions.save(requestInfo.headers, {
+  await sessions.save(requestInfo.response.headers, {
     userId: user.id,
     challenge: null,
   });
@@ -247,7 +249,7 @@ export async function loginWithPassword(email: string, password: string) {
   if (!isValid) return false;
 
   // Set session
-  await sessions.save(requestInfo.headers, {
+  await sessions.save(requestInfo.response.headers, {
     userId: user.id,
     challenge: null,
   });
@@ -257,7 +259,8 @@ export async function loginWithPassword(email: string, password: string) {
 
 // Add function to link passkey to existing account
 export async function addPasskeyToExistingAccount(userId: string, registration: RegistrationResponseJSON) {
-  const { request, headers } = requestInfo;
+  const { request } = requestInfo;
+  const headers = requestInfo.response.headers;
   const { origin } = new URL(request.url);
 
   const session = await sessions.load(request);

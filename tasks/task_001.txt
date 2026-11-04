@@ -1,9 +1,9 @@
 # Task ID: 1
 # Title: Project Setup with RedwoodSDK
 # Status: done
-# Dependencies: None
+# Dependencies: 
 # Priority: high
-# Description: Initialize the project using RedwoodSDK framework on Cloudflare, set up the development environment, and configure basic project structure.
+# Description: [Ferdig] Initialize the project using RedwoodSDK framework on Cloudflare, set up the development environment, and configure basic project structure.
 # Details:
 1. Install RedwoodSDK CLI tools
 2. Create a new project with `npx create-redwood-app sailing-community`

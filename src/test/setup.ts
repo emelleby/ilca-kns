@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
 
 // Mock Cloudflare Workers environment
@@ -16,7 +16,7 @@ vi.mock('cloudflare:workers', () => ({
 vi.mock('rwsdk/worker', () => ({
   requestInfo: {
     request: new Request('https://localhost:3000'),
-    headers: new Headers(),
+    response: { headers: new Headers() },
     ctx: {},
   },
 }))
