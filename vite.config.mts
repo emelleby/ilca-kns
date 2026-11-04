@@ -17,7 +17,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@prisma/client": path.resolve(
-        __dirname,
+        import.meta.dirname,
         "node_modules",
         "@prisma",
         "client"

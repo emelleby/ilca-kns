@@ -20,6 +20,11 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Logg
 
+### 2026-11-04 – Dev-støy fjernet
+- `vite.config.mts`: `__dirname` → `import.meta.dirname` (fjerner Vite-varsel).
+- CSP tillater `'unsafe-eval'` kun når `IS_DEV` (React dev-modus). Produksjonsbygget har ingen `unsafe-eval`.
+- Passkeys i dev: bruk `http://localhost:5173`, ikke `127.0.0.1` (WebAuthn godtar ikke IP-adresser som domene). `WEBAUTHN_RP_ID=localhost` i `.dev.vars`.
+
 ### 2026-11-04 – Fikset `/tasks`
 - `TasksPage` kjørte `JSON.parse` på en JSON-import som allerede er et objekt (importen ble endret fra `?raw` i `fa49409`). Bruker nå objektet direkte.
 - Lærdom: etter å ha hentet `main` med nye pakker må `pnpm install` kjøres, ellers får man misvisende Worker-/Vite-feil.
