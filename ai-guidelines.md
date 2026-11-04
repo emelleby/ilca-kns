@@ -24,6 +24,7 @@ Når noe i dokumentene ikke stemmer med koden, er koden riktig. Rett dokumentet.
 | `docs/progress.md` | Fremdriftslogg og felles minne | Etter hver betydelig endring |
 | `docs/architecture.md` | Nåtilstand: stack, struktur, skjema, mønstre | Når skjema, struktur eller mønstre endres |
 | `docs/stories/` | Detaljerte historier for aktiv fase | Skrives når fasen starter |
+| `docs/security/` | Sikkerhetsfunn med reproduksjon og utbedringsplan | Når et funn gjøres eller lukkes |
 | `docs/reference/` | Mønstre og veiledninger (rwsdk, shadcn, Tailwind, Resend) | Sjelden |
 
 `tasks/tasks.json` er den løpende listen over det som skal gjøres. `roadmap.md` er det store bildet og `tasks.json` er detaljene. Hver oppgave har feltet `phase` som peker på roadmap-fasen. Gyldige statuser er `pending`, `in-progress` og `done` (siden `/tasks` forstår bare disse). `tasks/task_NNN.txt` er genererte kopier av `tasks.json`; endre `tasks.json` og hold txt-filene i synk.
@@ -48,6 +49,6 @@ Når noe i dokumentene ikke stemmer med koden, er koden riktig. Rett dokumentet.
 Se `CLAUDE.md` og `.cursor/rules/`. Viktigst:
 
 - Serverkomponenter henter data; `"use client"` bare for interaktivitet.
-- Autorisasjon håndheves på server, aldri bare i UI.
+- Autorisasjon håndheves på server, aldri bare i UI. Hver eksportert funksjon i en `"use server"`-fil er et åpent endepunkt og må selv sjekke bruker og rolle; ta aldri `userId` for «meg» fra klienten (se `docs/security/server-function-authorization.md`).
 - Unngå hengende Promises i Workers (se `docs/reference/memory-bank/techContext.md`).
 - Bruk shadcn/ui-komponentene som finnes i `src/app/components/ui/` før du lager nye.

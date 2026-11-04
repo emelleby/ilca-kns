@@ -430,16 +430,62 @@
     {
       "id": 29,
       "title": "Authorization in server functions (security fix)",
-      "description": "[Fase 0 – gjør først] Server functions kan kalles direkte fra nettleseren av hvem som helst. Flere har ingen sjekk av innlogget bruker eller rolle. Verifisert i nettleser 2026-11-04: en uinnlogget besøkende kan opprette organisasjoner, og en vanlig bruker kan endre sin egen rolle til ADMIN i en klubb.",
-      "details": "Funn (verifisert i kode; første punkt også i nettleser mot dev):\nA. src/app/pages/superuser/functions.ts – INGEN autorisasjon i noen funksjon: createOrganization, updateOrganization, deleteOrganization, getOrganization, getAllOrganizations, addMemberToOrganization, updateMemberRole, removeMemberFromOrganization, createInvitation, getInvitationByToken, acceptInvitation(token, userId – tas fra klienten), rejectInvitation, getUserOrganizations(userId). Beskyttelsen ligger bare i rutene, som ikke stopper direkte kall.\nB. src/app/pages/user/functions.ts – addPasswordToPasskeyAccount(userId, email, password) og addPasskeyToExistingAccount(userId, …) har ingen sjekk: kan brukes til å ta over en annen konto hvis man kjenner bruker-ID. (removePasskey sjekker riktig og er mønsteret å følge.)\nC. src/app/pages/user/profile/functions.ts – updateUserProfile, createUserProfile, updateProfilePicture, deleteUserProfile, getUserProfile tar userId fra klienten uten sjekk. getPublicProfile(userId, viewerId) tar viewerId fra klienten, så personverninnstillinger kan omgås ved å sende viewerId = userId.\n\nLøsning:\n1. Felles guards (src/app/auth/guards.ts): requireUser() (kaster hvis ikke innlogget, henter bruker fra requestInfo.ctx), requireSuperUser(), requireOrganizationRole(orgId, roles) (gjenbruk logikk fra interceptors.ts).\n2. Aldri ta userId/viewerId fra klienten for «meg»: bruk ctx.user.id. Funksjoner som trenger en annen bruker krever SUPERUSER eller eierskap.\n3. superuser/functions.ts: alle krever SUPERUSER, unntatt: getInvitationByToken/rejectInvitation (token er hemmeligheten), acceptInvitation (krever innlogget bruker; bruker ctx.user.id, sjekker at invitasjonen gjelder brukerens e-post og ikke er utløpt/brukt), getUserOrganizations (kun egen eller SUPERUSER).\n4. user/functions.ts: addPasskey…/addPassword… kun for innlogget bruker på egen konto; addPassword bør kreve eksisterende innlogging og ikke overskrive eksisterende passord uten bekreftelse.\n5. profile/functions.ts: eier eller SUPERUSER for skriving/sletting; getPublicProfile bruker innlogget bruker som viewer.\n6. Tester som kaller hver funksjon uten bruker, som feil bruker og som riktig bruker (ekte funksjoner, kun db og requestInfo mockes – se passwordReset.test.ts).\n7. Utvid: en test som feiler hvis en eksportert funksjon i en 'use server'-fil ikke kaller en guard (eller står på en eksplisitt tillatt-liste).\n8. Hvis produksjon kjører denne koden: vurder å rotere sesjoner og sjekke databasen for uventede organisasjoner/medlemskap/roller etter utbedring.",
-      "testStrategy": "Hver server function: uten bruker → avvist; vanlig bruker på annens data → avvist; riktig bruker/SUPERUSER → ok. Regresjon: eksisterende innlogging, profilredigering og superuser-dashboard fungerer. Manuell røyktest i nettleser som anonym, MEMBER og SUPERUSER.",
+      "description": "[Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md",
+      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven",
+      "testStrategy": "Ekte funksjoner med mocket db/requestInfo (som passwordReset.test.ts): uten bruker avvist, vanlig bruker på annens data avvist, riktig bruker/SUPERUSER ok. Sikkerhetsnett-test over alle 'use server'-filer. Akseptansetest: node docs/security/repro-server-function-authz.cjs mot lokal dev gir 13/13 DENIED og exit 0. Regresjon: eksisterende 108 tester, pnpm build, manuell røyktest av innlogging, profil, passkey, reset og superuser-dashboard.",
       "priority": "high",
       "dependencies": [
         3,
         5
       ],
       "status": "pending",
-      "subtasks": [],
+      "subtasks": [
+        {
+          "id": "29.1",
+          "title": "Guards (src/app/auth/guards.ts) + enhetstester",
+          "status": "pending"
+        },
+        {
+          "id": "29.2",
+          "title": "superuser/functions.ts: autorisasjon",
+          "status": "pending"
+        },
+        {
+          "id": "29.3",
+          "title": "user/functions.ts: addPasskey/addPassword/verifyResetToken",
+          "status": "pending"
+        },
+        {
+          "id": "29.4",
+          "title": "user/profile/functions.ts: eier/SU og getPublicProfile",
+          "status": "pending"
+        },
+        {
+          "id": "29.5",
+          "title": "Oppdater UI-kallere som sender userId",
+          "status": "pending"
+        },
+        {
+          "id": "29.6",
+          "title": "Sikkerhetsnett-test for 'use server'-filer",
+          "status": "pending"
+        },
+        {
+          "id": "29.7",
+          "title": "Akseptansetest: repro-skript 13/13 DENIED + røyktest",
+          "status": "pending"
+        },
+        {
+          "id": "29.8",
+          "title": "Drift: sjekk produksjon, logging, sesjoner",
+          "status": "pending"
+        },
+        {
+          "id": "29.9",
+          "title": "Dokumentasjon oppdatert",
+          "status": "pending"
+        }
+      ],
       "phase": "Fase 0"
     }
   ]
