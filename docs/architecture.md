@@ -68,9 +68,23 @@ Eksisterer i dag:
 - `User` (rolle `USER` | `SUPERUSER`), `Credential` (passkeys), `PasswordReset`
 - `Profile` (seilingsfelter: erfaring, sertifikater, båtinfo, klubb, personverninnstillinger som JSON-streng)
 - `Organization`, `OrganizationMembership` (`role`: `"ADMIN"` | `"COACH"` | `"MEMBER"` som streng), `OrganizationInvitation`
-- `Post` (status `DRAFT` | `PUBLISHED` | `ARCHIVED`), `Comment`
+- `Post` (`status` DRAFT | PUBLISHED | ARCHIVED, `visibility` PUBLIC | ORGANIZATION | COACH, valgfri `organizationId`, `imageUrl`), `Comment`
 
 Finnes **ikke** (var feilaktig beskrevet som eksisterende tidligere): `Club`, `ClubMembership`, `TrainingGroup`, `GroupMembership`, `Event`, `EventParticipant`, `TrainingLog`, `Like`, media-tabell.
+
+### Synlighet for innlegg
+
+Regler og filter ligger samlet i `src/app/lib/postVisibility.ts` (ingen databasetilgang, fullt testet):
+
+| Nivå | Hvem ser innlegget |
+|---|---|
+| `PUBLIC` | Alle, også uinnloggede (vises på forsiden) |
+| `ORGANIZATION` | Medlemmer av innleggets organisasjon |
+| `COACH` | Forfatteren, og coacher/admins i innleggets organisasjon |
+
+Forfatteren ser alltid egne innlegg. Bare `PUBLISHED` innlegg vises i feeden. Ukjent synlighet gir ingen tilgang. Admin regnes som coach (via `roleHierarchy`). Når coach–seiler-tildeling finnes (fase 5) skal `COACH` snevres inn til tildelt coach, og det er det eneste stedet som må endres. Superbrukere har ingen egen tilgang til private innlegg; moderering (fase 6) skal få en eksplisitt tilgang.
+
+`canViewPost` (ett innlegg) og `visiblePostsWhere` (Prisma-filter) må gi samme svar; en test sjekker alle kombinasjoner. Alle nye steder som leser innlegg skal bruke dem. Datalaget er `src/app/lib/posts.ts` (`getViewer`, `getFeedPosts`).
 
 ### Beslutning: `Organization` er klubbmodellen
 
@@ -98,7 +112,7 @@ Alle skjemaendringer skal være additive (nye tabeller / nullable kolonner), sli
 
 ## 6. Test
 
-Vitest, jsdom, 64 tester i 5 filer (`pnpm test`):
+Vitest, jsdom, 108 tester i 8 filer (`pnpm test`):
 
 | Fil | Tester |
 |---|---|
@@ -107,6 +121,9 @@ Vitest, jsdom, 64 tester i 5 filer (`pnpm test`):
 | `layouts/__tests__/HomeLayout.test.tsx` | 13 |
 | `pages/user/__tests__/Login.test.tsx` | 11 |
 | `pages/user/__tests__/integration.test.tsx` | 4 |
+| `pages/user/__tests__/passwordReset.test.ts` | 6 |
+| `lib/__tests__/postVisibility.test.ts` | 34 |
+| `lib/__tests__/posts.test.ts` | 4 |
 
 Mønster: mock `cloudflare:workers`, `rwsdk/worker`, `@/db` og sesjon i `src/test/setup.ts`; gjenbrukbare hjelpere i `src/test/utils/serverFunctionMockHelper.ts`. Nye server functions skal ha tester etter samme mønster. Playwright/E2E er ikke satt opp.
 
@@ -116,7 +133,7 @@ Se `CLAUDE.md` (dev, build, migrate, seed, types, test).
 
 ## 8. Kjente gjenstående punkter
 
-- `PostList` bruker statisk mock-data (`getLatestPosts`)
+- Innlegg kan ennå ikke opprettes, redigeres eller slettes fra UI (kun via seed). `kudos` er alltid 0 til likes finnes (fase 4)
 - R2-binding finnes, men ingen opplasting er implementert
 - Ingen produksjonsovervåking utover Cloudflare-standard (`observability.enabled = false` i `wrangler.jsonc`)
 - E-postavsender er utviklingsadresse

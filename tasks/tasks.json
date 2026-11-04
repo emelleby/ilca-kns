@@ -75,7 +75,7 @@
       "id": 6,
       "title": "Community Blog/News Feature",
       "description": "[Fase 1] Implement the community blog/news functionality including post creation, editing, viewing, and interaction features.",
-      "details": "1. Create rich text editor component\n   - Text formatting options\n   - List creation\n   - Table insertion\n   - Link embedding\n   - Media insertion\n2. Implement post creation functionality\n   - Post form with rich text editor\n   - Media upload capability\n   - YouTube video embedding\n   - Category selection\n   - Draft saving\n   - Scheduled publishing\n3. Create post listing and viewing\n   - Chronological feed\n   - Featured/pinned posts\n   - Category filtering\n   - Post detail view\n4. Implement post interaction features\n   - Commenting system\n   - Like/reaction functionality\n   - Sharing options\n   - Content flagging\n5. Create notification system for post interactions\n6. Implement post search and discovery features",
+      "details": "Fase 1 – status:\n1. ✅ Post.organizationId + visibility (PUBLIC/ORGANIZATION/COACH), migrasjon 0007\n2. ✅ Feed fra database med synlighet; seed; tester\n3. ⏳ Opprett / rediger / slett innlegg med synlighetsvalg og rollesjekk (task 28)\n4. ⏳ Senere faser: rik tekst (15), media (10), kommentarer/likes, flagging (22)\n\nOpprinnelig plan:\n1. Create rich text editor component\n   - Text formatting options\n   - List creation\n   - Table insertion\n   - Link embedding\n   - Media insertion\n2. Implement post creation functionality\n   - Post form with rich text editor\n   - Media upload capability\n   - YouTube video embedding\n   - Category selection\n   - Draft saving\n   - Scheduled publishing\n3. Create post listing and viewing\n   - Chronological feed\n   - Featured/pinned posts\n   - Category filtering\n   - Post detail view\n4. Implement post interaction features\n   - Commenting system\n   - Like/reaction functionality\n   - Sharing options\n   - Content flagging\n5. Create notification system for post interactions\n6. Implement post search and discovery features",
       "testStrategy": "Test rich text editor functionality. Verify post creation with various content types. Test media upload and embedding. Verify draft saving and scheduled publishing. Test post listing with different filters. Verify comment, like, and sharing functionality. Test notification delivery for interactions. Verify search functionality returns relevant results.",
       "priority": "high",
       "dependencies": [
@@ -84,7 +84,7 @@
         5,
         28
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": [],
       "phase": "Fase 1"
     },
@@ -369,7 +369,7 @@
     {
       "id": 27,
       "title": "Production email sender and observability",
-      "description": "[Fase 0] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.",
+      "description": "[Utsatt – ikke noe domene ennå] Sett opp eget Resend-avsenderdomene og slå på Cloudflare observability før produksjon.",
       "details": "1. ✅ Fjernet hardkodet reset-mottaker; DEV_EMAIL_TO for utvikling; lenke logges i dev\n2. ⏳ Verifiser domene i Resend og sett EMAIL_FROM (CONSTANTS.FROM_EMAIL i src/app/shared/constants.ts bruker fortsatt onboarding@resend.dev)\n3. ⏳ Sett observability.enabled = true i wrangler.jsonc\n4. ⏳ Sett RESEND_API_KEY som secret i produksjon og test reset-e-post\n5. ✅ Dokumentert i docs/progress.md",
       "testStrategy": "Reset-e-post kommer frem fra eget domene. Feil vises i Workers Logs.",
       "priority": "high",
@@ -378,21 +378,21 @@
       ],
       "status": "pending",
       "subtasks": [],
-      "phase": "Fase 0"
+      "phase": "Utsatt"
     },
     {
       "id": 28,
       "title": "Organization role access helper",
-      "description": "[Fase 0] Felles hjelper requireOrgRole(user, organizationId, roles) som alle server functions bruker for tilgangskontroll mot OrganizationMembership.",
-      "details": "1. Implementer hjelper i src/app/auth (ett indeksert oppslag)\n2. Definer rolleset (ADMIN, COACH, MEMBER) som konstanter\n3. Aktiv klubb: lagre valgt organisasjon (sesjon eller cookie) og vis velger i header\n4. Skriv tester\n5. Dokumenter i architecture.md",
+      "description": "[Fase 1] Rollesjekk i server functions. Gjøres sammen med innleggs-CRUD i stedet for som egen oppgave. Synlighetsregler for lesing er ferdig (src/app/lib/postVisibility.ts); gjenstår skriverettigheter (forfatter eller organisasjonsadmin). Aktiv klubb-velger er utsatt.",
+      "details": "1. ✅ Synlighetsregler for lesing (canViewPost / visiblePostsWhere) med tester\n2. ⏳ Skriverettigheter for innlegg: forfatter eller ADMIN i innleggets organisasjon (create/update/delete)\n3. ⏳ Kun medlemmer kan opprette innlegg i en organisasjon\n4. ⏳ Tester for hver rolle, ikke-medlem og superbruker\n5. ⏸ Aktiv klubb-velger i header: utsatt til det trengs",
       "testStrategy": "Tester for hver rolle, ikke-medlem, og superbruker. Eksisterende auth-tester består.",
       "priority": "high",
       "dependencies": [
         5
       ],
-      "status": "pending",
+      "status": "in-progress",
       "subtasks": [],
-      "phase": "Fase 0"
+      "phase": "Fase 1"
     }
   ]
 }

@@ -31,7 +31,7 @@ export function Home(props: RequestInfo & { children?: ReactNode }) {
               </div>
 
               {/* Posts Feed */}
-              <PostList />
+              <PostList userId={props.ctx?.user?.id} />
             </div>
           </div>
         </div>

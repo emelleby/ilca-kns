@@ -1,10 +1,17 @@
 # Task ID: 6
 # Title: Community Blog/News Feature
-# Status: pending
+# Status: in-progress
 # Dependencies: 2, 3, 5, 28
 # Priority: high
 # Description: [Fase 1] Implement the community blog/news functionality including post creation, editing, viewing, and interaction features.
 # Details:
+Fase 1 – status:
+1. ✅ Post.organizationId + visibility (PUBLIC/ORGANIZATION/COACH), migrasjon 0007
+2. ✅ Feed fra database med synlighet; seed; tester
+3. ⏳ Opprett / rediger / slett innlegg med synlighetsvalg og rollesjekk (task 28)
+4. ⏳ Senere faser: rik tekst (15), media (10), kommentarer/likes, flagging (22)
+
+Opprinnelig plan:
 1. Create rich text editor component
    - Text formatting options
    - List creation

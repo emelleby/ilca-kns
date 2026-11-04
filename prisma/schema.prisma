@@ -60,6 +60,7 @@ model Organization {
   updatedAt   DateTime @updatedAt
   members     OrganizationMembership[]
   invitations OrganizationInvitation[]
+  posts       Post[]
 }
 
 model OrganizationMembership {
@@ -97,23 +98,37 @@ model Profile {
 }
 
 model Post {
-  id          String     @id @default(uuid())
-  userId      String
-  user        User       @relation(fields: [userId], references: [id])
-  title       String
-  content     String
-  category    String?
-  status      PostStatus @default(DRAFT)
-  publishedAt DateTime?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  comments    Comment[]
+  id             String         @id @default(uuid())
+  userId         String
+  user           User           @relation(fields: [userId], references: [id])
+  organizationId String?
+  organization   Organization?  @relation(fields: [organizationId], references: [id])
+  title          String
+  content        String
+  category       String?
+  imageUrl       String?
+  status         PostStatus     @default(DRAFT)
+  visibility     PostVisibility @default(ORGANIZATION)
+  publishedAt    DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  comments       Comment[]
+
+  @@index([organizationId])
+  @@index([status, publishedAt])
 }
 
 enum PostStatus {
   DRAFT
   PUBLISHED
   ARCHIVED
+}
+
+// Who may read a post. See src/app/lib/postVisibility.ts
+enum PostVisibility {
+  PUBLIC       // every user, also not logged in
+  ORGANIZATION // members of the post's organization
+  COACH        // the author and coaches/admins of the post's organization
 }
 
 model Comment {

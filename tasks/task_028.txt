@@ -1,15 +1,15 @@
 # Task ID: 28
 # Title: Organization role access helper
-# Status: pending
+# Status: in-progress
 # Dependencies: 5
 # Priority: high
-# Description: [Fase 0] Felles hjelper requireOrgRole(user, organizationId, roles) som alle server functions bruker for tilgangskontroll mot OrganizationMembership.
+# Description: [Fase 1] Rollesjekk i server functions. Gjøres sammen med innleggs-CRUD i stedet for som egen oppgave. Synlighetsregler for lesing er ferdig (src/app/lib/postVisibility.ts); gjenstår skriverettigheter (forfatter eller organisasjonsadmin). Aktiv klubb-velger er utsatt.
 # Details:
-1. Implementer hjelper i src/app/auth (ett indeksert oppslag)
-2. Definer rolleset (ADMIN, COACH, MEMBER) som konstanter
-3. Aktiv klubb: lagre valgt organisasjon (sesjon eller cookie) og vis velger i header
-4. Skriv tester
-5. Dokumenter i architecture.md
+1. ✅ Synlighetsregler for lesing (canViewPost / visiblePostsWhere) med tester
+2. ⏳ Skriverettigheter for innlegg: forfatter eller ADMIN i innleggets organisasjon (create/update/delete)
+3. ⏳ Kun medlemmer kan opprette innlegg i en organisasjon
+4. ⏳ Tester for hver rolle, ikke-medlem og superbruker
+5. ⏸ Aktiv klubb-velger i header: utsatt til det trengs
 
 # Test Strategy:
 Tester for hver rolle, ikke-medlem, og superbruker. Eksisterende auth-tester består.

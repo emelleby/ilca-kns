@@ -4,21 +4,29 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Nå
 
-- **Fase 0 pågår.** rwsdk-oppgraderingen (oppgave 26) er gjort på grenen `claude/upgrade-rwsdk` og venter på gjennomgang og merge. Neste: 27 (e-postavsender + logging) og 28 (`requireOrgRole`).
-- `main` er fortsatt på rwsdk 0.3.9 til grenen er slått inn.
+- **Fase 1 pågår** (dynamiske innlegg). Lesesiden er ferdig: feed fra database med synlighet. Neste: opprette/redigere/slette innlegg med synlighetsvalg.
+- rwsdk 1.7.5 er merget til `main`. Oppgave 27 (domene/e-post i produksjon) er utsatt; dev bruker `DEV_EMAIL_TO`.
 
 ## Åpne punkter
 
 - `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.
 - Før merge til produksjon: test passkey-innlogging og e-post (reset) manuelt; `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
 - Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
-- `PostList` bruker statisk mock-data.
+- Innlegg kan ikke opprettes fra UI ennå (kun seed).
 - R2-binding finnes, men er ikke i bruk.
 - E-post sendes fra `onboarding@resend.dev` (kun utvikling).
 - `observability.enabled = false` i `wrangler.jsonc`.
 - Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`) er utdaterte og kan slettes.
 
 ## Logg
+
+### 2026-11-04 – Fase 1: innlegg fra database med synlighet
+- Beslutning: tre synlighetsnivå per innlegg: `PUBLIC` (alle), `ORGANIZATION` (klubben), `COACH` (forfatter + coacher/admins i klubben). Regler samlet i `src/app/lib/postVisibility.ts`; `canViewPost` og `visiblePostsWhere` holdes i synk av en test. Superbruker har ikke egen tilgang til private innlegg.
+- Migrasjon `0007`: `Post.organizationId`, `visibility`, `imageUrl` + indekser (eksisterende data bevares).
+- `PostList` er en async serverkomponent mot databasen; forsiden (uinnlogget) viser bare offentlige innlegg. Ubrukt `HomeContentClient` slettet.
+- Rollesjekk for server functions bygges sammen med innleggs-CRUD i stedet for som egen oppgave (28). Aktiv klubb-velger utsatt.
+- Seed: fikset (`setupDb(env)` mangler i skript under rwsdk 1.x; rydder nå også profiler/credentials), 7 innlegg på alle nivåer, og felles lokalt passord `password123` for seed-brukerne.
+- Verifisert i nettleser: uinnlogget 2 innlegg, alice 6, bob 6, charlie 5, superbruker 2; utkast vises aldri. 108 tester, `tsc` uendret (30 eksisterende), bygg OK.
 
 ### 2026-11-04 – Passord-reset (e-post)
 - Fjernet hardkodet mottaker i `requestPasswordReset`; e-post går nå til brukerens egen adresse.

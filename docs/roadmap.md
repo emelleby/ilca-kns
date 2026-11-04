@@ -20,18 +20,18 @@ Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og teste
 |---|---|---|
 | 0.1 | Oppgrader rwsdk til siste versjon (1.7.5) | Gjort på `claude/upgrade-rwsdk`, venter på merge. Se `progress.md` |
 | 0.2 | Ryddede docs og enhetlig mappe-/filstruktur | Gjort i denne runden |
-| 0.3 | Egen e-postavsender (Resend-domene) og `observability.enabled = true` | Kreves før produksjon |
-| 0.4 | Felles hjelper `requireOrgRole(user, orgId, roles)` | Brukes av alle senere server functions |
+| 0.3 | Egen e-postavsender (Resend-domene) og `observability.enabled = true` | **Utsatt** (ikke noe domene ennå). Dev bruker `DEV_EMAIL_TO`. Kreves før produksjon |
+| 0.4 | Rollesjekk i server functions | Flyttet inn i fase 1 (bygges sammen med første bruker, innlegg). Ruteinterceptors finnes allerede i `src/app/interceptors.ts` |
 
 **Om oppgraderingen (0.1):** utført fra `main`, ikke fra `eivind/november`, som er ett år gammel og har uferdig sidebar-arbeid. Detaljer og brytende endringer: `architecture.md` §1. Grenene `upgrade-to-0.85`, `kiro` og `eivind/flat` er på 0.0.85 og kan slettes.
 
 ## Fase 1 – Dynamisk fellesskap (FR1, FR2, FR13, FR14)
 
-1. `Post.organizationId` + `visibility` (migrasjon)
-2. Erstatt mock i `PostList` med databasespørring (respekter klubb og synlighet)
-3. Opprett / rediger / slett innlegg (enkelt skjema, ren tekst)
-4. Aktiv klubb: velger i header for brukere med flere medlemskap
-5. Seed-data og tester for server functions
+1. ✅ `Post.organizationId` + `visibility` (PUBLIC / ORGANIZATION / COACH), migrasjon 0007
+2. ✅ Synlighetsregler (`postVisibility.ts`) og `PostList` mot databasen
+3. ✅ Seed-data på alle nivåer; tester
+4. Opprett / rediger / slett innlegg (enkelt skjema, ren tekst) med synlighetsvalg og rollesjekk (forfatter eller admin)
+5. Aktiv klubb: velger i header for brukere med flere medlemskap (utsatt til det trengs)
 
 ## Fase 2 – Arrangementer (FR6, FR7)
 
