@@ -172,7 +172,7 @@ export async function finishPasskeyLogin(login: AuthenticationResponseJSON) {
     requireUserVerification: false,
     credential: {
       id: credential.credentialId,
-      publicKey: credential.publicKey,
+      publicKey: new Uint8Array(credential.publicKey),
       counter: credential.counter,
     },
   });
@@ -419,7 +419,9 @@ export async function requestPasswordReset(email: string) {
 
   // Send email. Resend's test sender (onboarding@resend.dev) only delivers to the
   // account owner, so in development DEV_EMAIL_TO can redirect the message.
-  const recipient = IS_DEV && env.DEV_EMAIL_TO ? env.DEV_EMAIL_TO : email;
+  // DEV_EMAIL_TO is optional and only set in .dev.vars, so it is not always in the generated Env type.
+  const devEmailTo = (env as Env & { DEV_EMAIL_TO?: string }).DEV_EMAIL_TO;
+  const recipient = IS_DEV && devEmailTo ? devEmailTo : email;
   if (IS_DEV) {
     console.log(`[dev] Password reset link for ${email}: ${resetLink}`);
   }

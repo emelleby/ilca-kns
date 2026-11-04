@@ -24,6 +24,12 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Logg
 
+### 2026-11-04 – Typefeil ryddet
+- `pnpm types` er nå uten feil (var 30). Alle 147 tester og `pnpm build` går fortsatt.
+- Reelle feil rettet: `Skeleton` sendte ikke videre `style`/`data-*` (sidebar-skjelettets bredde virket ikke); `Calendar` brukte react-day-picker v8-API (`IconLeft/IconRight`) mot v9 (`Chevron`); `admin/routes.tsx` importerte sider som ikke finnes (ikke i bruk, nå tom plassholder).
+- `DEV_EMAIL_TO` leses som valgfri, siden `wrangler types` bare tar den med når den står i `.dev.vars`.
+- Testfiler: importerer `beforeEach`/`expect` fra vitest, og mock-data følger Prisma-/`RequestInfo`-typene.
+
 ### 2026-11-04 – Avhengigheter mellom oppgaver
 - Regel i `ai-guidelines.md`: før en oppgave startes skal alle `dependencies` være `done`, og nye oppgaver skal legges inn som avhengighet der de trengs, med «HVEM» i beskrivelsen.
 - Gjennomgått og rettet: 25 (lansering) venter nå på 27, 30, 31, 32, 34; 30 venter på 31; 31 på 26 og 29; 33 på 34; 11 på 29 og 34; 12 på 27; 17 på 29, 32, 34. Fjernet sykluser og feil: 28 ↔ 5 (28 avhenger bare av 29), 29 → 5 (29 er en del av 5), 6 → 5 (6 trenger 28 og 29).

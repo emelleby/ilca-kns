@@ -91,7 +91,7 @@ describe('Integration Tests: Critical User Journeys', () => {
     id: 'user-123',
     username: 'testsailor',
     email: 'test@example.com',
-    role: 'USER',
+    role: 'USER' as const,
     createdAt: new Date(),
   }
 
@@ -174,9 +174,13 @@ describe('Integration Tests: Critical User Journeys', () => {
   describe('AC2: Profile Edit → Save → Navigation Integration', () => {
     it('should edit profile, save successfully, then navigate without state loss', async () => {
       const mockUpdateUserProfile = vi.mocked(updateUserProfile)
+      // updateUserProfile returns the stored row, where JSON fields are strings
       const updatedProfile = {
         ...mockProfile,
         name: 'Updated Sailor Name',
+        certifications: JSON.stringify(mockProfile.certifications),
+        boatInformation: JSON.stringify(mockProfile.boatInformation),
+        privacySettings: JSON.stringify(mockProfile.privacySettings),
       }
       mockUpdateUserProfile.mockResolvedValue(updatedProfile)
 
@@ -188,6 +192,7 @@ describe('Integration Tests: Critical User Journeys', () => {
               ...mockProfile,
               boatInformation: mockProfile.boatInformation!,
               privacySettings: mockProfile.privacySettings!,
+              profilePicture: undefined,
             }}
             userId="user-123"
             username="testsailor"
@@ -250,6 +255,7 @@ describe('Integration Tests: Critical User Journeys', () => {
             ...mockProfile,
             boatInformation: mockProfile.boatInformation!,
             privacySettings: mockProfile.privacySettings!,
+            profilePicture: undefined,
           }}
           userId="user-123"
           username="testsailor"

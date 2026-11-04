@@ -3,6 +3,11 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { HomeLayout } from '../HomeLayout'
 import { link } from '@/app/shared/links'
+import type { RequestInfo } from 'rwsdk/worker'
+
+// HomeLayout only reads ctx.user, so tests pass a minimal ctx instead of a full RequestInfo
+const withCtx = (ctx: { session: null; user: { id: string; username: string; email: string; role: string } | null }) =>
+  ({ ctx }) as unknown as RequestInfo
 
 // Mock the shared links
 vi.mock('@/app/shared/links', () => ({
@@ -29,6 +34,7 @@ describe('HomeLayout Component', () => {
   const user = userEvent.setup()
 
   const mockAuthenticatedContext = {
+    session: null,
     user: {
       id: 'user-123',
       username: 'testuser',
@@ -38,6 +44,7 @@ describe('HomeLayout Component', () => {
   }
 
   const mockUnauthenticatedContext = {
+    session: null,
     user: null,
   }
 
@@ -48,7 +55,7 @@ describe('HomeLayout Component', () => {
   describe('Layout Structure', () => {
     it('should render header with logo and navigation', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Test Content</div>
         </HomeLayout>
       )
@@ -62,7 +69,7 @@ describe('HomeLayout Component', () => {
 
     it('should render main content area with Suspense fallback', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Main Content</div>
         </HomeLayout>
       )
@@ -74,7 +81,7 @@ describe('HomeLayout Component', () => {
   describe('Authenticated User Navigation', () => {
     it('should display authenticated navigation menu', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -96,7 +103,7 @@ describe('HomeLayout Component', () => {
       const mockLink = vi.mocked(link)
       
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -108,7 +115,7 @@ describe('HomeLayout Component', () => {
 
     it('should handle navigation link clicks', async () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -136,6 +143,7 @@ describe('HomeLayout Component', () => {
 
     it('should display correct avatar fallback for username', () => {
       const contextWithDifferentUser = {
+        session: null,
         user: {
           id: 'user-456',
           username: 'sailorjoe',
@@ -145,7 +153,7 @@ describe('HomeLayout Component', () => {
       }
 
       render(
-        <HomeLayout ctx={contextWithDifferentUser}>
+        <HomeLayout {...withCtx(contextWithDifferentUser)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -156,6 +164,7 @@ describe('HomeLayout Component', () => {
 
     it('should handle empty username gracefully', () => {
       const contextWithEmptyUsername = {
+        session: null,
         user: {
           id: 'user-789',
           username: '',
@@ -165,7 +174,7 @@ describe('HomeLayout Component', () => {
       }
 
       render(
-        <HomeLayout ctx={contextWithEmptyUsername}>
+        <HomeLayout {...withCtx(contextWithEmptyUsername)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -181,7 +190,7 @@ describe('HomeLayout Component', () => {
   describe('Unauthenticated User Navigation', () => {
     it('should display unauthenticated navigation menu', () => {
       render(
-        <HomeLayout ctx={mockUnauthenticatedContext}>
+        <HomeLayout {...withCtx(mockUnauthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -199,7 +208,7 @@ describe('HomeLayout Component', () => {
 
     it('should have correct href attributes for unauthenticated links', () => {
       render(
-        <HomeLayout ctx={mockUnauthenticatedContext}>
+        <HomeLayout {...withCtx(mockUnauthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -215,7 +224,7 @@ describe('HomeLayout Component', () => {
   describe('Core Path Verification', () => {
     it('should have no broken links in core navigation paths', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -239,7 +248,7 @@ describe('HomeLayout Component', () => {
 
     it('should have working home logo link', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -258,7 +267,7 @@ describe('HomeLayout Component', () => {
   describe('Accessibility and Structure', () => {
     it('should have proper semantic structure', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
@@ -271,7 +280,7 @@ describe('HomeLayout Component', () => {
 
     it('should have accessible image alt text', () => {
       render(
-        <HomeLayout ctx={mockAuthenticatedContext}>
+        <HomeLayout {...withCtx(mockAuthenticatedContext)}>
           <div>Content</div>
         </HomeLayout>
       )
