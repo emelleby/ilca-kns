@@ -1,0 +1,19 @@
+# Task ID: 32
+# Title: Rate limiting on sign-in, sign-up and password reset
+# Status: pending
+# Dependencies: 29
+# Priority: medium
+# Description: [Før lansering] HVEM: utvikler (AI-assistent kan skrive koden) + Eivind for oppsett i Cloudflare (opprette Turnstile-nøkler / rate limit-binding og legge inn secrets). Uten begrensning kan noen gjette passord ubegrenset og spamme reset-e-poster til hvem som helst.
+# Details:
+Berørte funksjoner (src/app/pages/user/functions.ts): loginWithPassword, registerWithPassword, requestPasswordReset, finishPasskeyLogin.
+
+Forslag (velg sammen før start):
+- Cloudflare Workers Rate Limiting-binding (ratelimit i wrangler.jsonc), nøkkel = IP + e-post. F.eks. 10 innloggingsforsøk per minutt per IP, 3 reset-forespørsler per time per e-post.
+- Eventuelt Cloudflare Turnstile på registrering og glemt passord (CSP i src/app/headers.ts tillater allerede challenges.cloudflare.com).
+
+Eivind: opprett Turnstile-widget i Cloudflare Dashboard (hvis valgt) og legg inn TURNSTILE_SECRET_KEY med npx wrangler secret put. Utvikler: binding i wrangler.jsonc, sjekk i funksjonene, felles hjelpefunksjon, feilmelding i UI, oppdater docs/architecture.md.
+
+Avvist forespørsel skal gi samme svar for eksisterende og ikke-eksisterende e-post (ingen kontoavsløring).
+
+# Test Strategy:
+Enhetstester med mocket rate limiter: under grensen ok, over grensen avvist; samme svar for kjent og ukjent e-post. Manuell test i dev.

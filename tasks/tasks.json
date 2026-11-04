@@ -431,14 +431,14 @@
       "id": 29,
       "title": "Authorization in server functions (security fix)",
       "description": "[Fase 0 – gjør først] KRITISK SIKKERHETSFEIL. Server functions kan kalles direkte av hvem som helst og mangler autorisasjon. Verifisert lokalt: uinnlogget kan opprette organisasjoner og overta andres kontoer; vanlig bruker kan gjøre seg selv til ADMIN. Full dokumentasjon: docs/security/server-function-authorization.md",
-      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven\n\nStatus 2026-11-04: 29.1–29.7 og 29.9 ferdig (gren claude/focused-euler-6nlxqf). Repro-skriptet gir 13/13 DENIED, exit 0. Gjenstår: 29.8 (drift i produksjon, må gjøres av eier) og manuell test av passkey med ekte autentikator.",
+      "details": "LES FØRST: docs/security/server-function-authorization.md. Den inneholder rotårsak, reproduksjon, tabell over ALLE eksponerte funksjoner med ønsket policy, løsningsdesign, testplan, akseptkriterier og driftssjekk.\n\nKort:\n- Berørt: src/app/pages/superuser/functions.ts (ingen sjekk i noen funksjon), user/functions.ts (addPasswordToPasskeyAccount, addPasskeyToExistingAccount), user/profile/functions.ts (userId/viewerId fra klienten). removePasskey er riktig og er mønsteret.\n- Verifisert: 13 av 13 forsøk i docs/security/repro-server-function-authz.cjs lykkes i dag (inkludert kontoovertakelse uten innlogging).\n- Løsning: guards i src/app/auth/guards.ts (requireUser, requireSuperUser, requireSelfOrSuperUser, requireOrganizationRole); bruk ctx.user.id i stedet for userId/viewerId/createdBy fra klient; flytt interne funksjoner ut av 'use server'-filer; zod-validering; ikke returner passordhash/andres e-post.\n\nDelmål:\n29.1 Guards + enhetstester\n29.2 superuser/functions.ts (alle SU, unntatt TOKEN/SESSION/SELF som i tabellen)\n29.3 user/functions.ts (addPasskey/addPassword kun egen konto; verifyResetToken uten hash)\n29.4 user/profile/functions.ts (eier/SU; getPublicProfile bruker innlogget bruker; interne funksjoner ut)\n29.5 Oppdater UI-kallere som sendte userId (AuthSettings, ProfileEditForm, ProfileSetup, ProfileView, ProfilePage, ProfileEditPage)\n29.6 Sikkerhetsnett-test: hver eksportert 'use server'-funksjon har guard eller står på tillatt-liste\n29.7 Kjør repro-skriptet: 13/13 DENIED, exit 0. Manuell røyktest anonym/MEMBER/COACH/SUPERUSER\n29.8 Drift: sjekk produksjonsdatabasen for uventede organisasjoner/medlemskap/passkeys/kontoer, slå på logging (oppgave 27), vurder å ugyldiggjøre sesjoner\n29.9 Oppdater architecture.md, progress.md og denne oppgaven\n\nStatus 2026-11-04: ferdig i kode (gren claude/focused-euler-6nlxqf). Repro-skriptet gir 13/13 DENIED, exit 0. Det som gjenstår er egne oppgaver: 30 (produksjonssjekk, Eivind), 31 (manuell passkey-test, Eivind), 32 (rate limiting), 33 (endre passord), 34 (sesjonsrotasjon), 35 (små oppfølginger).",
       "testStrategy": "Ekte funksjoner med mocket db/requestInfo (som passwordReset.test.ts): uten bruker avvist, vanlig bruker på annens data avvist, riktig bruker/SUPERUSER ok. Sikkerhetsnett-test over alle 'use server'-filer. Akseptansetest: node docs/security/repro-server-function-authz.cjs mot lokal dev gir 13/13 DENIED og exit 0. Regresjon: eksisterende 108 tester, pnpm build, manuell røyktest av innlogging, profil, passkey, reset og superuser-dashboard.",
       "priority": "high",
       "dependencies": [
         3,
         5
       ],
-      "status": "in-progress",
+      "status": "done",
       "subtasks": [
         {
           "id": "29.1",
@@ -477,8 +477,8 @@
         },
         {
           "id": "29.8",
-          "title": "Drift: sjekk produksjon, logging, sesjoner",
-          "status": "pending"
+          "title": "Drift: flyttet til egen oppgave 30 (Eivind)",
+          "status": "done"
         },
         {
           "id": "29.9",
@@ -487,6 +487,90 @@
         }
       ],
       "phase": "Fase 0"
+    },
+    {
+      "id": 30,
+      "title": "Production check after the server function security flaw",
+      "description": "[Fase 0 – rett etter deploy av oppgave 29] HVEM: Eivind (prosjekteier). Krever tilgang til Cloudflare-kontoen og produksjonsdatabasen; kan ikke gjøres av en AI-assistent i skyen. En AI kan hjelpe med å tolke resultatene. Mål: finne ut om sikkerhetsfeilen i oppgave 29 kan ha blitt utnyttet i produksjon, og rydde opp hvis den ble det.",
+      "details": "Bakgrunn: før oppgave 29 kunne hvem som helst kalle server functions direkte: opprette organisasjoner, gi seg selv ADMIN-rolle, endre andres profiler og sette passord på andres kontoer (kontoovertakelse). Detaljer: docs/security/server-function-authorization.md §1 og §6.\n\nForutsetning: oppgave 29 er merget til main og deployet (pnpm release). Gjør sjekken etter deploy, slik at ingen nye endringer kan skje mens du ser på dataene.\n\n1. Finn ut om sårbar kode har kjørt i produksjon: når ble appen sist deployet før oppgave 29, og hvilken commit? (Cloudflare Dashboard → Workers → ilcakns → Deployments.) Har den aldri vært i bruk av andre enn deg, kan du hoppe til punkt 5.\n2. Kjør spørringene mot produksjonsdatabasen (D1 «ilca2»). Eksempel:\n   npx wrangler d1 execute ilca2 --remote --command \"SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC\"\n   - Organisasjoner: SELECT id, name, createdAt FROM Organization ORDER BY createdAt DESC;\n   - Medlemskap og roller: SELECT * FROM OrganizationMembership ORDER BY joinedAt DESC LIMIT 50;\n   - Passkeys: SELECT userId, deviceName, createdAt FROM Credential ORDER BY createdAt DESC LIMIT 50;\n   - Kontoer med nylig endret e-post/passord: SELECT id, username, email, updatedAt FROM User ORDER BY updatedAt DESC LIMIT 50;\n   - Superbrukere: SELECT id, username, email FROM User WHERE role = 'SUPERUSER';\n   - Invitasjoner: SELECT * FROM OrganizationInvitation ORDER BY createdAt DESC LIMIT 50;\n3. Se etter: organisasjoner du ikke kjenner, ADMIN-roller du ikke har gitt, passkeys med enhetsnavn/dato som ikke stemmer med brukerens egne enheter, kontoer der e-post er endret uten at brukeren har gjort det.\n4. Hvis noe er mistenkelig: slett ukjente organisasjoner og medlemskap (superbruker-dashboardet eller SQL), fjern ukjente passkeys, nullstill passord for berørte kontoer (be brukeren bruke «glemt passord») og gi beskjed til de berørte.\n5. Ugyldiggjør alle innloggingsøkter hvis du er i tvil: bytt AUTH_SECRET_KEY (npx wrangler secret put AUTH_SECRET_KEY med en ny tilfeldig verdi, f.eks. fra `openssl rand -hex 32`). Da blir alle sesjonscookies ugyldige og alle må logge inn på nytt.\n6. Skriv resultatet (hva du fant, hva du gjorde) som én linje i docs/progress.md, eller be en AI-assistent gjøre det, og sett oppgaven til done.\n\nLogging (observability) for fremtiden er oppgave 27 punkt 3.",
+      "testStrategy": "Spørringene er kjørt og resultatet er notert i docs/progress.md. Eventuelle funn er ryddet opp, og berørte brukere har fått beskjed.",
+      "priority": "high",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Fase 0"
+    },
+    {
+      "id": 31,
+      "title": "Manual browser test of passkey and password flows",
+      "description": "[Fase 0 – før merge til produksjon] HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.",
+      "details": "Kjør lokalt (pnpm dev, http://localhost:5173) eller på en forhåndsvisning. Seed-brukere: alice/bob/charlie/superuser@example.com, passord password123.\n\n1. Registrer en ny konto med passkey (/user/signup). Forventet: du havner på /home.\n2. Logg ut og logg inn igjen med passkey (/user/login).\n3. Gå til innstillinger (/user/<brukernavn>/settings) på passkey-kontoen og legg til e-post og passord. Logg ut og logg inn med e-post/passord.\n4. Prøv å legge til e-post/passord en gang til på samme konto. Forventet: avvist («Failed to add email and password»), fordi kontoen allerede har passord.\n5. Logg inn som alice (passord) og legg til en passkey under innstillinger. Logg ut og logg inn med passkeyen.\n6. Fjern passkeyen under innstillinger.\n7. Glemt passord: be om reset for alice. I dev logges lenken i terminalen. Åpne lenken: siden skal vise «Hello alice», og nytt passord skal virke.\n8. Profil: rediger egen profil og lagre. Åpne en annen brukers profil og sjekk at skjulte felt (e-post, sted osv.) ikke vises.\n9. Superbruker: logg inn som superuser@example.com, opprett og slett en organisasjon på /superuser/dashboard.\n\nHvis noe feiler: noter steg, nettleser og feilmelding (nettleserkonsoll og terminal) og lag en ny oppgave eller gi det til en AI-assistent.",
+      "testStrategy": "Alle 9 stegene fungerer som forventet. Resultatet er notert i docs/progress.md.",
+      "priority": "high",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Fase 0"
+    },
+    {
+      "id": 32,
+      "title": "Rate limiting on sign-in, sign-up and password reset",
+      "description": "[Før lansering] HVEM: utvikler (AI-assistent kan skrive koden) + Eivind for oppsett i Cloudflare (opprette Turnstile-nøkler / rate limit-binding og legge inn secrets). Uten begrensning kan noen gjette passord ubegrenset og spamme reset-e-poster til hvem som helst.",
+      "details": "Berørte funksjoner (src/app/pages/user/functions.ts): loginWithPassword, registerWithPassword, requestPasswordReset, finishPasskeyLogin.\n\nForslag (velg sammen før start):\n- Cloudflare Workers Rate Limiting-binding (ratelimit i wrangler.jsonc), nøkkel = IP + e-post. F.eks. 10 innloggingsforsøk per minutt per IP, 3 reset-forespørsler per time per e-post.\n- Eventuelt Cloudflare Turnstile på registrering og glemt passord (CSP i src/app/headers.ts tillater allerede challenges.cloudflare.com).\n\nEivind: opprett Turnstile-widget i Cloudflare Dashboard (hvis valgt) og legg inn TURNSTILE_SECRET_KEY med npx wrangler secret put. Utvikler: binding i wrangler.jsonc, sjekk i funksjonene, felles hjelpefunksjon, feilmelding i UI, oppdater docs/architecture.md.\n\nAvvist forespørsel skal gi samme svar for eksisterende og ikke-eksisterende e-post (ingen kontoavsløring).",
+      "testStrategy": "Enhetstester med mocket rate limiter: under grensen ok, over grensen avvist; samme svar for kjent og ukjent e-post. Manuell test i dev.",
+      "priority": "medium",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Før lansering"
+    },
+    {
+      "id": 33,
+      "title": "Change password with re-authentication",
+      "description": "[Fase 1 eller senere] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). I dag kan en innlogget bruker ikke endre et eksisterende passord: addPasswordToPasskeyAccount avviser kontoer som allerede har passord (sikkerhetsvalg i oppgave 29), og eneste vei er «glemt passord».",
+      "details": "1. Ny server function changePassword(currentPassword, newPassword) i src/app/pages/user/functions.ts. Første linje requireUser(). Verifiser currentPassword mot lagret hash før endring. Nytt passord: zod, minst 8 tegn.\n2. Endre e-post på samme måte: krever gjeldende passord (eller ny passkey-verifisering for kontoer uten passord), og e-posten må ikke tilhøre en annen konto.\n3. UI i src/app/pages/user/settings/AuthSettings.tsx: skjema for å endre passord.\n4. Etter endring: roter sesjon (se oppgave 34).\n5. Oppdater docs/architecture.md §5 og docs/progress.md.",
+      "testStrategy": "Ekte funksjon med mocket db (som src/app/auth/__tests__/serverFunctionAuthz.test.ts): uinnlogget avvist, feil nåværende passord avvist, riktig passord ok, e-post som tilhører en annen avvist. Sikkerhetsnett-testen består.",
+      "priority": "medium",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Senere"
+    },
+    {
+      "id": 34,
+      "title": "Session rotation and protecting the last sign-in method",
+      "description": "[Før lansering] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). Når en bruker endrer innloggingsmetode bør gamle økter på andre enheter avsluttes, og brukeren bør ikke kunne låse seg ute ved å fjerne siste passkey på en konto uten passord.",
+      "details": "1. removePasskey (src/app/pages/user/functions.ts): avvis hvis dette er brukerens siste passkey og kontoen ikke har passord. Vis forklarende melding i AuthSettings.\n2. Sesjonsrotasjon: etter passord-reset, endret passord, lagt til e-post/passord og lagt til/fjernet passkey skal andre økter for brukeren bli ugyldige. Sesjonene ligger i Durable Object (src/session/store.ts, rwsdk/auth defineDurableSession). Undersøk om rwsdk har støtte for å slette alle økter for en bruker; hvis ikke, legg til et sessionVersion-felt på User (additiv migrasjon via pnpm migrate:new) som lagres i sesjonen og sjekkes i middleware i src/worker.tsx.\n3. Etter passord-reset (resetPassword) logges brukeren ikke automatisk inn.\n4. Oppdater docs/architecture.md §5.",
+      "testStrategy": "Enhetstester: siste innloggingsmetode kan ikke fjernes; sesjon med gammel versjon avvises av middleware. Manuell test med to nettlesere: endre passord i den ene, den andre blir logget ut.",
+      "priority": "medium",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Før lansering"
+    },
+    {
+      "id": 35,
+      "title": "Small follow-ups from the security review",
+      "description": "[Løpende, liten] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). Opprydding etter oppgave 29 som ikke er sikkerhetskritisk.",
+      "details": "1. src/app/pages/superuser/routes.tsx har en egen kopi av isSuperUser. Bytt til isSuperUser fra src/app/interceptors.ts (merk: den svarer 403 i stedet for å sende til /home; bestem hvilken oppførsel som er ønsket).\n2. Brukeroppregning: sjekk om registerWithPassword og passkey-registrering avslører at et brukernavn eller en e-post allerede finnes (f.eks. ulik feilmelding eller unntak fra Prisma). Gi en nøytral melding og logg detaljen på serveren.\n3. Feil fra guards kommer til klienten som «Connection closed». Gå gjennom klientkomponenter som kaller server functions (AuthSettings, ProfileView, ProfileEditForm, ProfileSetup, superuser-dialogene) og vis en forståelig melding («Du har ikke tilgang» / «Logg inn på nytt»).\n4. ProfileView: currentUserId-propen brukes ikke lenger til datahenting; fjern den fra useEffect-avhengighetene eller fjern propen.\n5. De gamle testene i src/app/pages/user/__tests__/serverFunctions.test.tsx mocker selve funksjonene og tester lite ekte kode. Vurder å erstatte dem med tester som kjører de ekte funksjonene.",
+      "testStrategy": "pnpm test, pnpm types (ikke flere feil enn før), pnpm build. Manuell sjekk av feilmeldinger i UI.",
+      "priority": "low",
+      "dependencies": [
+        29
+      ],
+      "status": "pending",
+      "subtasks": [],
+      "phase": "Løpende"
     }
   ]
 }

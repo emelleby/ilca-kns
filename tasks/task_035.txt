@@ -1,0 +1,15 @@
+# Task ID: 35
+# Title: Small follow-ups from the security review
+# Status: pending
+# Dependencies: 29
+# Priority: low
+# Description: [Løpende, liten] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). Opprydding etter oppgave 29 som ikke er sikkerhetskritisk.
+# Details:
+1. src/app/pages/superuser/routes.tsx har en egen kopi av isSuperUser. Bytt til isSuperUser fra src/app/interceptors.ts (merk: den svarer 403 i stedet for å sende til /home; bestem hvilken oppførsel som er ønsket).
+2. Brukeroppregning: sjekk om registerWithPassword og passkey-registrering avslører at et brukernavn eller en e-post allerede finnes (f.eks. ulik feilmelding eller unntak fra Prisma). Gi en nøytral melding og logg detaljen på serveren.
+3. Feil fra guards kommer til klienten som «Connection closed». Gå gjennom klientkomponenter som kaller server functions (AuthSettings, ProfileView, ProfileEditForm, ProfileSetup, superuser-dialogene) og vis en forståelig melding («Du har ikke tilgang» / «Logg inn på nytt»).
+4. ProfileView: currentUserId-propen brukes ikke lenger til datahenting; fjern den fra useEffect-avhengighetene eller fjern propen.
+5. De gamle testene i src/app/pages/user/__tests__/serverFunctions.test.tsx mocker selve funksjonene og tester lite ekte kode. Vurder å erstatte dem med tester som kjører de ekte funksjonene.
+
+# Test Strategy:
+pnpm test, pnpm types (ikke flere feil enn før), pnpm build. Manuell sjekk av feilmeldinger i UI.

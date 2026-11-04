@@ -1,0 +1,15 @@
+# Task ID: 33
+# Title: Change password with re-authentication
+# Status: pending
+# Dependencies: 29
+# Priority: medium
+# Description: [Fase 1 eller senere] HVEM: utvikler (AI-assistent kan gjøre hele oppgaven). I dag kan en innlogget bruker ikke endre et eksisterende passord: addPasswordToPasskeyAccount avviser kontoer som allerede har passord (sikkerhetsvalg i oppgave 29), og eneste vei er «glemt passord».
+# Details:
+1. Ny server function changePassword(currentPassword, newPassword) i src/app/pages/user/functions.ts. Første linje requireUser(). Verifiser currentPassword mot lagret hash før endring. Nytt passord: zod, minst 8 tegn.
+2. Endre e-post på samme måte: krever gjeldende passord (eller ny passkey-verifisering for kontoer uten passord), og e-posten må ikke tilhøre en annen konto.
+3. UI i src/app/pages/user/settings/AuthSettings.tsx: skjema for å endre passord.
+4. Etter endring: roter sesjon (se oppgave 34).
+5. Oppdater docs/architecture.md §5 og docs/progress.md.
+
+# Test Strategy:
+Ekte funksjon med mocket db (som src/app/auth/__tests__/serverFunctionAuthz.test.ts): uinnlogget avvist, feil nåværende passord avvist, riktig passord ok, e-post som tilhører en annen avvist. Sikkerhetsnett-testen består.

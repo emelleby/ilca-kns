@@ -1,0 +1,23 @@
+# Task ID: 31
+# Title: Manual browser test of passkey and password flows
+# Status: pending
+# Dependencies: 29
+# Priority: high
+# Description: [Fase 0 – før merge til produksjon] HVEM: Eivind. Krever en ekte passkey (telefon, Touch ID, Windows Hello eller sikkerhetsnøkkel), som en AI ikke har. Oppgave 29 endret signaturen på addPasskeyToExistingAccount og addPasswordToPasskeyAccount, og oppgave 26 endret Workers-runtime (compatibility_date). Dette er ikke testet med ekte autentikator.
+# Details:
+Kjør lokalt (pnpm dev, http://localhost:5173) eller på en forhåndsvisning. Seed-brukere: alice/bob/charlie/superuser@example.com, passord password123.
+
+1. Registrer en ny konto med passkey (/user/signup). Forventet: du havner på /home.
+2. Logg ut og logg inn igjen med passkey (/user/login).
+3. Gå til innstillinger (/user/<brukernavn>/settings) på passkey-kontoen og legg til e-post og passord. Logg ut og logg inn med e-post/passord.
+4. Prøv å legge til e-post/passord en gang til på samme konto. Forventet: avvist («Failed to add email and password»), fordi kontoen allerede har passord.
+5. Logg inn som alice (passord) og legg til en passkey under innstillinger. Logg ut og logg inn med passkeyen.
+6. Fjern passkeyen under innstillinger.
+7. Glemt passord: be om reset for alice. I dev logges lenken i terminalen. Åpne lenken: siden skal vise «Hello alice», og nytt passord skal virke.
+8. Profil: rediger egen profil og lagre. Åpne en annen brukers profil og sjekk at skjulte felt (e-post, sted osv.) ikke vises.
+9. Superbruker: logg inn som superuser@example.com, opprett og slett en organisasjon på /superuser/dashboard.
+
+Hvis noe feiler: noter steg, nettleser og feilmelding (nettleserkonsoll og terminal) og lag en ny oppgave eller gi det til en AI-assistent.
+
+# Test Strategy:
+Alle 9 stegene fungerer som forventet. Resultatet er notert i docs/progress.md.
