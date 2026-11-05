@@ -15,6 +15,8 @@ export async function PostList({ userId }: { userId?: string | null }) {
         posts.map((post) => (
           <PostCard
             key={post.id}
+            id={post.id}
+            canEdit={post.canEdit}
             user={post.user}
             title={post.title}
             content={post.content}

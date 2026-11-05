@@ -21,7 +21,7 @@ Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og teste
 | 0.1 | Oppgrader rwsdk til siste versjon (1.7.5) | Gjort på `claude/upgrade-rwsdk`, venter på merge. Se `progress.md` |
 | 0.2 | Ryddede docs og enhetlig mappe-/filstruktur | Gjort i denne runden |
 | 0.3 | Egen e-postavsender (Resend-domene) og `observability.enabled = true` | **Utsatt** (ikke noe domene ennå). Dev bruker `DEV_EMAIL_TO`. Kreves før produksjon |
-| 0.4 | Rollesjekk i server functions | Flyttet inn i fase 1 (bygges sammen med første bruker, innlegg). Ruteinterceptors finnes allerede i `src/app/interceptors.ts` |
+| 0.4 | Rollesjekk i server functions | ✅ Gjort i fase 1 sammen med innlegg (oppgave 28). Ruteinterceptors finnes allerede i `src/app/interceptors.ts` |
 | 0.5 | **Autorisasjon i alle server functions** (oppgave 29) | Ferdig i kode, venter på merge. Se `docs/security/server-function-authorization.md` |
 | 0.6 | Produksjonssjekk etter sikkerhetsfeilen (oppgave 30) og manuell passkey-test (oppgave 31) | **Eivind.** Rett etter merge/deploy av 0.5 |
 
@@ -34,7 +34,7 @@ Regel: ta fase for fase. Ikke start en fase før forrige fase er ferdig og teste
 1. ✅ `Post.organizationId` + `visibility` (PUBLIC / ORGANIZATION / COACH), migrasjon 0007
 2. ✅ Synlighetsregler (`postVisibility.ts`) og `PostList` mot databasen
 3. ✅ Seed-data på alle nivåer; tester
-4. Opprett / rediger / slett innlegg (enkelt skjema, ren tekst) med synlighetsvalg og rollesjekk (forfatter eller admin)
+4. ✅ Opprett / rediger / arkiver innlegg (enkelt skjema, ren tekst) med synlighetsvalg og rollesjekk (forfatter eller admin), oppgave 6 og 28
 5. Aktiv klubb: velger i header for brukere med flere medlemskap (utsatt til det trengs)
 
 ## Fase 2 – Arrangementer (FR6, FR7)

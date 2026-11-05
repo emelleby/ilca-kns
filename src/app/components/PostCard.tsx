@@ -1,6 +1,10 @@
 import React from "react";
+import { PostActions } from "./PostActions";
 
 export type PostCardProps = {
+  id: string;
+  /** Show the edit/archive menu (canEditPost). */
+  canEdit?: boolean;
   user: {
     name: string;
     avatarUrl: string;
@@ -15,6 +19,8 @@ export type PostCardProps = {
 };
 
 export function PostCard({
+  id,
+  canEdit = false,
   user,
   title,
   content,
@@ -98,9 +104,7 @@ export function PostCard({
             <span>Share</span>
           </button>
         </div>
-        <button className="text-sm text-gray-500 hover:text-gray-700">
-          <span>⋯</span>
-        </button>
+        {canEdit && <PostActions postId={id} title={title} />}
       </div>
     </article>
   );

@@ -4,7 +4,7 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 
 ## Nå
 
-- **Fase 1 pågår** (oppgave 6). Feed fra database med synlighet er ferdig, og skriverettigheter og server functions for opprette/redigere/arkivere er på plass (28, 6.1). Neste: skjema og sider (6.2–6.4), deretter nettleserverifisering (6.6).
+- **Fase 1 er ferdig i kode** (oppgave 6, PR emelleby/ilca-kns#12): feed med synlighet, og opprette/redigere/arkivere innlegg fra UI. Neste fase etter roadmap: fase 2 (kalender, oppgave 9).
 - rwsdk 1.7.5 er merget til `main`. Oppgave 27 (domene/e-post i produksjon) er utsatt; dev bruker `DEV_EMAIL_TO`.
 
 ## Åpne punkter
@@ -16,7 +16,7 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - `eivind/november` har uferdig sidebar-arbeid (hydreringsfeil, mobilmeny). Ikke inkludert i oppgraderingen. Avgjør om det skal gjenopptas på toppen av `claude/upgrade-rwsdk`.
 - Før merge til produksjon: manuell test av passkey og passord er oppgave 31 (Eivind); `compatibility_date` er endret fra 2024-09-23 til 2025-09-21, og dette endrer Workers-runtime i produksjon.
 - Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
-- Innlegg kan ikke opprettes fra UI ennå (server functions finnes, skjema og sider mangler: 6.2–6.4).
+- Arkiverte innlegg kan ikke gjenopprettes fra UI ennå (bare i databasen). Hører naturlig til moderering (22).
 - R2-binding finnes, men er ikke i bruk.
 - **Workers Previews deler produksjonens D1 og R2 (`ilca2`).** Akseptert så lenge det ikke finnes ekte brukere. Før lansering: egen preview-database og -bucket i `previews`-blokken i `wrangler.jsonc`. Preview-URL-er er offentlige uten tilgangskontroll. `AUTH_SECRET_KEY` er satt i Preview base config (2026-11-05). Uten den kaster rwsdk sitt sesjonslager på hver forespørsel (error 1101). Base config ble ikke tatt med i en preview som fantes fra før; der måtte den settes direkte med `npx wrangler preview secret put AUTH_SECRET_KEY --name <gren>`. Sjekk med `npx wrangler preview secret list --name <gren>` hvis en preview gir 1101. `RESEND_API_KEY` mangler også, så e-post sendes ikke fra previews.
 - E-post sendes fra `onboarding@resend.dev` (kun utvikling).
@@ -24,6 +24,13 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`) er utdaterte og kan slettes.
 
 ## Logg
+
+### 2026-11-05 – Opprette, redigere og arkivere innlegg fra UI (oppgave 6.2–6.6)
+- `components/PostForm.tsx` (klient): klubb (forhåndsvalgt hvis bare én, låst ved redigering), tittel, innhold, kategori, synlighet som radioknapper («Everyone», «Club only», «Me and coaches»), valgfri bilde-URL. Klientvalidering er bare hjelp; serveren avgjør.
+- Sider `/posts/create` og `/posts/:id/edit` (`pages/posts/`), bak `isAuthenticated`. Redigeringssiden gir 404 både når innlegget ikke finnes, er arkivert eller ikke er ditt. Uten klubbmedlemskap viser opprett-siden en forklaring i stedet for skjemaet.
+- Feeden får `canEdit` per innlegg (`canEditPost`), og `PostCard` viser «⋯»-meny med Rediger/Arkiver bare da (`PostActions.tsx`). «Add Content» er nå lenken «New post».
+- Verifisert i nettleser (Playwright mot `pnpm dev` med seed-data): alice oppretter et COACH-innlegg i Sailing Club Norway; charlie ser det, bob og anonym ikke. Etter endring til PUBLIC ser alle det. bob får 404 på redigeringslenken. Etter arkivering er det borte for alle, og redigeringslenken gir 404. Anonym på `/posts/create` sendes til innlogging.
+- 208 tester (12 nye), `pnpm types` uten feil.
 
 ### 2026-11-05 – Skriverettigheter og server functions for innlegg (oppgave 28, 6.1)
 - Beslutningene i oppgave 6 er lagt til grunn som foreslått. Skriveregler ligger ved siden av lesereglene i `lib/postVisibility.ts`: `canCreatePostIn` (medlem av organisasjonen, alle roller) og `canEditPost` (forfatter, eller ADMIN i innleggets organisasjon). En forfatter som har forlatt klubben kan fortsatt redigere egne innlegg.

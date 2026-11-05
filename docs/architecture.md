@@ -45,14 +45,14 @@ src/
   app/
     Document.tsx, headers.ts, interceptors.ts
     auth/             # email.ts (Resend), password.ts, guards.ts (autorisasjon i server functions)
-    components/       # PostCard, PostList, PostFilter, ProfileEditForm, UserProfileSidebar, ui/ (shadcn)
+    components/       # PostCard, PostActions, PostForm, PostList, PostFilter, ProfileEditForm, UserProfileSidebar, ui/ (shadcn)
     layouts/          # HomeLayout, AuthLayout, SidebarLayout
     pages/
       Home, FrontPage, TasksPage, Test
       user/           # Login, Signup, Forgot/ResetPassword, profile/, settings/, routes.tsx, functions.ts
       superuser/      # Dashboard, organisasjons-dialoger, routes.tsx, functions.ts
       admin/          # routes.tsx, functions.ts
-      posts/          # functions.ts (opprette/redigere/arkivere innlegg)
+      posts/          # PostFormPage (/posts/create, /posts/:id/edit), routes.tsx, functions.ts
     shared/, hooks/, lib/
   scripts/seed.ts
   test/               # setup + mock-hjelpere
@@ -60,7 +60,7 @@ prisma/schema.prisma
 migrations/           # 0001–0006
 ```
 
-Ruter i `worker.tsx`: `/`, `/home` (krever innlogging), `/tasks`, `/test`, `/pingo`, `/protected`, `/user/*`, `/superuser/*`.
+Ruter i `worker.tsx`: `/`, `/home` (krever innlogging), `/tasks`, `/test`, `/pingo`, `/protected`, `/user/*`, `/superuser/*`, `/posts/*` (krever innlogging).
 
 ## 3. Datamodell (`prisma/schema.prisma`)
 
@@ -115,7 +115,7 @@ Alle skjemaendringer skal være additive (nye tabeller / nullable kolonner), sli
 
 ## 6. Test
 
-Vitest, jsdom, 196 tester i 13 filer (`pnpm test`):
+Vitest, jsdom, 208 tester i 14 filer (`pnpm test`):
 
 | Fil | Tester |
 |---|---|
@@ -127,7 +127,8 @@ Vitest, jsdom, 196 tester i 13 filer (`pnpm test`):
 | `pages/user/__tests__/passwordReset.test.ts` | 6 |
 | `lib/__tests__/postVisibility.test.ts` | 44 |
 | `pages/posts/__tests__/functions.test.ts` | 38 |
-| `lib/__tests__/posts.test.ts` | 4 |
+| `lib/__tests__/posts.test.ts` | 11 |
+| `components/__tests__/PostForm.test.tsx` | 5 |
 | `auth/__tests__/guards.test.ts` | 5 |
 | `auth/__tests__/serverFunctionAuthz.test.ts` | 23 |
 | `auth/__tests__/serverFunctionGuards.test.ts` | 7 |
@@ -141,7 +142,7 @@ Se `CLAUDE.md` (dev, build, migrate, seed, types, test).
 
 ## 8. Kjente gjenstående punkter
 
-- Innlegg kan ennå ikke opprettes, redigeres eller arkiveres fra UI (server functions finnes; skjema og sider er oppgave 6.2–6.4). `kudos` er alltid 0 til likes finnes (fase 4)
+- Arkiverte innlegg kan ikke gjenopprettes fra UI. `kudos` er alltid 0 til likes finnes (fase 4)
 - R2-binding finnes, men ingen opplasting er implementert
 - Ingen produksjonsovervåking utover Cloudflare-standard (`observability.enabled = false` i `wrangler.jsonc`)
 - E-postavsender er utviklingsadresse

@@ -12,6 +12,8 @@ export const link = defineLinks([
   "/user/reset-password",
   "/user/:username/settings",
   "/user/:username/profile",
+  "/posts/create",
+  "/posts/:id/edit",
   "/legal/privacy",
   "/legal/terms",
   "/legal/tasks",
