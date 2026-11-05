@@ -1,15 +1,17 @@
 # Task ID: 28
 # Title: Organization role access helper
-# Status: in-progress
+# Status: done
 # Dependencies: 29
 # Priority: high
-# Description: [Fase 1] Rollesjekk i server functions. Gjøres sammen med innleggs-CRUD i stedet for som egen oppgave. Synlighetsregler for lesing er ferdig (src/app/lib/postVisibility.ts); gjenstår skriverettigheter (forfatter eller organisasjonsadmin). Aktiv klubb-velger er utsatt.
+# Description: [Fase 1] Rollesjekk for innlegg. Lesing: canViewPost / visiblePostsWhere. Skriving: canCreatePostIn / canEditPost i src/app/lib/postVisibility.ts, brukt av server functions i src/app/pages/posts/functions.ts (oppgave 6.1). Aktiv klubb-velger er utsatt.
 # Details:
 1. ✅ Synlighetsregler for lesing (canViewPost / visiblePostsWhere) med tester
-2. ⏳ Skriverettigheter for innlegg: forfatter eller ADMIN i innleggets organisasjon (create/update/delete). Bygger på guards fra oppgave 29
-3. ⏳ Kun medlemmer kan opprette innlegg i en organisasjon
-4. ⏳ Tester for hver rolle, ikke-medlem og superbruker
+2. ✅ Skriverettigheter: forfatter eller ADMIN i innleggets organisasjon kan redigere/arkivere (canEditPost). Bygger på requireUser fra oppgave 29
+3. ✅ Kun medlemmer (alle roller) kan opprette innlegg i en organisasjon (canCreatePostIn)
+4. ✅ Tester for hver rolle, ikke-medlem, tidligere medlem og superbruker (postVisibility.test.ts og pages/posts/__tests__/functions.test.ts)
 5. ⏸ Aktiv klubb-velger i header: utsatt til det trengs
+
+Beslutning: SUPERUSER har ingen egen skrivetilgang til innlegg, på samme måte som for lesing. Moderering (oppgave 22) får eksplisitt tilgang.
 
 # Test Strategy:
 Tester for hver rolle, ikke-medlem, og superbruker. Eksisterende auth-tester består.

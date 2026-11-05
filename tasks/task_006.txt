@@ -9,11 +9,12 @@ Omfang fase 1 – nåværende status:
 ✅ Datamodell: Post.organizationId, visibility (PUBLIC | ORGANIZATION | COACH), imageUrl (migrasjon 0007)
 ✅ Synlighetsregler (src/app/lib/postVisibility.ts) og datalag (src/app/lib/posts.ts)
 ✅ Feed fra database; forsiden viser kun offentlige innlegg; seed-data på alle nivåer
-⏳ Opprett / rediger / arkiver innlegg (under)
+✅ Skriverettigheter (oppgave 28) og server functions createPost / updatePost / archivePost (6.1)
+⏳ Skjema, sider og knapper (6.2–6.4), nettleserverifisering (6.6)
 
 Forutsetning: oppgave 29 (guards) og 28 (skriverettigheter) må være på plass først, ellers blir CRUD åpent for alle.
 
-Foreslåtte beslutninger (bekreft før start):
+Beslutninger (lagt til grunn 2026-11-05; 1–6 og 8 er implementert i 6.1):
 1. Hvem kan opprette: innloggede brukere med minst ett organisasjonsmedlemskap. Hvert innlegg hører til én organisasjon som velges i skjemaet (forhåndsvalgt hvis bare én). Ingen innlegg uten organisasjon i MVP.
 2. Standard synlighet: ORGANIZATION. Valg: «Alle», «Kun klubben», «Kun meg og coacher».
 3. Felt: tittel (3–120 tegn), innhold (1–10000, ren tekst), kategori (News | Training | Event | Other), synlighet, organisasjon, valgfri bilde-URL (opplasting kommer i fase 4).

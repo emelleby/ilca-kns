@@ -13,7 +13,7 @@ Status per delpunkt (verifisert mot koden 2026-11-04):
 5. ⏳ Admin-rettigheter: brukeradministrasjon finnes delvis i superuser-dashboard; moderering flyttet til fase 6 (oppgave 22).
 6. ✅ Autorisasjon i alle server functions: gjort i oppgave 29 (guards i src/app/auth/guards.ts).
 
-Gjenstår for å lukke oppgaven: 28 (skriverettigheter for innlegg) og admin-ruter (src/app/pages/admin/). Opprydding av interceptors (én felles isSuperUser) er flyttet til oppgave 35.
+Gjenstår for å lukke oppgaven: admin-ruter (src/app/pages/admin/). 28 (skriverettigheter for innlegg) er ferdig 2026-11-05. Opprydding av interceptors (én felles isSuperUser) er flyttet til oppgave 35.
 
 # Test Strategy:
 Test permission enforcement for each role. Verify role assignment and modification. Test access to protected routes and resources. Verify coach access to student data. Test admin-specific functionality. Verify UI elements are correctly shown/hidden based on permissions.

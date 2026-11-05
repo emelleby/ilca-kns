@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import {
   canViewPost,
+  canCreatePostIn,
+  canEditPost,
   visiblePostsWhere,
   POST_VISIBILITY as V,
   type PostAccessFields,
@@ -161,5 +163,40 @@ describe('canViewPost agrees with visiblePostsWhere', () => {
       // Own non-published posts are intentionally outside the feed filter
       expect(evaluate(p, v), JSON.stringify(p)).toBe(canViewPost(p, v))
     }
+  })
+})
+
+describe('write rules (task 28)', () => {
+  const author = viewer('author', [{ organizationId: ORG, role: 'MEMBER' }])
+  const formerMember = viewer('author')
+  const superuserLike = viewer('su') // SUPERUSER without membership: no special access
+
+  it('canCreatePostIn: any member of the organization', () => {
+    expect(canCreatePostIn(ORG, member)).toBe(true)
+    expect(canCreatePostIn(ORG, coach)).toBe(true)
+    expect(canCreatePostIn(ORG, admin)).toBe(true)
+    expect(canCreatePostIn(ORG, outsider)).toBe(false)
+    expect(canCreatePostIn(ORG, noOrg)).toBe(false)
+    expect(canCreatePostIn(ORG, superuserLike)).toBe(false)
+    expect(canCreatePostIn(ORG, null)).toBe(false)
+  })
+
+  it.each([
+    ['author', author, true],
+    ['author who left the organization', formerMember, true],
+    ['admin of the organization', admin, true],
+    ['other member', member, false],
+    ['coach', coach, false],
+    ['admin of another organization', outsider, false],
+    ['user without organization', noOrg, false],
+    ['visitor', null, false],
+  ])('canEditPost: %s → %s', (_label, v, expected) => {
+    expect(canEditPost(post(), v as Viewer)).toBe(expected)
+  })
+
+  it('canEditPost: a post without organization can only be edited by its author', () => {
+    const p = post({ organizationId: null })
+    expect(canEditPost(p, author)).toBe(true)
+    expect(canEditPost(p, admin)).toBe(false)
   })
 })

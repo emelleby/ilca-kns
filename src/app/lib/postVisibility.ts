@@ -100,3 +100,29 @@ export function visiblePostsWhere(viewer: Viewer): Prisma.PostWhereInput {
 
   return { status: "PUBLISHED", OR: visible };
 }
+
+/*
+ * Who may write a post (task 28). Same viewer shape as the read rules.
+ *
+ * - Create: members (any role) of the organization the post belongs to.
+ *   Every post created from the UI belongs to one organization.
+ * - Edit / archive: the author, or an ADMIN of the post's organization.
+ *
+ * SUPERUSER has no special write access, matching the read rules. Moderation
+ * (phase 6, task 22) will add explicit access.
+ */
+
+/** Can this viewer create a post in the organization? */
+export function canCreatePostIn(organizationId: string, viewer: Viewer): boolean {
+  return !!viewer && organizationIds(viewer).includes(organizationId);
+}
+
+/** Can this viewer edit or archive this post? */
+export function canEditPost(
+  post: Pick<PostAccessFields, "userId" | "organizationId">,
+  viewer: Viewer,
+): boolean {
+  if (!viewer) return false;
+  if (post.userId === viewer.id) return true;
+  return !!post.organizationId && organizationIds(viewer, ["ADMIN"]).includes(post.organizationId);
+}
