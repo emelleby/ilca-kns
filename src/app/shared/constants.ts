@@ -15,3 +15,6 @@ export const roleHierarchy = {
   COACH: ["COACH", "MEMBER"],
   MEMBER: ["MEMBER"]
 };
+// Post categories (task 6). Stored as a string in Post.category.
+export const POST_CATEGORIES = ["News", "Training", "Event", "Other"] as const;
+export type PostCategory = (typeof POST_CATEGORIES)[number];

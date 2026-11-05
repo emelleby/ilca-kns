@@ -45,13 +45,14 @@ src/
   app/
     Document.tsx, headers.ts, interceptors.ts
     auth/             # email.ts (Resend), password.ts, guards.ts (autorisasjon i server functions)
-    components/       # PostCard, PostList, PostFilter, ProfileEditForm, UserProfileSidebar, ui/ (shadcn)
+    components/       # PostCard, PostActions, PostForm, PostList, PostFilter, ProfileEditForm, UserProfileSidebar, ui/ (shadcn)
     layouts/          # HomeLayout, AuthLayout, SidebarLayout
     pages/
       Home, FrontPage, TasksPage, Test
       user/           # Login, Signup, Forgot/ResetPassword, profile/, settings/, routes.tsx, functions.ts
       superuser/      # Dashboard, organisasjons-dialoger, routes.tsx, functions.ts
       admin/          # routes.tsx, functions.ts
+      posts/          # PostFormPage (/posts/create, /posts/:id/edit), routes.tsx, functions.ts
     shared/, hooks/, lib/
   scripts/seed.ts
   test/               # setup + mock-hjelpere
@@ -59,7 +60,7 @@ prisma/schema.prisma
 migrations/           # 0001–0006
 ```
 
-Ruter i `worker.tsx`: `/`, `/home` (krever innlogging), `/tasks`, `/test`, `/pingo`, `/protected`, `/user/*`, `/superuser/*`.
+Ruter i `worker.tsx`: `/`, `/home` (krever innlogging), `/tasks`, `/test`, `/pingo`, `/protected`, `/user/*`, `/superuser/*`, `/posts/*` (krever innlogging).
 
 ## 3. Datamodell (`prisma/schema.prisma`)
 
@@ -85,6 +86,8 @@ Regler og filter ligger samlet i `src/app/lib/postVisibility.ts` (ingen database
 Forfatteren ser alltid egne innlegg. Bare `PUBLISHED` innlegg vises i feeden. Ukjent synlighet gir ingen tilgang. Admin regnes som coach (via `roleHierarchy`). Når coach–seiler-tildeling finnes (fase 5) skal `COACH` snevres inn til tildelt coach, og det er det eneste stedet som må endres. Superbrukere har ingen egen tilgang til private innlegg; moderering (fase 6) skal få en eksplisitt tilgang.
 
 `canViewPost` (ett innlegg) og `visiblePostsWhere` (Prisma-filter) må gi samme svar; en test sjekker alle kombinasjoner. Alle nye steder som leser innlegg skal bruke dem. Datalaget er `src/app/lib/posts.ts` (`getViewer`, `getFeedPosts`).
+
+Skriving (samme fil): `canCreatePostIn` (medlem av organisasjonen, alle roller) og `canEditPost` (forfatter, eller ADMIN i innleggets organisasjon). Superbrukere har heller ikke egen skrivetilgang. Server functions i `src/app/pages/posts/functions.ts` (`createPost`, `updatePost`, `archivePost`); organisasjonen settes ved opprettelse og kan ikke endres, og «slette» betyr `status = ARCHIVED`.
 
 ### Beslutning: `Organization` er klubbmodellen
 
@@ -112,7 +115,7 @@ Alle skjemaendringer skal være additive (nye tabeller / nullable kolonner), sli
 
 ## 6. Test
 
-Vitest, jsdom, 147 tester i 12 filer (`pnpm test`):
+Vitest, jsdom, 208 tester i 14 filer (`pnpm test`):
 
 | Fil | Tester |
 |---|---|
@@ -122,11 +125,13 @@ Vitest, jsdom, 147 tester i 12 filer (`pnpm test`):
 | `pages/user/__tests__/Login.test.tsx` | 11 |
 | `pages/user/__tests__/integration.test.tsx` | 4 |
 | `pages/user/__tests__/passwordReset.test.ts` | 6 |
-| `lib/__tests__/postVisibility.test.ts` | 34 |
-| `lib/__tests__/posts.test.ts` | 4 |
+| `lib/__tests__/postVisibility.test.ts` | 44 |
+| `pages/posts/__tests__/functions.test.ts` | 38 |
+| `lib/__tests__/posts.test.ts` | 11 |
+| `components/__tests__/PostForm.test.tsx` | 5 |
 | `auth/__tests__/guards.test.ts` | 5 |
 | `auth/__tests__/serverFunctionAuthz.test.ts` | 23 |
-| `auth/__tests__/serverFunctionGuards.test.ts` | 6 |
+| `auth/__tests__/serverFunctionGuards.test.ts` | 7 |
 | `lib/__tests__/tasks.test.ts` (avhengigheter i `tasks.json`) | 5 |
 
 Mønster: mock `cloudflare:workers`, `rwsdk/worker`, `@/db` og sesjon i `src/test/setup.ts`; gjenbrukbare hjelpere i `src/test/utils/serverFunctionMockHelper.ts`. Nye server functions skal ha tester etter samme mønster. Playwright/E2E er ikke satt opp.
@@ -137,7 +142,7 @@ Se `CLAUDE.md` (dev, build, migrate, seed, types, test).
 
 ## 8. Kjente gjenstående punkter
 
-- Innlegg kan ennå ikke opprettes, redigeres eller slettes fra UI (kun via seed). `kudos` er alltid 0 til likes finnes (fase 4)
+- Arkiverte innlegg kan ikke gjenopprettes fra UI. `kudos` er alltid 0 til likes finnes (fase 4)
 - R2-binding finnes, men ingen opplasting er implementert
 - Ingen produksjonsovervåking utover Cloudflare-standard (`observability.enabled = false` i `wrangler.jsonc`)
 - E-postavsender er utviklingsadresse

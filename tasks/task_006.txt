@@ -1,19 +1,21 @@
 # Task ID: 6
 # Title: Community Blog/News Feature
-# Status: in-progress
+# Status: done
 # Dependencies: 2, 3, 28, 29
 # Priority: high
-# Description: [Fase 1] Community-innlegg: feed fra database (ferdig) og opprette/redigere/arkivere innlegg med synlighetsvalg. Rik tekst, media, kommentarer, likes, flagging, varsler og søk er ikke del av fase 1 (se oppgave 10, 12, 13, 15, 22 og roadmap fase 4). Avhengigheter: 28 og 29 må være done før CRUD startes. Ikke avhengig av 30–35 (drift og sikkerhetsoppfølging); nye server functions følger guard-mønsteret i docs/architecture.md §4.
+# Description: [Fase 1] Community-innlegg: feed fra database og opprette/redigere/arkivere innlegg med synlighetsvalg (ferdig 2026-11-05). Rik tekst, media, kommentarer, likes, flagging, varsler og søk er ikke del av fase 1 (se oppgave 10, 12, 13, 15, 22 og roadmap fase 4). Avhengigheter: 28 og 29 må være done før CRUD startes. Ikke avhengig av 30–35 (drift og sikkerhetsoppfølging); nye server functions følger guard-mønsteret i docs/architecture.md §4.
 # Details:
 Omfang fase 1 – nåværende status:
 ✅ Datamodell: Post.organizationId, visibility (PUBLIC | ORGANIZATION | COACH), imageUrl (migrasjon 0007)
 ✅ Synlighetsregler (src/app/lib/postVisibility.ts) og datalag (src/app/lib/posts.ts)
 ✅ Feed fra database; forsiden viser kun offentlige innlegg; seed-data på alle nivåer
-⏳ Opprett / rediger / arkiver innlegg (under)
+✅ Skriverettigheter (oppgave 28) og server functions createPost / updatePost / archivePost (6.1)
+✅ Skjema (components/PostForm.tsx), sider /posts/create og /posts/:id/edit, rediger/arkiver-meny på PostCard (6.2–6.4)
+✅ Tester og nettleserverifisering (6.5, 6.6)
 
 Forutsetning: oppgave 29 (guards) og 28 (skriverettigheter) må være på plass først, ellers blir CRUD åpent for alle.
 
-Foreslåtte beslutninger (bekreft før start):
+Beslutninger (lagt til grunn og implementert 2026-11-05):
 1. Hvem kan opprette: innloggede brukere med minst ett organisasjonsmedlemskap. Hvert innlegg hører til én organisasjon som velges i skjemaet (forhåndsvalgt hvis bare én). Ingen innlegg uten organisasjon i MVP.
 2. Standard synlighet: ORGANIZATION. Valg: «Alle», «Kun klubben», «Kun meg og coacher».
 3. Felt: tittel (3–120 tegn), innhold (1–10000, ren tekst), kategori (News | Training | Event | Other), synlighet, organisasjon, valgfri bilde-URL (opplasting kommer i fase 4).
