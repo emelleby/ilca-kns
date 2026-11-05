@@ -18,7 +18,7 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
 - Innlegg kan ikke opprettes fra UI ennå (kun seed).
 - R2-binding finnes, men er ikke i bruk.
-- **Workers Previews deler produksjonens D1 og R2 (`ilca2`).** Akseptert så lenge det ikke finnes ekte brukere. Før lansering: egen preview-database og -bucket i `previews`-blokken i `wrangler.jsonc`. Preview-URL-er er offentlige uten tilgangskontroll. `AUTH_SECRET_KEY` er satt i Preview base config (2026-11-05). Uten den kaster rwsdk sitt sesjonslager på hver forespørsel (error 1101); sett den på nytt med `npx wrangler preview base-config secret put AUTH_SECRET_KEY` hvis den fjernes. `RESEND_API_KEY` mangler også, så e-post sendes ikke fra previews.
+- **Workers Previews deler produksjonens D1 og R2 (`ilca2`).** Akseptert så lenge det ikke finnes ekte brukere. Før lansering: egen preview-database og -bucket i `previews`-blokken i `wrangler.jsonc`. Preview-URL-er er offentlige uten tilgangskontroll. `AUTH_SECRET_KEY` er satt i Preview base config (2026-11-05). Uten den kaster rwsdk sitt sesjonslager på hver forespørsel (error 1101). Base config ble ikke tatt med i en preview som fantes fra før; der måtte den settes direkte med `npx wrangler preview secret put AUTH_SECRET_KEY --name <gren>`. Sjekk med `npx wrangler preview secret list --name <gren>` hvis en preview gir 1101. `RESEND_API_KEY` mangler også, så e-post sendes ikke fra previews.
 - E-post sendes fra `onboarding@resend.dev` (kun utvikling).
 - `observability.enabled = false` i `wrangler.jsonc`.
 - Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`) er utdaterte og kan slettes.
