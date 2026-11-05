@@ -18,11 +18,21 @@ Felles minne for prosjektet. Nyeste øverst. Regler for hvordan dette føres st�
 - Oppgrader Prisma 6.8 → 7 senere (egen oppgave); ikke krevd av rwsdk.
 - Innlegg kan ikke opprettes fra UI ennå (kun seed).
 - R2-binding finnes, men er ikke i bruk.
+- **Workers Previews deler produksjonens D1 og R2 (`ilca2`).** Akseptert så lenge det ikke finnes ekte brukere. Før lansering: egen preview-database og -bucket i `previews`-blokken i `wrangler.jsonc`. Preview-URL-er er offentlige uten tilgangskontroll. `AUTH_SECRET_KEY` er satt i Preview base config (2026-11-05). Uten den kaster rwsdk sitt sesjonslager på hver forespørsel (error 1101). Base config ble ikke tatt med i en preview som fantes fra før; der måtte den settes direkte med `npx wrangler preview secret put AUTH_SECRET_KEY --name <gren>`. Sjekk med `npx wrangler preview secret list --name <gren>` hvis en preview gir 1101. `RESEND_API_KEY` mangler også, så e-post sendes ikke fra previews.
 - E-post sendes fra `onboarding@resend.dev` (kun utvikling).
 - `observability.enabled = false` i `wrangler.jsonc`.
 - Eldre grener (`upgrade-to-0.85`, `kiro`, `eivind/flat`) er utdaterte og kan slettes.
 
 ## Logg
+
+### 2026-11-05 – Workers Previews
+- Cloudflare Workers Builds kjører `wrangler preview` for andre grener enn `main`, og feilet fordi `wrangler.jsonc` manglet `previews`-blokk. Lagt til: vars, egen Durable Object-binding (hver preview får isolert sesjonslagring), og D1/R2 som peker på produksjon (bevisst valg, se Åpne punkter).
+
+### 2026-11-04 – Typefeil ryddet
+- `pnpm types` er nå uten feil (var 30). Alle 147 tester og `pnpm build` går fortsatt.
+- Reelle feil rettet: `Skeleton` sendte ikke videre `style`/`data-*` (sidebar-skjelettets bredde virket ikke); `Calendar` brukte react-day-picker v8-API (`IconLeft/IconRight`) mot v9 (`Chevron`); `admin/routes.tsx` importerte sider som ikke finnes (ikke i bruk, nå tom plassholder).
+- `DEV_EMAIL_TO` leses som valgfri, siden `wrangler types` bare tar den med når den står i `.dev.vars`.
+- Testfiler: importerer `beforeEach`/`expect` fra vitest, og mock-data følger Prisma-/`RequestInfo`-typene.
 
 ### 2026-11-04 – Avhengigheter mellom oppgaver
 - Regel i `ai-guidelines.md`: før en oppgave startes skal alle `dependencies` være `done`, og nye oppgaver skal legges inn som avhengighet der de trengs, med «HVEM» i beskrivelsen.

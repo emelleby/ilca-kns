@@ -1,4 +1,4 @@
-import { vi } from 'vitest'
+import { vi, expect } from 'vitest'
 
 /**
  * Mock helper utilities for server function testing
